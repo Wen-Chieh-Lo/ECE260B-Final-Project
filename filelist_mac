@@ -1,0 +1,15 @@
+// --- testbench ---
+./verilog/tb/mac_col_tb.v
+
+// --- MAC ---
+./verilog/mac/mac_col.v
+./verilog/mac/mac_8in.v
+./verilog/mac/mac_array.v
+
+// --- memory / FIFO ---
+./verilog/memory/sram_w16.v
+./verilog/ofifo.v
+./verilog/memory/fifo_depth16.v
+./verilog/memory/fifo_mux_16_1.v
+./verilog/memory/fifo_mux_8_1.v
+./verilog/memory/fifo_mux_2_1.v
