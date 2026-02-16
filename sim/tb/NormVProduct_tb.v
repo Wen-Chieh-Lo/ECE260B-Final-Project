@@ -82,7 +82,7 @@ reg [bw_psum*col-1:0] temp16b;
 
 initial begin 
 
-  $dumpfile("waveform/NormVProduct.vcd");
+  $dumpfile("sim/waveform/NormVProduct.vcd");
   $dumpvars(0,fullchip_tb);
 
 
@@ -91,7 +91,7 @@ initial begin
 
 $display("##### V data txt reading #####");
 
-  qkvn_file = $fopen("pattern/vdata.txt", "r");
+  qkvn_file = $fopen("sim/pattern/vdata.txt", "r");
 
   //// To get rid of first 3 lines in data file ////
   // qkvn_scan_file = $fscanf(qkvn_file, "%s\n", captured_data);
@@ -127,7 +127,7 @@ $display("##### norm data txt reading #####");
   end
   reset = 0;
 
-  qkvn_file = $fopen("pattern/norm.txt", "r");
+  qkvn_file = $fopen("sim/pattern/norm.txt", "r");
 
   //// To get rid of first 4 lines in data file ////
   // qkvn_scan_file = $fscanf(qkvn_file, "%s\n", captured_data);

@@ -23,14 +23,15 @@ make help       # list targets
 | `filelist_sfp_row`      | sfp_row           |
 | `filelist_sfp_row_dual` | sfp_row dual-core |
 
-Waveforms: `waveform/*.vcd` after each run.
+Waveforms: `sim/waveform/*.vcd` after each run.
 
 ## Layout
 
 - `filelists/` — iverilog filelists per config
-- `pattern/` — test vectors (kdata, mac_out, norm, etc.)
 - `verilog/` — RTL (core, fullchip, sync, sfp_row, ofifo)
 - `verilog/mac/` — MAC column and array
 - `verilog/memory/` — SRAM, FIFO, mux
-- `verilog/tb/` — testbenches
-- `waveform/` — generated VCD files
+- `sim/tb/` — testbenches
+- `sim/pattern/` — test vectors (kdata, mac_out, norm, etc.)
+- `sim/compiled` — iverilog/vvp binary (generated)
+- `sim/waveform/` — generated VCD files

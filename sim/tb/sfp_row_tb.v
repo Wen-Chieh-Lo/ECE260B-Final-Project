@@ -72,7 +72,7 @@ module sfp_row_tb;
   always #5 clk = ~clk;
 
   initial begin
-    $dumpfile("waveform/sfp_row.vcd");
+    $dumpfile("sim/waveform/sfp_row.vcd");
     $dumpvars(0, sfp_row_tb);
 
     // Clock a few cycles, then release reset
@@ -82,7 +82,7 @@ module sfp_row_tb;
 
     // ----- Load mac_out.txt (8 rows x 8 cols, tab/space separated)
     $display("##### Loading mac_out.txt into pmem #####");
-    mac_file = $fopen("pattern/mac_out.txt", "r");
+    mac_file = $fopen("sim/pattern/mac_out.txt", "r");
     if (mac_file == 0) begin
       $display("ERROR: cannot open mac_out.txt");
       $finish;
@@ -116,7 +116,7 @@ module sfp_row_tb;
 
     // ----- Load golden norm_out_q20.txt (unsigned 0..2^20-1)
     $display("##### Loading norm_out_q20.txt #####");
-    norm_file = $fopen("pattern/norm_out_q20.txt", "r");
+    norm_file = $fopen("sim/pattern/norm_out_q20.txt", "r");
     if (norm_file == 0) begin
       $display("ERROR: cannot open norm_out_q20.txt");
       $finish;

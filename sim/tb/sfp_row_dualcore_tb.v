@@ -79,7 +79,7 @@ module sfp_row_dualcore_tb;
   always #5 clk = ~clk;
 
   initial begin
-    $dumpfile("waveform/sfp_row_dualcore.vcd");
+    $dumpfile("sim/waveform/sfp_row_dualcore.vcd");
     $dumpvars(0, sfp_row_dualcore_tb);
 
     repeat(5) @(posedge clk);
@@ -88,7 +88,7 @@ module sfp_row_dualcore_tb;
 
     // ----- Load mac_out.txt
     $display("##### Loading mac_out.txt #####");
-    mac_file = $fopen("pattern/mac_out.txt", "r");
+    mac_file = $fopen("sim/pattern/mac_out.txt", "r");
     if (mac_file == 0) begin
       $display("ERROR: cannot open mac_out.txt");
       $finish;
@@ -102,7 +102,7 @@ module sfp_row_dualcore_tb;
 
     // ----- Load golden norm_out_q20.txt
     $display("##### Loading norm_out_q20.txt #####");
-    norm_file = $fopen("pattern/norm_out_q20.txt", "r");
+    norm_file = $fopen("sim/pattern/norm_out_q20.txt", "r");
     if (norm_file == 0) begin
       $display("ERROR: cannot open norm_out_q20.txt");
       $finish;

@@ -9,7 +9,7 @@ parameter total_cycle = 8;   // how many streamed Q vectors will be processed
 parameter bw = 8;            // Q & K vector bit precision
 parameter bw_psum = 2*bw+4;  // partial sum bit precision
 parameter pr = 8;           // how many products added in each dot product 
-parameter col = 8;           // how many dot product units are equipped
+parameter col = 1;           // how many dot product units are equipped
 
 integer qk_file ; // file handler
 integer qk_scan_file ; // file handler
@@ -22,9 +22,9 @@ integer  weight [col*pr-1:0];
 
 
 
-integer  K[col-1:0][pr-1:0];
+integer  K[pr-1:0];
 integer  Q[total_cycle-1:0][pr-1:0];
-integer  result[total_cycle-1:0][col-1:0];
+integer  result[total_cycle-1:0];
 integer  sum[total_cycle-1:0];
 
 integer i,j,k,t,p,q,s,u, m;
@@ -37,7 +37,7 @@ reg reset = 1;
 reg clk = 0;
 reg [pr*bw-1:0] mem_in; 
 reg ofifo_rd = 0;
-wire [18:0] inst; 
+wire [16:0] inst; 
 reg qmem_rd = 0;
 reg qmem_wr = 0; 
 reg kmem_rd = 0; 
@@ -49,25 +49,7 @@ reg load = 0;
 reg [3:0] qkmem_add = 0;
 reg [3:0] pmem_add = 0;
 
-reg [bw-1:0] prob0;
-reg [bw-1:0] prob1;
-reg [bw-1:0] prob2;
-reg [bw-1:0] prob3;
-reg [bw-1:0] prob4;
-reg [bw-1:0] prob5;
-reg [bw-1:0] prob6;
-reg [bw-1:0] prob7;
-reg [bw-1:0] prob8;
-reg [bw-1:0] prob9;
-reg [bw-1:0] prob10;
-reg [bw-1:0] prob11;
-reg [bw-1:0] prob12;
-reg [bw-1:0] prob13;
-reg [bw-1:0] prob14;
-reg [bw-1:0] prob15;
 
-assign inst[18] = 1'b0;           // div policy not determined, set as never used to ensure no error
-assign inst[17] = 1'b0;           // acc policy not determined, set as never used to ensure no error
 assign inst[16] = ofifo_rd;
 assign inst[15:12] = qkmem_add;
 assign inst[11:8]  = pmem_add;
@@ -87,8 +69,7 @@ reg [bw_psum+3:0] temp_sum;
 reg [bw_psum*col-1:0] temp16b;
 
 
-
-fullchip #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) fullchip_instance (
+mac_col #(.bw(bw), .bw_psum(bw_psum), .pr(pr)) mac_col_instance (
       .reset(reset),
       .clk(clk), 
       .mem_in(mem_in), 
@@ -98,7 +79,7 @@ fullchip #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) fullchip_instance (
 
 initial begin 
 
-  $dumpfile("waveform/fullchip.vcd");
+  $dumpfile("sim/waveform/mac_col.vcd");
   $dumpvars(0,fullchip_tb);
 
 
@@ -108,16 +89,16 @@ initial begin
 $display("##### Q data txt reading #####");
 
 
-  qk_file = $fopen("pattern/qdata.txt", "r");
+  qk_file = $fopen("sim/pattern/qdata.txt", "r");
 
-  // To get rid of first 3 lines in data file ////
-  // qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
-  // qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
-  // qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
-  // qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
+  //// To get rid of first 3 lines in data file ////
+  qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
+  qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
+  qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
+  qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
 
 
-  for (q=0; q<total_cycle; q=q+1) begin
+  for (q=0; q<col; q=q+1) begin
     for (j=0; j<pr; j=j+1) begin
           qk_scan_file = $fscanf(qk_file, "%d\n", captured_data);
           Q[q][j] = captured_data;
@@ -147,24 +128,22 @@ $display("##### K data txt reading #####");
   end
   reset = 0;
 
-  qk_file = $fopen("pattern/kdata.txt", "r");
+  qk_file = $fopen("sim/pattern/kdata.txt", "r");
 
-  // To get rid of first 4 lines in data file ////
-  // qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
-  // qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
-  // qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
-  // qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
-
-
+  //// To get rid of first 4 lines in data file ////
+  qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
+  qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
+  qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
+  qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
 
 
-  for (q=0; q<col; q=q+1) begin
+
+
     for (j=0; j<pr; j=j+1) begin
           qk_scan_file = $fscanf(qk_file, "%d\n", captured_data);
-          K[q][j] = captured_data;
+          K[j] = captured_data;
           //$display("##### %d\n", K[q][j]);
     end
-  end
 /////////////////////////////////
 
 
@@ -180,20 +159,16 @@ $display("##### K data txt reading #####");
 $display("##### Estimated multiplication result #####");
 
   for (t=0; t<total_cycle; t=t+1) begin
-     for (q=0; q<col; q=q+1) begin
-       result[t][q] = 0;
-     end
+     result[t] = 0;
   end
 
   for (t=0; t<total_cycle; t=t+1) begin
-     for (q=0; q<col; q=q+1) begin
          for (k=0; k<pr; k=k+1) begin
-            result[t][q] = result[t][q] + Q[t][k] * K[q][k];
+            result[t] = result[t] + Q[t][k] * K[k];
          end
 
          temp5b = result[t][q];
          temp16b = {temp16b[139:0], temp5b};
-     end
 
      //$display("%d %d %d %d %d %d %d %d", result[t][0], result[t][1], result[t][2], result[t][3], result[t][4], result[t][5], result[t][6], result[t][7]);
      $display("prd @cycle%2d: %40h", t, temp16b);
@@ -210,28 +185,11 @@ $display("##### Estimated multiplication result #####");
 
 $display("##### Qmem writing  #####");
 
-  for (q=0; q<total_cycle; q=q+1) begin
+  for (q=0; q<col; q=q+1) begin
 
     #0.5 clk = 1'b0;  
     qmem_wr = 1;  if (q>0) qkmem_add = qkmem_add + 1; 
-
-    prob0 = Q[q][0];
-    prob1 = Q[q][1];
-    prob2 = Q[q][2];
-    prob3 = Q[q][3];
-    prob4 = Q[q][4];
-    prob5 = Q[q][5];
-    prob6 = Q[q][6];
-    prob7 = Q[q][7];
-    prob8 = Q[q][8];
-    prob9 = Q[q][9];
-    prob10 = Q[q][10];
-    prob11 = Q[q][11];
-    prob12 = Q[q][12];
-    prob13 = Q[q][13];
-    prob14 = Q[q][14];
-    prob15 = Q[q][15];
-
+    
     mem_in[1*bw-1:0*bw] = Q[q][0];
     mem_in[2*bw-1:1*bw] = Q[q][1];
     mem_in[3*bw-1:2*bw] = Q[q][2];
@@ -346,7 +304,7 @@ $display("##### K data loading to processor #####");
 ///// execution  /////
 $display("##### execute #####");
 
-  for (q=0; q<total_cycle; q=q+1) begin
+  for (q=0; q<col; q=q+1) begin
     #0.5 clk = 1'b0;  
     execute = 1; 
     qmem_rd = 1;
@@ -377,7 +335,7 @@ $display("##### execute #####");
 
 $display("##### move ofifo to pmem #####");
 
-  for (q=0; q<total_cycle; q=q+1) begin
+  for (q=0; q<col; q=q+1) begin
     #0.5 clk = 1'b0;  
     ofifo_rd = 1; 
     pmem_wr = 1; 
@@ -395,46 +353,6 @@ $display("##### move ofifo to pmem #####");
 
 ///////////////////////////////////////////
 
- for (q=0; q<5; q=q+1) begin
-    #0.5 clk = 1'b0;   
-    #0.5 clk = 1'b1;   
- end
-
-// ////////////// sfp accumulation ///////////////////
-
-// $display("##### accumulation in sfp and wb to pmem #####");
-
-//   for (q=0; q<total_cycle; q=q+1) begin
-//     #0.5 clk = 1'b0;  
-//     div = 0;
-//     pmem_rd = 1;
-//     pmem_wr = 0;  
-//     if(q>0) pmem_add = pmem_add + 1;
-//     #0.5 clk = 1'b1;
-
-//     #0.5 clk = 1'b0;
-//     acc = 1;
-//     pmem_rd = 0;
-//     #0.5 clk = 1'b1;
-    
-//     #0.5 clk = 1'b0;
-//     acc = 0;
-//     #0.5 clk = 1'b1;
-    
-//     #0.5 clk = 1'b0;
-//     div = 1;
-//     #0.5 clk = 1'b1;
-    
-//     #0.5 clk = 1'b0;
-//     pmem_wr = 1;
-//     #0.5 clk = 1'b1;
-//   end
-
-//   #0.5 clk = 1'b0;  
-//   pmem_rd = 0; pmem_add = 0; acc = 0; div = 0; pmem_wr = 0;
-//   #0.5 clk = 1'b1;  
-
-// ///////////////////////////////////////////
 
 
 

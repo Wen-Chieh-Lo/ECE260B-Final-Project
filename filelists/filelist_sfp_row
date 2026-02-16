@@ -1,5 +1,5 @@
 // --- testbench ---
-./verilog/tb/sfp_row_tb.v
+./sim/tb/sfp_row_tb.v
 
 // --- SFP row ---
 ./verilog/sfp_row.v

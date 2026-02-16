@@ -1,5 +1,5 @@
 // --- testbench ---
-./verilog/tb/fullchip_dual_tb.v
+./sim/tb/fullchip_dual_tb.v
 
 // --- top / core ---
 ./verilog/fullchip_dual.v

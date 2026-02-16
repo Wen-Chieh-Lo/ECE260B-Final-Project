@@ -1,5 +1,5 @@
 // --- testbench ---
-./verilog/tb/mac_col_tb.v
+./sim/tb/mac_col_tb.v
 
 // --- MAC ---
 ./verilog/mac/mac_col.v
