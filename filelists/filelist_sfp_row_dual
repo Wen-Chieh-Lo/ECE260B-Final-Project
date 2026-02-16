@@ -1,0 +1,8 @@
+// --- testbench ---
+./verilog/tb/sfp_row_dualcore_tb.v
+
+// --- SFP row (two instances) ---
+./verilog/sfp_row.v
+
+// --- memory ---
+./verilog/memory/fifo_depth16.v

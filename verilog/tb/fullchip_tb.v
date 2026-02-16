@@ -98,7 +98,7 @@ fullchip #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) fullchip_instance (
 
 initial begin 
 
-  $dumpfile("waveform/fullchip_tb.vcd");
+  $dumpfile("waveform/fullchip.vcd");
   $dumpvars(0,fullchip_tb);
 
 

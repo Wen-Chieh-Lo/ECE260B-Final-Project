@@ -79,7 +79,7 @@ mac_col #(.bw(bw), .bw_psum(bw_psum), .pr(pr)) mac_col_instance (
 
 initial begin 
 
-  $dumpfile("waveform/mac_col_tb.vcd");
+  $dumpfile("waveform/mac_col.vcd");
   $dumpvars(0,fullchip_tb);
 
 

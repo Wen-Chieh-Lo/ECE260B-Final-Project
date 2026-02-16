@@ -82,7 +82,7 @@ reg [bw_psum*col-1:0] temp16b;
 
 initial begin 
 
-  $dumpfile("waveform/NormVProduct_tb.vcd");
+  $dumpfile("waveform/NormVProduct.vcd");
   $dumpvars(0,fullchip_tb);
 
 

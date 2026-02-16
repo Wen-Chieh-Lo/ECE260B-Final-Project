@@ -1,23 +1,36 @@
 # ECE260B Final Project
 
-UCSD ECE260B final project
+Verilog RTL and testbenches for single/dual-core MAC + SFP normalization. Simulated with Icarus Verilog.
 
-## Project Structure
+## Requirements
 
-- **verilog/** — RTL source files
-  - `fullchip.v` / `core.v` — single-core version
-  - `fullchip_dual.v` / `core_dual.v` — dual-core version
-  - Submodules: MAC array, FIFO, SRAM, SFP normalization, etc.
-- **filelist** — file list for compilation
-- **\*.txt** — test data (kdata, norm, qdata, vdata, etc.)
+- [Icarus Verilog](http://iverilog.icarus.com/) (`iverilog`, `vvp`)
+- Optional: GTKWave (or any VCD viewer) for waveforms
 
+## Build & Run
 
-## Simulation
+```bash
+make [target]   # default: fullchip
+make all        # run all configurations
+make help       # list targets
+```
 
-- **single port**
-    - iverilog -o compiled -c filelist; vvp compiled
-- **dual port**
-    - iverilog -o compiled_dual -c filelist; vvp compiled_dual
+| Target                  | Config            |
+| ----------------------- | ----------------- |
+| `filelist`              | fullchip          |
+| `filelist_mac`          | mac_col           |
+| `filelist_dual`         | fullchip_dual     |
+| `filelist_sfp_row`      | sfp_row           |
+| `filelist_sfp_row_dual` | sfp_row dual-core |
 
----
-*RTL origin: UCSD VVIP Lab (Prof. Mingu Kang). Do not distribute without permission.*
+Waveforms: `waveform/*.vcd` after each run.
+
+## Layout
+
+- `filelists/` — iverilog filelists per config
+- `pattern/` — test vectors (kdata, mac_out, norm, etc.)
+- `verilog/` — RTL (core, fullchip, sync, sfp_row, ofifo)
+- `verilog/mac/` — MAC column and array
+- `verilog/memory/` — SRAM, FIFO, mux
+- `verilog/tb/` — testbenches
+- `waveform/` — generated VCD files

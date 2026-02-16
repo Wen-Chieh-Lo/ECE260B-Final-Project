@@ -79,7 +79,7 @@ module sfp_row_dualcore_tb;
   always #5 clk = ~clk;
 
   initial begin
-    $dumpfile("waveform/sfp_row_dualcore_tb.vcd");
+    $dumpfile("waveform/sfp_row_dualcore.vcd");
     $dumpvars(0, sfp_row_dualcore_tb);
 
     repeat(5) @(posedge clk);
