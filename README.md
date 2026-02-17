@@ -2,12 +2,13 @@
 
 Verilog RTL and testbenches for single/dual-core MAC + SFP normalization. Simulated with Icarus Verilog.
 
-## Project Status (Verification)
+## Verification checklist
 
-| Status    | Scope |
-| --------- | ----- |
-| **Done**  | MAC array and SFP row testbenches — simulations run and pass for single-core configs. |
-| **Pending** | Dual-core verification (fullchip dual, sfp_row_dual) and RTL/file-level checks. |
+- [x] MAC array TB (single-core)
+- [ ] SFP row TB (single-core)
+- [ ] Full dual-core flow
+- [ ] Vproduct verification
+- [ ] Core integration
 
 ## Requirements
 
