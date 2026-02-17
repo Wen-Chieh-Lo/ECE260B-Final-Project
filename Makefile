@@ -4,19 +4,17 @@
 #
 # Usage:  make [target]
 #
-#   target          description
-#   --------------- ----------------------------------------------------------
-#   (default)       fullchip (same as filelist)
-#   filelist        fullchip
-#   filelist_mac    mac_col
-#   filelist_dual   fullchip_dual
-#   filelist_sfp_row      sfp_row single-core
-#   filelist_sfp_row_dual sfp_row dual-core
-#   all             run all of the above in sequence
+#   target        description              filelist (in filelists/)
+#   ------------- -----------------------  --------------------------
+#   (default)     fullchip single-core     filelist
+#   fullchip      same as default          filelist
+#   mac           mac_array                filelist_mac
+#   dual          fullchip dual-core       filelist_dual
+#   sfp_row       sfp_row single-core      filelist_sfp_row
+#   sfp_row_dual  sfp_row dual-core        filelist_sfp_row_dual
+#   all           run all of the above
 #
-# Waveforms (see sim/waveform/*.vcd after run):
-#   fullchip.vcd, mac_col.vcd, fullchip_dual.vcd,
-#   sfp_row.vcd, sfp_row_dualcore.vcd  (use GTKWave or any VCD viewer)
+# Waveforms: sim/waveform/*.vcd (fullchip.vcd, mac_array.vcd, ...)
 # =============================================================================
 
 FILELISTS_DIR := filelists
@@ -24,55 +22,66 @@ IVERILOG      := iverilog
 VVP           := vvp
 OUT           := sim/compiled
 
-# Collect all filelist names from filelists/ (no path)
-FILELIST_NAMES := $(notdir $(wildcard $(FILELISTS_DIR)/filelist*))
+# Target -> filelist (used by rules below)
+#   make target  reads  filelists/<filelist>
+TARGET_FILELIST_table := \
+	fullchip:filelist \
+	mac:filelist_mac \
+	dual:filelist_dual \
+	sfp_row:filelist_sfp_row \
+	sfp_row_dual:filelist_sfp_row_dual
 
-# Map: filelist target -> waveform .vcd filename (single source of truth)
-WAVEFORM_map := filelist:fullchip.vcd \
-	filelist_mac:mac_col.vcd \
-	filelist_dual:fullchip_dual.vcd \
-	filelist_sfp_row:sfp_row.vcd \
-	filelist_sfp_row_dual:sfp_row_dualcore.vcd
-$(foreach p,$(WAVEFORM_map),$(eval $(firstword $(subst :, ,$(p))): WAVEFORM := $(word 2,$(subst :, ,$(p)))))
+# Target -> waveform .vcd name
+TARGET_WAVEFORM_table := \
+	fullchip:fullchip.vcd \
+	mac:mac_array.vcd \
+	dual:fullchip_dual.vcd \
+	sfp_row:sfp_row.vcd \
+	sfp_row_dual:sfp_row_dualcore.vcd
 
-.PHONY: all clean help $(FILELIST_NAMES)
+SIM_TARGETS := fullchip mac dual sfp_row sfp_row_dual
 
-# Default: use filelist (fullchip)
-default: filelist
+$(foreach p,$(TARGET_FILELIST_table),$(eval $(firstword $(subst :, ,$(p))): FILELIST_NAME := $(word 2,$(subst :, ,$(p)))))
+$(foreach p,$(TARGET_WAVEFORM_table),$(eval $(firstword $(subst :, ,$(p))): WAVEFORM := $(word 2,$(subst :, ,$(p)))))
 
-# Run all filelist modes (overwrites sim/compiled and waveform)
-all: $(FILELIST_NAMES)
-	@echo "--- All modes done. Waveforms: sim/waveform/*.vcd ---"
+.PHONY: all clean help default $(SIM_TARGETS)
 
-# Generic rule: one target per filelist in filelists/
-# Build: iverilog -o sim/compiled -f filelists/<name>
-# Run:   vvp sim/compiled → waveform path per comments above
-$(FILELIST_NAMES):
+default: fullchip
+
+all: $(SIM_TARGETS)
+	@echo "--- All done. Waveforms: sim/waveform/*.vcd ---"
+
+$(SIM_TARGETS):
 	@mkdir -p sim
-	$(IVERILOG) -o $(OUT) -f $(FILELISTS_DIR)/$@
+	$(IVERILOG) -o $(OUT) -f $(FILELISTS_DIR)/$(FILELIST_NAME)
 	$(VVP) $(OUT)
 	@echo ""
-	@echo ">>> Waveform: sim/waveform/$(WAVEFORM) (open with GTKWave or any VCD viewer) <<<"
+	@echo ">>> Waveform: sim/waveform/$(WAVEFORM) (GTKWave or any VCD viewer) <<<"
 
-# Compile only, no run (override with FILELIST=filelist_mac etc.; default filelist)
-FILELIST ?= filelist
+# Compile only: make compile [TARGET=mac]
+TARGET ?= fullchip
 compile:
 	@mkdir -p sim
-	$(IVERILOG) -o $(OUT) -f $(FILELISTS_DIR)/$(FILELIST)
-	@echo "Built $(OUT). Run '$(VVP) $(OUT)' to generate waveform."
+	@fl=$$(echo '$(TARGET_FILELIST_table)' | tr ' ' '\n' | grep '^$(TARGET):' | cut -d: -f2); \
+	$(IVERILOG) -o $(OUT) -f $(FILELISTS_DIR)/$$fl; \
+	echo "Built $(OUT). Run '$(VVP) $(OUT)' to generate waveform."
 
 clean:
 	rm -f $(OUT)
 	@echo "Removed $(OUT)"
 
 help:
-	@echo "Targets:"
-	@echo "  make / make filelist        - build and run filelists/filelist; waveform: sim/waveform/fullchip.vcd"
-	@echo "  make filelist_mac           - filelists/filelist_mac; waveform: sim/waveform/mac_col.vcd"
-	@echo "  make filelist_dual          - filelists/filelist_dual; waveform: sim/waveform/fullchip_dual.vcd"
-	@echo "  make filelist_sfp_row       - filelists/filelist_sfp_row; waveform: sim/waveform/sfp_row.vcd"
-	@echo "  make filelist_sfp_row_dual  - filelists/filelist_sfp_row_dual; waveform: sim/waveform/sfp_row_dualcore.vcd"
-	@echo "  make all                    - run all modes"
-	@echo "  make compile FILELIST=xxx   - compile only (xxx=filelist|filelist_mac|filelist_dual|filelist_sfp_row|filelist_sfp_row_dual)"
-	@echo "  make clean                  - remove sim/compiled"
-	@echo "  make help                   - show this help"
+	@echo "Targets (make <target> = build + run):"
+	@echo ""
+	@echo "  target         filelist               waveform"
+	@echo "  ------------   -------------------   -------------------------"
+	@echo "  fullchip       filelist               fullchip.vcd"
+	@echo "  mac            filelist_mac           mac_array.vcd"
+	@echo "  dual           filelist_dual          fullchip_dual.vcd"
+	@echo "  sfp_row        filelist_sfp_row       sfp_row.vcd"
+	@echo "  sfp_row_dual   filelist_sfp_row_dual  sfp_row_dualcore.vcd"
+	@echo ""
+	@echo "  all            run all above"
+	@echo "  compile TARGET=<target>   compile only (no run)"
+	@echo "  clean          remove sim/compiled"
+	@echo "  help           this message"

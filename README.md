@@ -15,20 +15,20 @@ make all        # run all configurations
 make help       # list targets
 ```
 
-| Target                  | Config            |
-| ----------------------- | ----------------- |
-| `filelist`              | fullchip          |
-| `filelist_mac`          | mac_col           |
-| `filelist_dual`         | fullchip_dual     |
-| `filelist_sfp_row`      | sfp_row           |
-| `filelist_sfp_row_dual` | sfp_row dual-core |
+| Target          | Config            | filelist (in filelists/)   |
+| ---------------- | ----------------- | -------------------------- |
+| `fullchip`       | fullchip          | filelist                   |
+| `mac`            | mac_array         | filelist_mac               |
+| `dual`           | fullchip_dual     | filelist_dual              |
+| `sfp_row`        | sfp_row           | filelist_sfp_row           |
+| `sfp_row_dual`   | sfp_row dual-core | filelist_sfp_row_dual       |
 
 Waveforms: `sim/waveform/*.vcd` after each run.
 
 ## Layout
 
 - `filelists/` — iverilog filelists per config
-- `verilog/` — RTL (core, fullchip, sync, sfp_row, ofifo)
+- `verilog/` — RTL (core, fullchip, mac_array_top, sync, sfp_row, ofifo)
 - `verilog/mac/` — MAC column and array
 - `verilog/memory/` — SRAM, FIFO, mux
 - `sim/tb/` — testbenches
