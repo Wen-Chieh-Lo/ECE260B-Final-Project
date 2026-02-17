@@ -1,8 +1,5 @@
-// --- testbench ---
+// --- testbench + DUT (mac_array_top in same file) ---
 ./sim/tb/mac_array_tb.v
-
-// --- top (mac_array + ofifo + qmem + kmem + psum_mem only) ---
-./verilog/mac_array_top.v
 
 // --- MAC ---
 ./verilog/mac/mac_col.v

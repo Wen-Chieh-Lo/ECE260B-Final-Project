@@ -37,7 +37,7 @@ Waveforms: `sim/waveform/*.vcd` after each run.
 ## Layout
 
 - `filelists/` — iverilog filelists per config
-- `verilog/` — RTL (core, fullchip, mac_array_top, sync, sfp_row, ofifo)
+- `verilog/` — RTL (core, fullchip, sync, sfp_row, ofifo); `mac_array_top` lives in `sim/tb/mac_array_tb.v` with TB
 - `verilog/mac/` — MAC column and array
 - `verilog/memory/` — SRAM, FIFO, mux
 - `sim/tb/` — testbenches
