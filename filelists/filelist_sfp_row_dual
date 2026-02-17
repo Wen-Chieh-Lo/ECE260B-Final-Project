@@ -6,3 +6,6 @@
 
 // --- memory ---
 ./verilog/memory/fifo_depth16.v
+./verilog/memory/fifo_mux_16_1.v
+./verilog/memory/fifo_mux_8_1.v
+./verilog/memory/fifo_mux_2_1.v

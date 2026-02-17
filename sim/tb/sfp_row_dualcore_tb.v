@@ -1,11 +1,4 @@
-// Dual-core SFP testbench: verifies sum_in/sum_out for L1 norm across two cores.
-//
-// Protocol:
-//   - Each core owns half of each row: core0 cols 0-3, core1 cols 4-7 (other half zero-padded).
-//   - acc=1: each core writes sum of |sfp_in| into internal FIFO and exposes it on sum_out when read.
-//   - fifo_ext_rd=1: read partial sum from sum_out (one cycle later capture).
-//   - Cross-couple: sum_in0 = sum_out1, sum_in1 = sum_out0 so sum_2core = local + other = full row L1 sum.
-//   - div=1 (two cycles): both divide by the same total; combine sfp_out col0-3 from each core for full row.
+// Dual-core style TB: (1) after acc, assert fifo_ext_rd and check sum_out; (2) drive random sum_in, golden = divide by (sum_abs + sum_in).
 
 `timescale 1ns/1ps
 
@@ -14,33 +7,31 @@ module sfp_row_dualcore_tb;
   parameter ROWS = 8;
   parameter col = 8;
   parameter bw = 8;
-  parameter bw_psum = 2*bw+4;  // 20
-  parameter HALF = 4;
+  parameter bw_psum = 2*bw+3;  // 20
+  parameter out_shift = 8;
 
-  integer mac_file, norm_file, r, c, scan_val, captured_data;
+  integer mac_file, r, c, captured_data;
   integer mac_data [0:ROWS*col-1];
-  integer golden  [0:ROWS*col-1];
+  integer estimated [0:ROWS*col-1];   // divisor = sum_abs + sum_in
+  integer sum_abs_golden [0:ROWS-1];  // sum(|row|) per row for sum_out check
   integer u0, u1, u2, u3, u4, u5, u6, u7;
-  integer err_count;
+  integer err_count, row_err, sum_err_count;
+  integer sum_abs, divisor, signed_val;
   reg [bw_psum-1:0] d0, d1, d2, d3, d4, d5, d6, d7;
 
   reg reset = 1;
   reg clk = 0;
 
-  // Per-row inputs: core0 = cols 0..3 (zero-pad 4..7), core1 = cols 4..7 (zero-pad 0..3)
-  reg [col*bw_psum-1:0] sfp_in0 = 0;
-  reg [col*bw_psum-1:0] sfp_in1 = 0;
+  reg  [col*bw_psum-1:0] sfp_in_drive;
+  wire [col*bw_psum-1:0] sfp_in = sfp_in_drive;
 
-  // Control
   reg acc = 0, div = 0;
-  reg fifo_ext_rd0 = 0, fifo_ext_rd1 = 0;
+  reg fifo_ext_rd = 0;
+  reg [bw_psum+3:0] sum_in_drive;     // TB drives sum_in (other core's sum)
+  wire [bw_psum+3:0] sum_in = sum_in_drive;
+  wire [bw_psum+3:0] sum_out;
 
-  // sum_out from each core -> capture then feed to the other as sum_in
-  wire [bw_psum+3:0] sum_out0, sum_out1;
-  reg  [bw_psum+3:0] sum_in0 = 0, sum_in1 = 0;
-  reg  [bw_psum+3:0] sum0_captured = 0, sum1_captured = 0;
-
-  wire [col*bw_psum-1:0] sfp_out0, sfp_out1;
+  wire [col*bw_psum-1:0] sfp_out;
 
   task read_int;
     input integer fd;
@@ -52,35 +43,32 @@ module sfp_row_dualcore_tb;
     end
   endtask
 
-  sfp_row #(.col(col), .bw(bw)) u_sfp0 (
+  sfp_row #(
+    .col(col), 
+    .bw(bw), 
+    .bw_psum(bw_psum), 
+    .out_shift(out_shift)
+  ) u_sfp (
     .clk(clk),
     .reset(reset),
     .acc(acc),
     .div(div),
-    .fifo_ext_rd(fifo_ext_rd0),
-    .sum_in(sum_in0),
-    .sum_out(sum_out0),
-    .sfp_in(sfp_in0),
-    .sfp_out(sfp_out0)
-  );
-
-  sfp_row #(.col(col), .bw(bw)) u_sfp1 (
-    .clk(clk),
-    .reset(reset),
-    .acc(acc),
-    .div(div),
-    .fifo_ext_rd(fifo_ext_rd1),
-    .sum_in(sum_in1),
-    .sum_out(sum_out1),
-    .sfp_in(sfp_in1),
-    .sfp_out(sfp_out1)
+    .fifo_ext_rd(fifo_ext_rd),
+    .sum_in(sum_in),
+    .sum_out(sum_out),
+    .sfp_in(sfp_in),
+    .sfp_out(sfp_out)
   );
 
   always #5 clk = ~clk;
 
   initial begin
-    $dumpfile("sim/waveform/sfp_row_dualcore.vcd");
+    $dumpfile("sim/waveform/sfp_row_dual.vcd");
     $dumpvars(0, sfp_row_dualcore_tb);
+
+    // Random sum_in (other core's sum) so divisor = sum_this_core + sum_in
+    sum_in_drive = ($urandom % 512) + 1;  // non-zero, 1..512
+    $display("##### sum_in (other core) = %0d #####", sum_in_drive);
 
     repeat(5) @(posedge clk);
     reset = 0;
@@ -93,100 +81,113 @@ module sfp_row_dualcore_tb;
       $display("ERROR: cannot open mac_out.txt");
       $finish;
     end
-    for (r = 0; r < ROWS; r = r + 1)
+    for (r = 0; r < ROWS; r = r + 1) begin
       for (c = 0; c < col; c = c + 1) begin
         read_int(mac_file, captured_data);
+        // $display("mac_data[%0d][%0d] = %0d", r, c, captured_data);
         mac_data[r*col + c] = captured_data;
       end
+    end
     $fclose(mac_file);
 
-    // ----- Load golden norm_out_q20.txt
-    $display("##### Loading norm_out_q20.txt #####");
-    norm_file = $fopen("sim/pattern/norm_out_q20.txt", "r");
-    if (norm_file == 0) begin
-      $display("ERROR: cannot open norm_out_q20.txt");
-      $finish;
-    end
-    for (r = 0; r < ROWS; r = r + 1)
-      for (c = 0; c < col; c = c + 1) begin
-        read_int(norm_file, captured_data);
-        golden[r*col + c] = captured_data;
-      end
-    $fclose(norm_file);
-
-    // ----- Process each row: split -> acc -> exchange sum (fifo_ext_rd) -> sum_in cross -> div -> compare
-    err_count = 0;
+    // ----- Golden: divisor = sum_abs + sum_in (RTL uses sum_2core = sum_this_core + sum_in)
+    $display("##### Estimated: divisor = sum_abs + sum_in = %0d #####", sum_in_drive);
     for (r = 0; r < ROWS; r = r + 1) begin
-      // Form sfp_in: core0 = row[0..3] in col0..3, zeros in col4..7; core1 = row[4..7] in col0..3, zeros in col4..7
-      d0 = (mac_data[r*col+0] & ((1<<bw_psum)-1));
-      d1 = (mac_data[r*col+1] & ((1<<bw_psum)-1));
-      d2 = (mac_data[r*col+2] & ((1<<bw_psum)-1));
-      d3 = (mac_data[r*col+3] & ((1<<bw_psum)-1));
-      d4 = (mac_data[r*col+4] & ((1<<bw_psum)-1));
-      d5 = (mac_data[r*col+5] & ((1<<bw_psum)-1));
-      d6 = (mac_data[r*col+6] & ((1<<bw_psum)-1));
-      d7 = (mac_data[r*col+7] & ((1<<bw_psum)-1));
-      sfp_in0 = { 20'b0, 20'b0, 20'b0, 20'b0, d3, d2, d1, d0 };  // core0: col0-3 = row[0..3], col4-7 = 0
-      sfp_in1 = { 20'b0, 20'b0, 20'b0, 20'b0, d7, d6, d5, d4 };  // core1: col0-3 = row[4..7], col4-7 = 0
+      sum_abs = 0;
+      for (c = 0; c < col; c = c + 1) begin
+        signed_val = mac_data[r*col + c];
+        if (signed_val[bw_psum-1] == 1'b1)
+          signed_val = ~(signed_val-1'b1);
+        sum_abs = sum_abs + signed_val;
+      end
+      if (sum_abs == 0) sum_abs = 1;
+      sum_abs_golden[r] = sum_abs;
+      divisor = sum_abs + sum_in_drive;
+      if (divisor == 0) divisor = 1;
+      for (c = 0; c < col; c = c + 1)
+        estimated[r*col + c] = $signed({mac_data[r*col + c], {out_shift{1'b0}}}) / $signed(divisor);
+    end
 
-      acc = 1;
-      div = 0;
-      fifo_ext_rd0 = 0;
-      fifo_ext_rd1 = 0;
-      sum_in0 = 0;
-      sum_in1 = 0;
-      @(posedge clk);
-
+    // ----- (1) After acc: fifo_ext_rd -> check sum_out == sum_abs_golden
+    // ----- (2) div uses sum_2core = sum_this_core + sum_in -> sfp_out vs estimated
+    $display("");
+    $display("##### sum_out check (fifo_ext_rd after acc) #####");
+    err_count = 0;
+    sum_err_count = 0;
+    for (r = 0; r < ROWS; r = r + 1) begin
+      d0 = mac_data[r*col+0];
+      d1 = mac_data[r*col+1];
+      d2 = mac_data[r*col+2];
+      d3 = mac_data[r*col+3];
+      d4 = mac_data[r*col+4];
+      d5 = mac_data[r*col+5];
+      d6 = mac_data[r*col+6];
+      d7 = mac_data[r*col+7];
+      sfp_in_drive = { d7, d6, d5, d4, d3, d2, d1, d0 };
       acc = 0;
+      div = 0;
+      fifo_ext_rd = 0;
       @(posedge clk);
-
-      // Read partial sums: capture sum_out in same cycle as fifo_ext_rd (before rd_ptr advances at posedge)
-      fifo_ext_rd0 = 1;
-      fifo_ext_rd1 = 1;
-      sum0_captured = sum_out0;
-      sum1_captured = sum_out1;
+      acc = 1;
       @(posedge clk);
-      fifo_ext_rd0 = 0;
-      fifo_ext_rd1 = 0;
+      acc = 0;
+      @(posedge clk);   // one cycle after acc so FIFO write has settled
+      fifo_ext_rd = 1;
+      #0.5;             // sample sum_out this cycle (FIFO out = current rd_ptr; rd_ptr advances at next posedge)
+      if (sum_out !== sum_abs_golden[r]) begin
+        $display("  row %0d sum_out MISMATCH: RTL %0d != golden %0d", r, sum_out, sum_abs_golden[r]);
+        sum_err_count = sum_err_count + 1;
+      end
       @(posedge clk);
-
-      // Exchange: each core divides by (own_partial + other_partial)
-      sum_in0 = sum1_captured;
-      sum_in1 = sum0_captured;
-
-      // Two div cycles (same as single-core: first cycle div_q updates, second cycle sum_2core used for division)
+      fifo_ext_rd = 0;
+      @(posedge clk);
       div = 1;
       @(posedge clk);
       @(posedge clk);
       div = 0;
       @(posedge clk);
-
-      // Combine: core0 sfp_out col0..3 -> row[0..3], core1 sfp_out col0..3 -> row[4..7]
-      u0 = sfp_out0[bw_psum*1-1 -: bw_psum] & ((1<<bw_psum)-1);
-      u1 = sfp_out0[bw_psum*2-1 -: bw_psum] & ((1<<bw_psum)-1);
-      u2 = sfp_out0[bw_psum*3-1 -: bw_psum] & ((1<<bw_psum)-1);
-      u3 = sfp_out0[bw_psum*4-1 -: bw_psum] & ((1<<bw_psum)-1);
-      u4 = sfp_out1[bw_psum*1-1 -: bw_psum] & ((1<<bw_psum)-1);
-      u5 = sfp_out1[bw_psum*2-1 -: bw_psum] & ((1<<bw_psum)-1);
-      u6 = sfp_out1[bw_psum*3-1 -: bw_psum] & ((1<<bw_psum)-1);
-      u7 = sfp_out1[bw_psum*4-1 -: bw_psum] & ((1<<bw_psum)-1);
-
-      if (u0 != golden[r*col+0] || u1 != golden[r*col+1] || u2 != golden[r*col+2] || u3 != golden[r*col+3] ||
-          u4 != golden[r*col+4] || u5 != golden[r*col+5] || u6 != golden[r*col+6] || u7 != golden[r*col+7]) begin
-        err_count = err_count + 1;
-        $display("MISMATCH row %0d: got %0d %0d %0d %0d %0d %0d %0d %0d", r, u0,u1,u2,u3,u4,u5,u6,u7);
-        $display("        golden %0d %0d %0d %0d %0d %0d %0d %0d",
-          golden[r*col+0], golden[r*col+1], golden[r*col+2], golden[r*col+3],
-          golden[r*col+4], golden[r*col+5], golden[r*col+6], golden[r*col+7]);
-      end else
-        $display("Row %0d OK (dual-core sum exchange)", r);
-
+      @(posedge clk);  // sfp_out valid one cycle after div
+      u0 = $signed(sfp_out[bw_psum*1-1 -: bw_psum]);
+      u1 = $signed(sfp_out[bw_psum*2-1 -: bw_psum]);
+      u2 = $signed(sfp_out[bw_psum*3-1 -: bw_psum]);
+      u3 = $signed(sfp_out[bw_psum*4-1 -: bw_psum]);
+      u4 = $signed(sfp_out[bw_psum*5-1 -: bw_psum]);
+      u5 = $signed(sfp_out[bw_psum*6-1 -: bw_psum]);
+      u6 = $signed(sfp_out[bw_psum*7-1 -: bw_psum]);
+      u7 = $signed(sfp_out[bw_psum*8-1 -: bw_psum]);
+      $display("   [%0d]   RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", r, u0, u1, u2, u3, u4, u5, u6, u7);
+      $display("         golden: %7d %7d %7d %7d %7d %7d %7d %7d",
+        estimated[r*col+0], estimated[r*col+1], estimated[r*col+2], estimated[r*col+3],
+        estimated[r*col+4], estimated[r*col+5], estimated[r*col+6], estimated[r*col+7]);
+      row_err = 0;
+      if (u0 != estimated[r*col+0]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col0 MISMATCH (RTL %d != golden %d)", u0, estimated[r*col+0]); end
+      if (u1 != estimated[r*col+1]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col1 MISMATCH (RTL %d != golden %d)", u1, estimated[r*col+1]); end
+      if (u2 != estimated[r*col+2]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col2 MISMATCH (RTL %d != golden %d)", u2, estimated[r*col+2]); end
+      if (u3 != estimated[r*col+3]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col3 MISMATCH (RTL %d != golden %d)", u3, estimated[r*col+3]); end
+      if (u4 != estimated[r*col+4]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col4 MISMATCH (RTL %d != golden %d)", u4, estimated[r*col+4]); end
+      if (u5 != estimated[r*col+5]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col5 MISMATCH (RTL %d != golden %d)", u5, estimated[r*col+5]); end
+      if (u6 != estimated[r*col+6]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col6 MISMATCH (RTL %d != golden %d)", u6, estimated[r*col+6]); end
+      if (u7 != estimated[r*col+7]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col7 MISMATCH (RTL %d != golden %d)", u7, estimated[r*col+7]); end
+      $display("       %s", (row_err == 0) ? "[OK]" : "[MISMATCH]");
       @(posedge clk);
     end
 
-    $display("##### sfp_row_dualcore_tb done: %0d rows OK, %0d errors #####", ROWS - err_count, err_count);
-    if (err_count > 0) $display("*** FAIL ***");
-    else               $display("*** PASS ***");
+    $display("");
+    $display("##### sum_out (fifo_ext_rd) summary #####");
+    if (sum_err_count == 0)
+      $display("  PASS  sum_out matches sum_abs for all %0d rows", ROWS);
+    else
+      $display("  FAIL  sum_out %0d mismatches", sum_err_count);
+
+    $display("------------------------------------------------------------");
+    if (err_count == 0 && sum_err_count == 0) begin
+      $display("  PASS  sfp_out + sum_out  all match (divisor = sum_abs + sum_in)");
+      $display("------------------------------------------------------------");
+    end else begin
+      $display("  FAIL  sfp_out %0d mismatches, sum_out %0d mismatches", err_count, sum_err_count);
+      $display("------------------------------------------------------------");
+    end
+    $display("");
     #100 $finish;
   end
 

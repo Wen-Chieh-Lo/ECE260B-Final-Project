@@ -12,6 +12,7 @@
 #   dual          fullchip dual-core       filelist_dual
 #   sfp_row       sfp_row single-core      filelist_sfp_row
 #   sfp_row_dual  sfp_row dual-core        filelist_sfp_row_dual
+#   vproduct      Vproduct (norm)          filelist_vproduct
 #   all           run all of the above
 #
 # Waveforms: sim/waveform/*.vcd (fullchip.vcd, mac_array.vcd, ...)
@@ -29,7 +30,8 @@ TARGET_FILELIST_table := \
 	mac:filelist_mac \
 	dual:filelist_dual \
 	sfp_row:filelist_sfp_row \
-	sfp_row_dual:filelist_sfp_row_dual
+	sfp_row_dual:filelist_sfp_row_dual \
+	vproduct:filelist_vproduct
 
 # Target -> waveform .vcd name
 TARGET_WAVEFORM_table := \
@@ -37,9 +39,10 @@ TARGET_WAVEFORM_table := \
 	mac:mac_array.vcd \
 	dual:fullchip_dual.vcd \
 	sfp_row:sfp_row.vcd \
-	sfp_row_dual:sfp_row_dualcore.vcd
+	sfp_row_dual:sfp_row_dualcore.vcd \
+	vproduct:vproduct.vcd
 
-SIM_TARGETS := fullchip mac dual sfp_row sfp_row_dual
+SIM_TARGETS := fullchip mac dual sfp_row sfp_row_dual vproduct
 
 $(foreach p,$(TARGET_FILELIST_table),$(eval $(firstword $(subst :, ,$(p))): FILELIST_NAME := $(word 2,$(subst :, ,$(p)))))
 $(foreach p,$(TARGET_WAVEFORM_table),$(eval $(firstword $(subst :, ,$(p))): WAVEFORM := $(word 2,$(subst :, ,$(p)))))
@@ -80,6 +83,7 @@ help:
 	@echo "  dual           filelist_dual          fullchip_dual.vcd"
 	@echo "  sfp_row        filelist_sfp_row       sfp_row.vcd"
 	@echo "  sfp_row_dual   filelist_sfp_row_dual  sfp_row_dualcore.vcd"
+	@echo "  vproduct       filelist_vproduct      vproduct.vcd"
 	@echo ""
 	@echo "  all            run all above"
 	@echo "  compile TARGET=<target>   compile only (no run)"
