@@ -5,7 +5,7 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   parameter col = 8;
   parameter bw = 8;
   parameter bw_psum = 2*bw+3;
-  parameter out_shift = 8;
+  parameter out_shift = 7;
 
  
   input  clk, reset, div, acc, fifo_ext_rd;
@@ -13,7 +13,7 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   input  [col*bw_psum-1:0] sfp_in;
   wire  [col*bw_psum-1:0] abs;
   reg    div_q;
-  output [col*bw_psum-1:0] sfp_out;
+  output [col*out_shift-1:0] sfp_out;
   output [bw_psum+3:0] sum_out;
   wire [bw_psum+3:0] sum_this_core;
   wire signed [bw_psum-1:0] sum_2core;
@@ -49,14 +49,14 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   assign sfp_in_sign7 =  sfp_in[bw_psum*8-1 : bw_psum*7];
 
 
-  assign sfp_out[bw_psum*1-1 : bw_psum*0] = sfp_out_sign0;
-  assign sfp_out[bw_psum*2-1 : bw_psum*1] = sfp_out_sign1;
-  assign sfp_out[bw_psum*3-1 : bw_psum*2] = sfp_out_sign2;
-  assign sfp_out[bw_psum*4-1 : bw_psum*3] = sfp_out_sign3;
-  assign sfp_out[bw_psum*5-1 : bw_psum*4] = sfp_out_sign4;
-  assign sfp_out[bw_psum*6-1 : bw_psum*5] = sfp_out_sign5;
-  assign sfp_out[bw_psum*7-1 : bw_psum*6] = sfp_out_sign6;
-  assign sfp_out[bw_psum*8-1 : bw_psum*7] = sfp_out_sign7;
+  assign sfp_out[out_shift*1-1 : out_shift*0] = sfp_out_sign0;
+  assign sfp_out[out_shift*2-1 : out_shift*1] = sfp_out_sign1;
+  assign sfp_out[out_shift*3-1 : out_shift*2] = sfp_out_sign2;
+  assign sfp_out[out_shift*4-1 : out_shift*3] = sfp_out_sign3;
+  assign sfp_out[out_shift*5-1 : out_shift*4] = sfp_out_sign4;
+  assign sfp_out[out_shift*6-1 : out_shift*5] = sfp_out_sign5;
+  assign sfp_out[out_shift*7-1 : out_shift*6] = sfp_out_sign6;
+  assign sfp_out[out_shift*8-1 : out_shift*7] = sfp_out_sign7;
 
 
   assign sum_2core = sum_this_core[bw_psum+3:0] + sum_in[bw_psum+3:0];
@@ -114,15 +114,14 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
          fifo_wr <= 0;
    
          if (div) begin
-           sfp_out_sign0 <= $signed({sfp_in_sign0, {out_shift{1'b0}}}) / $signed(sum_2core);
-           sfp_out_sign1 <= $signed({sfp_in_sign1, {out_shift{1'b0}}}) / $signed(sum_2core);
-           sfp_out_sign2 <= $signed({sfp_in_sign2, {out_shift{1'b0}}}) / $signed(sum_2core);
-           sfp_out_sign3 <= $signed({sfp_in_sign3, {out_shift{1'b0}}}) / $signed(sum_2core);
-           sfp_out_sign4 <= $signed({sfp_in_sign4, {out_shift{1'b0}}}) / $signed(sum_2core);
-           sfp_out_sign5 <= $signed({sfp_in_sign5, {out_shift{1'b0}}}) / $signed(sum_2core);
-           sfp_out_sign6 <= $signed({sfp_in_sign6, {out_shift{1'b0}}}) / $signed(sum_2core);
-           sfp_out_sign7 <= $signed({sfp_in_sign7, {out_shift{1'b0}}}) / $signed(sum_2core);
-
+           sfp_out_sign0 <= {abs[bw_psum*1-1 : bw_psum*0], {out_shift{1'b0}}} / sum_2core;
+           sfp_out_sign1 <= {abs[bw_psum*2-1 : bw_psum*1], {out_shift{1'b0}}} / sum_2core;
+           sfp_out_sign2 <= {abs[bw_psum*3-1 : bw_psum*2], {out_shift{1'b0}}} / sum_2core;
+           sfp_out_sign3 <= {abs[bw_psum*4-1 : bw_psum*3], {out_shift{1'b0}}} / sum_2core;
+           sfp_out_sign4 <= {abs[bw_psum*5-1 : bw_psum*4], {out_shift{1'b0}}} / sum_2core;
+           sfp_out_sign5 <= {abs[bw_psum*6-1 : bw_psum*5], {out_shift{1'b0}}} / sum_2core;
+           sfp_out_sign6 <= {abs[bw_psum*7-1 : bw_psum*6], {out_shift{1'b0}}} / sum_2core;
+           sfp_out_sign7 <= {abs[bw_psum*8-1 : bw_psum*7], {out_shift{1'b0}}} / sum_2core;
          end
        end
    end

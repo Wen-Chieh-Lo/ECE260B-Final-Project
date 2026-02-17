@@ -8,7 +8,7 @@ module sfp_row_dualcore_tb;
   parameter col = 8;
   parameter bw = 8;
   parameter bw_psum = 2*bw+3;  // 20
-  parameter out_shift = 8;
+  parameter out_shift = 7;
 
   integer mac_file, r, c, captured_data;
   integer mac_data [0:ROWS*col-1];
@@ -16,7 +16,7 @@ module sfp_row_dualcore_tb;
   integer sum_abs_golden [0:ROWS-1];  // sum(|row|) per row for sum_out check
   integer u0, u1, u2, u3, u4, u5, u6, u7;
   integer err_count, row_err, sum_err_count;
-  integer sum_abs, divisor, signed_val;
+  integer sum_abs, divisor, unsigned_val;
   reg [bw_psum-1:0] d0, d1, d2, d3, d4, d5, d6, d7;
 
   reg reset = 1;
@@ -31,7 +31,7 @@ module sfp_row_dualcore_tb;
   wire [bw_psum+3:0] sum_in = sum_in_drive;
   wire [bw_psum+3:0] sum_out;
 
-  wire [col*bw_psum-1:0] sfp_out;
+  wire [col*out_shift-1:0] sfp_out;
 
   task read_int;
     input integer fd;
@@ -95,17 +95,21 @@ module sfp_row_dualcore_tb;
     for (r = 0; r < ROWS; r = r + 1) begin
       sum_abs = 0;
       for (c = 0; c < col; c = c + 1) begin
-        signed_val = mac_data[r*col + c];
-        if (signed_val[bw_psum-1] == 1'b1)
-          signed_val = ~(signed_val-1'b1);
-        sum_abs = sum_abs + signed_val;
+        unsigned_val = mac_data[r*col + c];
+        if (unsigned_val[bw_psum-1] == 1'b1)
+          unsigned_val = ~(unsigned_val-1'b1);
+        sum_abs = sum_abs + unsigned_val;
       end
       if (sum_abs == 0) sum_abs = 1;
       sum_abs_golden[r] = sum_abs;
       divisor = sum_abs + sum_in_drive;
       if (divisor == 0) divisor = 1;
-      for (c = 0; c < col; c = c + 1)
-        estimated[r*col + c] = $signed({mac_data[r*col + c], {out_shift{1'b0}}}) / $signed(divisor);
+      for (c = 0; c < col; c = c + 1) begin
+        unsigned_val = mac_data[r*col + c];
+        if (unsigned_val[bw_psum-1] == 1'b1)
+          unsigned_val = ~(unsigned_val-1'b1);
+        estimated[r*col + c] = {unsigned_val, {out_shift{1'b0}}} / divisor;
+      end
     end
 
     // ----- (1) After acc: fifo_ext_rd -> check sum_out == sum_abs_golden
@@ -151,14 +155,14 @@ module sfp_row_dualcore_tb;
       div = 0;
       @(posedge clk);
       @(posedge clk);  // sfp_out valid one cycle after div
-      u0 = $signed(sfp_out[bw_psum*1-1 -: bw_psum]);
-      u1 = $signed(sfp_out[bw_psum*2-1 -: bw_psum]);
-      u2 = $signed(sfp_out[bw_psum*3-1 -: bw_psum]);
-      u3 = $signed(sfp_out[bw_psum*4-1 -: bw_psum]);
-      u4 = $signed(sfp_out[bw_psum*5-1 -: bw_psum]);
-      u5 = $signed(sfp_out[bw_psum*6-1 -: bw_psum]);
-      u6 = $signed(sfp_out[bw_psum*7-1 -: bw_psum]);
-      u7 = $signed(sfp_out[bw_psum*8-1 -: bw_psum]);
+      u0 = $signed(sfp_out[out_shift*1-1 -: out_shift]);
+      u1 = $signed(sfp_out[out_shift*2-1 -: out_shift]);
+      u2 = $signed(sfp_out[out_shift*3-1 -: out_shift]);
+      u3 = $signed(sfp_out[out_shift*4-1 -: out_shift]);
+      u4 = $signed(sfp_out[out_shift*5-1 -: out_shift]);
+      u5 = $signed(sfp_out[out_shift*6-1 -: out_shift]);
+      u6 = $signed(sfp_out[out_shift*7-1 -: out_shift]);
+      u7 = $signed(sfp_out[out_shift*8-1 -: out_shift]);
       $display("   [%0d]   RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", r, u0, u1, u2, u3, u4, u5, u6, u7);
       $display("         golden: %7d %7d %7d %7d %7d %7d %7d %7d",
         estimated[r*col+0], estimated[r*col+1], estimated[r*col+2], estimated[r*col+3],
