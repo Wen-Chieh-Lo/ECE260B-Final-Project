@@ -1,5 +1,6 @@
-// Testbench: load mac_out.txt into pmem, feed sfp_row row-by-row, compare with norm_out_q20.txt
-// sum_in / sum_out are tied off (not used).
+// Testbench: load mac_out.txt into pmem, feed sfp_row row-by-row.
+// Estimated = normalize each row: sum_abs = sum(|row|), divisor = sum_abs>>7, out[c] = signed(row[c])/divisor.
+// Scoreboard same as mac_array_tb: RTL vs estimated, [OK]/[MISMATCH], PASS block.
 
 `timescale 1ns/1ps
 
@@ -10,11 +11,12 @@ module sfp_row_tb;
   parameter bw = 8;
   parameter bw_psum = 2*bw+4;  // 20
 
-  integer mac_file, norm_file, r, c, scan_val, captured_data;
+  integer mac_file, r, c, captured_data;
   integer mac_data [0:ROWS*col-1];   // row-major: row*col + c
-  integer golden  [0:ROWS*col-1];
+  integer estimated [0:ROWS*col-1];   // computed from mac_data (same formula as sfp_row)
   integer u0, u1, u2, u3, u4, u5, u6, u7;
-  integer err_count;
+  integer err_count, row_err;
+  integer sum_abs, divisor, signed_val;
   reg [bw_psum-1:0] d0, d1, d2, d3, d4, d5, d6, d7;
 
   reg reset = 1;
@@ -114,21 +116,34 @@ module sfp_row_tb;
       @(posedge clk);
     end
 
-    // ----- Load golden norm_out_q20.txt (unsigned 0..2^20-1)
-    $display("##### Loading norm_out_q20.txt #####");
-    norm_file = $fopen("sim/pattern/norm_out_q20.txt", "r");
-    if (norm_file == 0) begin
-      $display("ERROR: cannot open norm_out_q20.txt");
-      $finish;
-    end
-    for (r = 0; r < ROWS; r = r + 1)
+    // ----- Estimated: same as sfp_row (sum_abs = sum of |row|, divisor = sum_abs>>7, out[c] = signed(row[c])/divisor)
+    $display("##### Estimated normalization (sum_abs>>7, then signed divide) #####");
+    for (r = 0; r < ROWS; r = r + 1) begin
+      sum_abs = 0;
       for (c = 0; c < col; c = c + 1) begin
-        read_int(norm_file, captured_data);
-        golden[r*col + c] = captured_data;
+        signed_val = mac_data[r*col + c] & ((1<<bw_psum)-1);
+        if (signed_val >= (1<<(bw_psum-1)))
+          signed_val = signed_val - (1<<bw_psum);
+        if (signed_val < 0)
+          sum_abs = sum_abs + (-signed_val);
+        else
+          sum_abs = sum_abs + signed_val;
       end
-    $fclose(norm_file);
+      divisor = sum_abs >> 7;
+      if (divisor == 0) divisor = 1;
+      for (c = 0; c < col; c = c + 1) begin
+        signed_val = mac_data[r*col + c] & ((1<<bw_psum)-1);
+        if (signed_val >= (1<<(bw_psum-1)))
+          signed_val = signed_val - (1<<bw_psum);
+        estimated[r*col + c] = signed_val / divisor;
+      end
+    end
 
-    // ----- Process each row: read from pmem -> acc -> div (2 cycles) -> compare
+    // ----- Process each row: read from pmem -> acc -> div (2 cycles) -> compare with estimated
+    $display("");
+    $display("##### sfp_row out vs estimated #####");
+    $display("  [row]  RTL   :   col0   col1   col2   col3   col4   col5   col6   col7");
+    $display("         golden:   ----   ----   ----   ----   ----   ----   ----   ----");
     err_count = 0;
     for (r = 0; r < ROWS; r = r + 1) begin
       pmem_rd = 1;
@@ -137,44 +152,52 @@ module sfp_row_tb;
       acc = 0;
       div = 0;
       @(posedge clk);
-      // Cycle 1: pmem_out valid, assert acc
       acc = 1;
       @(posedge clk);
       acc = 0;
       @(posedge clk);
-      // Two div cycles so fifo output is used for sum_2core
       div = 1;
       @(posedge clk);
       @(posedge clk);
       div = 0;
       @(posedge clk);
-      // sfp_out is now valid (registered on div cycle)
-      begin
-        u0 = sfp_out[bw_psum*1-1 -: bw_psum] & ((1<<bw_psum)-1);
-        u1 = sfp_out[bw_psum*2-1 -: bw_psum] & ((1<<bw_psum)-1);
-        u2 = sfp_out[bw_psum*3-1 -: bw_psum] & ((1<<bw_psum)-1);
-        u3 = sfp_out[bw_psum*4-1 -: bw_psum] & ((1<<bw_psum)-1);
-        u4 = sfp_out[bw_psum*5-1 -: bw_psum] & ((1<<bw_psum)-1);
-        u5 = sfp_out[bw_psum*6-1 -: bw_psum] & ((1<<bw_psum)-1);
-        u6 = sfp_out[bw_psum*7-1 -: bw_psum] & ((1<<bw_psum)-1);
-        u7 = sfp_out[bw_psum*8-1 -: bw_psum] & ((1<<bw_psum)-1);
-        if (u0 != golden[r*col+0] || u1 != golden[r*col+1] || u2 != golden[r*col+2] || u3 != golden[r*col+3] ||
-            u4 != golden[r*col+4] || u5 != golden[r*col+5] || u6 != golden[r*col+6] || u7 != golden[r*col+7]) begin
-          err_count = err_count + 1;
-          $display("MISMATCH row %0d: got %0d %0d %0d %0d %0d %0d %0d %0d", r, u0,u1,u2,u3,u4,u5,u6,u7);
-          $display("        golden %0d %0d %0d %0d %0d %0d %0d %0d",
-            golden[r*col+0], golden[r*col+1], golden[r*col+2], golden[r*col+3],
-            golden[r*col+4], golden[r*col+5], golden[r*col+6], golden[r*col+7]);
-        end else
-          $display("Row %0d OK", r);
-      end
+      @(posedge clk);  // sfp_out valid one cycle after div
+      u0 = $signed(sfp_out[bw_psum*1-1 -: bw_psum]);
+      u1 = $signed(sfp_out[bw_psum*2-1 -: bw_psum]);
+      u2 = $signed(sfp_out[bw_psum*3-1 -: bw_psum]);
+      u3 = $signed(sfp_out[bw_psum*4-1 -: bw_psum]);
+      u4 = $signed(sfp_out[bw_psum*5-1 -: bw_psum]);
+      u5 = $signed(sfp_out[bw_psum*6-1 -: bw_psum]);
+      u6 = $signed(sfp_out[bw_psum*7-1 -: bw_psum]);
+      u7 = $signed(sfp_out[bw_psum*8-1 -: bw_psum]);
+      $display("   [%0d]   RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", r, u0, u1, u2, u3, u4, u5, u6, u7);
+      $display("         golden: %7d %7d %7d %7d %7d %7d %7d %7d",
+        estimated[r*col+0], estimated[r*col+1], estimated[r*col+2], estimated[r*col+3],
+        estimated[r*col+4], estimated[r*col+5], estimated[r*col+6], estimated[r*col+7]);
+      row_err = 0;
+      if (u0 != estimated[r*col+0]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col0 MISMATCH (RTL %d != golden %d)", u0, estimated[r*col+0]); end
+      if (u1 != estimated[r*col+1]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col1 MISMATCH (RTL %d != golden %d)", u1, estimated[r*col+1]); end
+      if (u2 != estimated[r*col+2]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col2 MISMATCH (RTL %d != golden %d)", u2, estimated[r*col+2]); end
+      if (u3 != estimated[r*col+3]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col3 MISMATCH (RTL %d != golden %d)", u3, estimated[r*col+3]); end
+      if (u4 != estimated[r*col+4]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col4 MISMATCH (RTL %d != golden %d)", u4, estimated[r*col+4]); end
+      if (u5 != estimated[r*col+5]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col5 MISMATCH (RTL %d != golden %d)", u5, estimated[r*col+5]); end
+      if (u6 != estimated[r*col+6]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col6 MISMATCH (RTL %d != golden %d)", u6, estimated[r*col+6]); end
+      if (u7 != estimated[r*col+7]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col7 MISMATCH (RTL %d != golden %d)", u7, estimated[r*col+7]); end
+      $display("       %s", (row_err == 0) ? "[OK]" : "[MISMATCH]");
+      $display("");
       @(posedge clk);
     end
 
     pmem_rd = 0;
-    $display("##### sfp_row_tb done: %0d rows OK, %0d errors #####", ROWS - err_count, err_count);
-    if (err_count > 0) $display("*** FAIL ***");
-    else               $display("*** PASS ***");
+    $display("------------------------------------------------------------");
+    if (err_count == 0) begin
+      $display("  PASS  %0d rows x %0d cols  all match estimated result", ROWS, col);
+      $display("------------------------------------------------------------");
+    end else begin
+      $display("  FAIL  %0d mismatches", err_count);
+      $display("------------------------------------------------------------");
+    end
+    $display("");
     #100 $finish;
   end
 

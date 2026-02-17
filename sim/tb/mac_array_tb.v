@@ -1,5 +1,5 @@
 // Mac verification TB: content from fullchip_tb; DUT = mac_array_top (core + fullchip interface).
-// Same flow: Q/K files -> qmem/kmem write -> K load -> execute -> ofifo to pmem.
+// Same flow: Q/K files -> qmem/kmem write -> K load -> execute -> sample ofifo out, compare to golden.
 
 `timescale 1ns/1ps
 
@@ -24,39 +24,36 @@ module mac_array_tb;
   reg [pr*bw-1:0] mem_in;
   reg ofifo_rd = 0;
   wire [18:0] inst;
-  reg qmem_rd = 0, qmem_wr = 0, kmem_rd = 0, kmem_wr = 0, pmem_rd = 0, pmem_wr = 0;
+  reg qmem_rd = 0, qmem_wr = 0, kmem_rd = 0, kmem_wr = 0;
   reg execute = 0, load = 0;
   reg [3:0] qkmem_add = 0;
-  reg [3:0] pmem_add = 0;
 
   reg [bw_psum-1:0] temp5b;
   reg [bw_psum+3:0] temp_sum;
   reg [bw_psum*col-1:0] temp16b;
 
-  wire [bw_psum*col-1:0] pmem_data_out;
+  wire [bw_psum*col-1:0] mac_out;
   integer err, row_err, row, c;
   integer golden_col [0:7];  // RTL col c -> golden result[t][golden_col[c]] (chain mapping)
 
-  assign inst[18] = 1'b0;
-  assign inst[17] = 1'b0;
+  assign inst[18:17] = 2'b0;
   assign inst[16] = ofifo_rd;
   assign inst[15:12] = qkmem_add;
-  assign inst[11:8]  = pmem_add;
+  assign inst[11:8]  = 4'b0;
   assign inst[7] = execute;
   assign inst[6] = load;
   assign inst[5] = qmem_rd;
   assign inst[4] = qmem_wr;
   assign inst[3] = kmem_rd;
   assign inst[2] = kmem_wr;
-  assign inst[1] = pmem_rd;
-  assign inst[0] = pmem_wr;
+  assign inst[1:0] = 2'b0;
 
   mac_array_top #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) mac_array_top_instance (
     .reset(reset),
     .clk(clk),
     .mem_in(mem_in),
     .inst(inst),
-    .out(pmem_data_out)
+    .out(mac_out)
   );
 
   initial begin
@@ -179,29 +176,27 @@ module mac_array_tb;
       golden_col[c] = 7 - c;
 
     $display("");
-    $display("##### move ofifo to pmem & compare to estimated #####");
+    $display("##### sample ofifo out & compare to golden #####");
     $display("  [row]  RTL   :    col0    col1    col2    col3    col4    col5    col6    col7");
     $display("         golden:    ----    ----    ----    ----    ----    ----    ----    ----\n");
     err = 0;
     for (q = 0; q < total_cycle; q = q+1) begin
       #0.5 clk = 1'b0;
       ofifo_rd = 1;
-      pmem_wr = 1;
-      if (q > 0) pmem_add = pmem_add + 1;
-      #0.5;  // sample before posedge: pmem_data_out = row being written (result[q])
+      #0.5;  // sample before posedge: mac_out = row being read (result[q])
       row = q;
       $display("   [%0d]   RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", row,
-        $signed(pmem_data_out[0*bw_psum +: bw_psum]), $signed(pmem_data_out[1*bw_psum +: bw_psum]),
-        $signed(pmem_data_out[2*bw_psum +: bw_psum]), $signed(pmem_data_out[3*bw_psum +: bw_psum]),
-        $signed(pmem_data_out[4*bw_psum +: bw_psum]), $signed(pmem_data_out[5*bw_psum +: bw_psum]),
-        $signed(pmem_data_out[6*bw_psum +: bw_psum]), $signed(pmem_data_out[7*bw_psum +: bw_psum]));
+        $signed(mac_out[0*bw_psum +: bw_psum]), $signed(mac_out[1*bw_psum +: bw_psum]),
+        $signed(mac_out[2*bw_psum +: bw_psum]), $signed(mac_out[3*bw_psum +: bw_psum]),
+        $signed(mac_out[4*bw_psum +: bw_psum]), $signed(mac_out[5*bw_psum +: bw_psum]),
+        $signed(mac_out[6*bw_psum +: bw_psum]), $signed(mac_out[7*bw_psum +: bw_psum]));
       $display("         golden: %7d %7d %7d %7d %7d %7d %7d %7d",
         result[row][7], result[row][6], result[row][5], result[row][4],
         result[row][3], result[row][2], result[row][1], result[row][0]);
       row_err = 0;
       for (c = 0; c < col; c = c+1) begin
-        if ($signed(pmem_data_out[c*bw_psum +: bw_psum]) !== result[row][golden_col[c]]) begin
-          $display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c, $signed(pmem_data_out[c*bw_psum +: bw_psum]), result[row][golden_col[c]]);
+        if ($signed(mac_out[c*bw_psum +: bw_psum]) !== result[row][golden_col[c]]) begin
+          $display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c, $signed(mac_out[c*bw_psum +: bw_psum]), result[row][golden_col[c]]);
           err = err + 1;
           row_err = row_err + 1;
         end
@@ -211,8 +206,6 @@ module mac_array_tb;
       #0.5 clk = 1'b1;
     end
     #0.5 clk = 1'b0;
-    pmem_wr = 0;
-    pmem_add = 0;
     ofifo_rd = 0;
     #0.5 clk = 1'b1;
 
