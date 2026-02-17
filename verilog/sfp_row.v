@@ -27,14 +27,14 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   wire signed [bw_psum-1:0] sfp_in_sign7;
 
 
-  reg signed [bw_psum-1:0] sfp_out_sign0;
-  reg signed [bw_psum-1:0] sfp_out_sign1;
-  reg signed [bw_psum-1:0] sfp_out_sign2;
-  reg signed [bw_psum-1:0] sfp_out_sign3;
-  reg signed [bw_psum-1:0] sfp_out_sign4;
-  reg signed [bw_psum-1:0] sfp_out_sign5;
-  reg signed [bw_psum-1:0] sfp_out_sign6;
-  reg signed [bw_psum-1:0] sfp_out_sign7;
+  reg  [bw_psum-1:0] sfp_out_sign0;
+  reg  [bw_psum-1:0] sfp_out_sign1;
+  reg  [bw_psum-1:0] sfp_out_sign2;
+  reg  [bw_psum-1:0] sfp_out_sign3;
+  reg  [bw_psum-1:0] sfp_out_sign4;
+  reg  [bw_psum-1:0] sfp_out_sign5;
+  reg  [bw_psum-1:0] sfp_out_sign6;
+  reg  [bw_psum-1:0] sfp_out_sign7;
 
   reg [bw_psum+3:0] sum_q;
   reg fifo_wr;
