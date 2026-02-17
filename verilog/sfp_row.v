@@ -7,13 +7,15 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   parameter bw_psum = 2*bw+3;
   parameter out_shift = 7;
 
+  localparam bw_out = out_shift + 1'b1;
+
  
   input  clk, reset, div, acc, fifo_ext_rd;
   input  [bw_psum+3:0] sum_in;
   input  [col*bw_psum-1:0] sfp_in;
   wire  [col*bw_psum-1:0] abs;
   reg    div_q;
-  output [col*out_shift-1:0] sfp_out;
+  output [col*bw_out-1:0] sfp_out;
   output [bw_psum+3:0] sum_out;
   wire [bw_psum+3:0] sum_this_core;
   wire signed [bw_psum-1:0] sum_2core;
@@ -49,15 +51,14 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   assign sfp_in_sign7 =  sfp_in[bw_psum*8-1 : bw_psum*7];
 
 
-  assign sfp_out[out_shift*1-1 : out_shift*0] = sfp_out_sign0;
-  assign sfp_out[out_shift*2-1 : out_shift*1] = sfp_out_sign1;
-  assign sfp_out[out_shift*3-1 : out_shift*2] = sfp_out_sign2;
-  assign sfp_out[out_shift*4-1 : out_shift*3] = sfp_out_sign3;
-  assign sfp_out[out_shift*5-1 : out_shift*4] = sfp_out_sign4;
-  assign sfp_out[out_shift*6-1 : out_shift*5] = sfp_out_sign5;
-  assign sfp_out[out_shift*7-1 : out_shift*6] = sfp_out_sign6;
-  assign sfp_out[out_shift*8-1 : out_shift*7] = sfp_out_sign7;
-
+  assign sfp_out[bw_out*1-1 : bw_out*0] = {1'b0, sfp_out_sign0};
+  assign sfp_out[bw_out*2-1 : bw_out*1] = {1'b0, sfp_out_sign1};
+  assign sfp_out[bw_out*3-1 : bw_out*2] = {1'b0, sfp_out_sign2};
+  assign sfp_out[bw_out*4-1 : bw_out*3] = {1'b0, sfp_out_sign3};
+  assign sfp_out[bw_out*5-1 : bw_out*4] = {1'b0, sfp_out_sign4};
+  assign sfp_out[bw_out*6-1 : bw_out*5] = {1'b0, sfp_out_sign5};
+  assign sfp_out[bw_out*7-1 : bw_out*6] = {1'b0, sfp_out_sign6};
+  assign sfp_out[bw_out*8-1 : bw_out*7] = {1'b0, sfp_out_sign7};
 
   assign sum_2core = sum_this_core[bw_psum+3:0] + sum_in[bw_psum+3:0];
 

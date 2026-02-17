@@ -1,6 +1,6 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
-module core (clk, sum_out, mem_in, out, inst, reset);
+module core (clk, sum_in, sum_out, mem_in, out, inst, reset);
 
 parameter col = 8;
 parameter bw = 8;
@@ -8,6 +8,7 @@ parameter bw_psum = 2*bw+3;
 parameter sfp_out_shift = 8;
 parameter pr = 8;
 
+input  [bw_psum+3:0] sum_in;
 output [bw_psum+3:0] sum_out;
 output [bw_psum*col-1:0] out;
 wire   [bw_psum*col-1:0] pmem_out;
@@ -28,6 +29,7 @@ wire  [col-1:0] fifo_wr;
 wire  ofifo_rd;
 wire [3:0] qkmem_add;
 wire [3:0] pmem_add;
+wire [1:0] mac_inst;
 
 wire vproduct_mode;
 
@@ -45,35 +47,36 @@ wire sfp_fifo_ext_rd;                 // SFP start to output FIFO -> sfp_sum_out
 wire [bw_psum+3:0] sfp_sum_in;        // SFP sum input, is always 0 in single port
 wire [bw_psum+3:0] sfp_sum_out;       // SFP sum output, float in single core
 
-assign vproduct_mode = inst[19];
-assign sfp_div = inst[18];            // set as controlled by primary input, may changed to internal FSM
-assign sfp_acc = inst[17];            // set as controlled by primary input, may changed to internal FSM
 assign sfp_fifo_ext_rd = 1'b0;    // unused in single core
 assign sfp_sum_in = {bw_psum+4{1'b0}}; // unused in single core
 
+assign vprod_mode = inst[19];
+assign sfp_div  = inst[18];            // set as controlled by primary input, may changed to internal FSM
+assign sfp_acc  = inst[17];            // set as controlled by primary input, may changed to internal FSM
 assign ofifo_rd = inst[16];
-assign qkmem_add = inst[15:12];
+assign qkmem_add= inst[15:12];
 assign pmem_add = inst[11:8];
 
-assign qmem_wr = inst[4];
-assign kmem_rd = inst[3];
-assign kmem_wr = inst[2];
-assign pmem_rd = inst[1];
-assign pmem_wr = inst[0];
+assign mac_inst = inst[7:6];
+assign qmem_rd  = inst[5];
+assign qmem_wr  = inst[4];
+assign kmem_rd  = inst[3];
+assign kmem_wr  = inst[2];
+assign pmem_rd  = inst[1];
+assign pmem_wr  = inst[0];
 
-assign mac_in  = vproduct_mode ? qmem_out : (inst[6] ? kmem_out : qmem_out);
+assign mac_in  = mac_inst[1] ? kmem_out : qmem_out;
 
 // assign pmem_in = fifo_out;
 assign out = pmem_out;
 
-assign qmem_rd = inst[5];
-assign pmem_in = sfp_div ? sfp_out : fifo_out;           // not determined, but sfp_out should be ready in the cycle when div is enabled
+assign pmem_in = fifo_out; 
 
 mac_array #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) mac_array_instance (
         .in(mac_in), 
         .clk(clk), 
         .reset(reset), 
-        .inst(inst[7:6]),     
+        .inst(mac_inst),     
         .fifo_wr(fifo_wr),     
 	.out(array_out)
 );

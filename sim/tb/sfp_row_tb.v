@@ -10,6 +10,7 @@ module sfp_row_tb;
   parameter bw = 8;
   parameter bw_psum = 2*bw+3;  // 20
   parameter out_shift = 8;
+  parameter bw_out = out_shift + 1'b1;
 
   integer mac_file, r, c, captured_data;
   integer mac_data [0:ROWS*col-1];   // row-major: row*col + c
@@ -32,7 +33,7 @@ module sfp_row_tb;
   wire [bw_psum+3:0] sum_in  = 0;
   wire [bw_psum+3:0] sum_out;
 
-  wire [col*out_shift-1:0] sfp_out;
+  wire [col*bw_out-1:0] sfp_out;
 
   task read_int;
     input integer fd;
@@ -104,7 +105,7 @@ module sfp_row_tb;
         if (unsigned_val[bw_psum-1] == 1'b1)
           unsigned_val = ~(unsigned_val-1'b1); 
         estimated[r*col + c] = {unsigned_val, {out_shift{1'b0}}} / sum_abs;
-        $display("estimated[%0d][%0d] = %0d, mac_data[%0d][%0d] = %0d, sum_abs = %0d", r, c, estimated[r*col + c], r, c, $signed(mac_data[r*col + c]), $signed(sum_abs));
+        // $display("estimated[%0d][%0d] = %0d, mac_data[%0d][%0d] = %0d, sum_abs = %0d", r, c, estimated[r*col + c], r, c, $signed(mac_data[r*col + c]), $signed(sum_abs));
       end
     end
 
@@ -138,14 +139,15 @@ module sfp_row_tb;
       div = 0;
       @(posedge clk);
       @(posedge clk);  // sfp_out valid one cycle after div
-      u0 = $signed(sfp_out[out_shift*1-1 -: out_shift]);
-      u1 = $signed(sfp_out[out_shift*2-1 -: out_shift]);
-      u2 = $signed(sfp_out[out_shift*3-1 -: out_shift]);
-      u3 = $signed(sfp_out[out_shift*4-1 -: out_shift]);
-      u4 = $signed(sfp_out[out_shift*5-1 -: out_shift]);
-      u5 = $signed(sfp_out[out_shift*6-1 -: out_shift]);
-      u6 = $signed(sfp_out[out_shift*7-1 -: out_shift]);
-      u7 = $signed(sfp_out[out_shift*8-1 -: out_shift]);
+      u0 = $signed(sfp_out[bw_out*1-1 -: bw_out]);
+      u1 = $signed(sfp_out[bw_out*2-1 -: bw_out]);
+      u2 = $signed(sfp_out[bw_out*3-1 -: bw_out]);
+      u3 = $signed(sfp_out[bw_out*4-1 -: bw_out]);
+      u4 = $signed(sfp_out[bw_out*5-1 -: bw_out]);
+      u5 = $signed(sfp_out[bw_out*6-1 -: bw_out]);
+      u6 = $signed(sfp_out[bw_out*7-1 -: bw_out]);
+      u7 = $signed(sfp_out[bw_out*8-1 -: bw_out]);
+      // $display("sfp_out = %0d", sfp_out);
       $display("   [%0d]   RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", r, u0, u1, u2, u3, u4, u5, u6, u7);
       $display("         golden: %7d %7d %7d %7d %7d %7d %7d %7d",
         estimated[r*col+0], estimated[r*col+1], estimated[r*col+2], estimated[r*col+3],
