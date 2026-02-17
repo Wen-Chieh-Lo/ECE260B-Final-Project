@@ -5,7 +5,7 @@ Verilog RTL and testbenches for single/dual-core MAC + SFP normalization. Simula
 ## Verification checklist
 
 - [x] MAC array TB (single-core)
-- [ ] SFP row TB (single-core)
+- [x] SFP row TB (single-core)
 - [ ] SFP row TB (dual-core)
 - [ ] Vproduct verification
 - [ ] Core integration

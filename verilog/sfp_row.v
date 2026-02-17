@@ -4,7 +4,8 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
 
   parameter col = 8;
   parameter bw = 8;
-  parameter bw_psum = 2*bw+4;
+  parameter bw_psum = 2*bw+3;
+  parameter out_shift = 8;
 
  
   input  clk, reset, div, acc, fifo_ext_rd;
@@ -58,7 +59,7 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   assign sfp_out[bw_psum*8-1 : bw_psum*7] = sfp_out_sign7;
 
 
-  assign sum_2core = sum_this_core[bw_psum+3:7] + sum_in[bw_psum+3:7];
+  assign sum_2core = sum_this_core[bw_psum+3:0] + sum_in[bw_psum+3:0];
 
   assign abs[bw_psum*1-1 : bw_psum*0] = (sfp_in[bw_psum*1-1]) ?  (~sfp_in[bw_psum*1-1 : bw_psum*0] + 1)  :  sfp_in[bw_psum*1-1 : bw_psum*0];
   assign abs[bw_psum*2-1 : bw_psum*1] = (sfp_in[bw_psum*2-1]) ?  (~sfp_in[bw_psum*2-1 : bw_psum*1] + 1)  :  sfp_in[bw_psum*2-1 : bw_psum*1];
@@ -112,16 +113,14 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
          fifo_wr <= 0;
    
          if (div) begin
-           sfp_out_sign0 <= sfp_in_sign0 / sum_2core;
-           sfp_out_sign1 <= sfp_in_sign1 / sum_2core;
-           sfp_out_sign2 <= sfp_in_sign2 / sum_2core;
-           sfp_out_sign3 <= sfp_in_sign3 / sum_2core;
-           sfp_out_sign4 <= sfp_in_sign4 / sum_2core;
-           sfp_out_sign5 <= sfp_in_sign5 / sum_2core;
-           sfp_out_sign6 <= sfp_in_sign6 / sum_2core;
-           sfp_out_sign7 <= sfp_in_sign7 / sum_2core;
-
-
+           sfp_out_sign0 <= $signed({sfp_in_sign0, {out_shift{1'b0}}}) / $signed(sum_2core);
+           sfp_out_sign1 <= $signed({sfp_in_sign1, {out_shift{1'b0}}}) / $signed(sum_2core);
+           sfp_out_sign2 <= $signed({sfp_in_sign2, {out_shift{1'b0}}}) / $signed(sum_2core);
+           sfp_out_sign3 <= $signed({sfp_in_sign3, {out_shift{1'b0}}}) / $signed(sum_2core);
+           sfp_out_sign4 <= $signed({sfp_in_sign4, {out_shift{1'b0}}}) / $signed(sum_2core);
+           sfp_out_sign5 <= $signed({sfp_in_sign5, {out_shift{1'b0}}}) / $signed(sum_2core);
+           sfp_out_sign6 <= $signed({sfp_in_sign6, {out_shift{1'b0}}}) / $signed(sum_2core);
+           sfp_out_sign7 <= $signed({sfp_in_sign7, {out_shift{1'b0}}}) / $signed(sum_2core);
 
          end
        end

@@ -3,7 +3,7 @@
 module mac_8in (out, a, b);
 
 parameter bw = 8;
-parameter bw_psum = 2*bw+6;
+parameter bw_psum = 2*bw+3;
 parameter pr = 64; // parallel factor: number of inputs = 64
 
 output [bw_psum-1:0] out;

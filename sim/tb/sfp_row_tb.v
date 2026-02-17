@@ -1,6 +1,5 @@
-// Testbench: load mac_out.txt into pmem, feed sfp_row row-by-row.
+// Testbench: load mac_out.txt, feed sfp_row row-by-row (no SRAM; TB drives sfp_in directly).
 // Estimated = normalize each row: sum_abs = sum(|row|), divisor = sum_abs>>7, out[c] = signed(row[c])/divisor.
-// Scoreboard same as mac_array_tb: RTL vs estimated, [OK]/[MISMATCH], PASS block.
 
 `timescale 1ns/1ps
 
@@ -9,7 +8,8 @@ module sfp_row_tb;
   parameter ROWS = 8;
   parameter col = 8;
   parameter bw = 8;
-  parameter bw_psum = 2*bw+4;  // 20
+  parameter bw_psum = 2*bw+3;  // 20
+  parameter out_shift = 8;
 
   integer mac_file, r, c, captured_data;
   integer mac_data [0:ROWS*col-1];   // row-major: row*col + c
@@ -22,11 +22,9 @@ module sfp_row_tb;
   reg reset = 1;
   reg clk = 0;
 
-  // pmem: 16 x 160-bit (one row = 8 x 20-bit per address)
-  reg  pmem_rd = 0, pmem_wr = 0;
-  reg  [3:0] pmem_add = 0;
-  wire [col*bw_psum-1:0] pmem_out;
-  reg  [col*bw_psum-1:0] pmem_in = 0;
+  // TB drives sfp_in directly (no SRAM)
+  reg  [col*bw_psum-1:0] sfp_in_drive;
+  wire [col*bw_psum-1:0] sfp_in = sfp_in_drive;
 
   // sfp_row control (ignore sum_in / sum_out)
   reg acc = 0, div = 0;
@@ -34,11 +32,7 @@ module sfp_row_tb;
   wire [bw_psum+3:0] sum_in  = 0;
   wire [bw_psum+3:0] sum_out;
 
-  // sfp_row: sfp_in from pmem, sfp_out to compare
-  wire [col*bw_psum-1:0] sfp_in;
   wire [col*bw_psum-1:0] sfp_out;
-
-  assign sfp_in = pmem_out;
 
   task read_int;
     input integer fd;
@@ -50,16 +44,12 @@ module sfp_row_tb;
     end
   endtask
 
-  sram_w16 #(.sram_bit(col*bw_psum)) pmem (
-    .CLK(clk),
-    .D(pmem_in),
-    .Q(pmem_out),
-    .CEN(!(pmem_rd || pmem_wr)),
-    .WEN(!pmem_wr),
-    .A(pmem_add)
-  );
-
-  sfp_row #(.col(col), .bw(bw)) u_sfp (
+  sfp_row #(
+    .col(col), 
+    .bw(bw), 
+    .bw_psum(bw_psum), 
+    .out_shift(out_shift)
+  ) u_sfp (
     .clk(clk),
     .reset(reset),
     .acc(acc),
@@ -83,7 +73,7 @@ module sfp_row_tb;
     @(posedge clk);
 
     // ----- Load mac_out.txt (8 rows x 8 cols, tab/space separated)
-    $display("##### Loading mac_out.txt into pmem #####");
+    $display("##### Loading mac_out.txt #####");
     mac_file = $fopen("sim/pattern/mac_out.txt", "r");
     if (mac_file == 0) begin
       $display("ERROR: cannot open mac_out.txt");
@@ -92,63 +82,45 @@ module sfp_row_tb;
     for (r = 0; r < ROWS; r = r + 1) begin
       for (c = 0; c < col; c = c + 1) begin
         read_int(mac_file, captured_data);
+        // $display("mac_data[%0d][%0d] = %0d", r, c, captured_data);
         mac_data[r*col + c] = captured_data;
       end
     end
     $fclose(mac_file);
-
-    // Write each row to pmem (one 160-bit word per row; each element 20-bit 2's complement)
-    for (r = 0; r < ROWS; r = r + 1) begin
-      pmem_add = r[3:0];
-      d0 = (mac_data[r*col+0] & ((1<<bw_psum)-1));
-      d1 = (mac_data[r*col+1] & ((1<<bw_psum)-1));
-      d2 = (mac_data[r*col+2] & ((1<<bw_psum)-1));
-      d3 = (mac_data[r*col+3] & ((1<<bw_psum)-1));
-      d4 = (mac_data[r*col+4] & ((1<<bw_psum)-1));
-      d5 = (mac_data[r*col+5] & ((1<<bw_psum)-1));
-      d6 = (mac_data[r*col+6] & ((1<<bw_psum)-1));
-      d7 = (mac_data[r*col+7] & ((1<<bw_psum)-1));
-      pmem_in  = { d7, d6, d5, d4, d3, d2, d1, d0 };
-      pmem_wr = 1;
-      pmem_rd = 0;
-      @(posedge clk);
-      pmem_wr = 0;
-      @(posedge clk);
-    end
 
     // ----- Estimated: same as sfp_row (sum_abs = sum of |row|, divisor = sum_abs>>7, out[c] = signed(row[c])/divisor)
     $display("##### Estimated normalization (sum_abs>>7, then signed divide) #####");
     for (r = 0; r < ROWS; r = r + 1) begin
       sum_abs = 0;
       for (c = 0; c < col; c = c + 1) begin
-        signed_val = mac_data[r*col + c] & ((1<<bw_psum)-1);
-        if (signed_val >= (1<<(bw_psum-1)))
-          signed_val = signed_val - (1<<bw_psum);
-        if (signed_val < 0)
-          sum_abs = sum_abs + (-signed_val);
-        else
-          sum_abs = sum_abs + signed_val;
+        signed_val = mac_data[r*col + c];
+        if (signed_val[bw_psum-1] == 1'b1)
+          signed_val = ~(signed_val-1'b1);
+        sum_abs = sum_abs + signed_val;
       end
-      divisor = sum_abs >> 7;
-      if (divisor == 0) divisor = 1;
+      if (sum_abs == 0) sum_abs = 1;
       for (c = 0; c < col; c = c + 1) begin
-        signed_val = mac_data[r*col + c] & ((1<<bw_psum)-1);
-        if (signed_val >= (1<<(bw_psum-1)))
-          signed_val = signed_val - (1<<bw_psum);
-        estimated[r*col + c] = signed_val / divisor;
+        estimated[r*col + c] = $signed({mac_data[r*col + c], {out_shift{1'b0}}}) / $signed(sum_abs);
+        $display("estimated[%0d][%0d] = %0d, mac_data[%0d][%0d] = %0d, sum_abs = %0d", r, c, estimated[r*col + c], r, c, $signed(mac_data[r*col + c]), $signed(sum_abs));
       end
     end
 
-    // ----- Process each row: read from pmem -> acc -> div (2 cycles) -> compare with estimated
+    // ----- Process each row: drive sfp_in from mac_data -> acc -> div (2 cycles) -> compare
     $display("");
     $display("##### sfp_row out vs estimated #####");
     $display("  [row]  RTL   :   col0   col1   col2   col3   col4   col5   col6   col7");
     $display("         golden:   ----   ----   ----   ----   ----   ----   ----   ----");
     err_count = 0;
     for (r = 0; r < ROWS; r = r + 1) begin
-      pmem_rd = 1;
-      pmem_wr = 0;
-      pmem_add = r[3:0];
+      d0 = mac_data[r*col+0];
+      d1 = mac_data[r*col+1];
+      d2 = mac_data[r*col+2];
+      d3 = mac_data[r*col+3];
+      d4 = mac_data[r*col+4];
+      d5 = mac_data[r*col+5];
+      d6 = mac_data[r*col+6];
+      d7 = mac_data[r*col+7];
+      sfp_in_drive = { d7, d6, d5, d4, d3, d2, d1, d0 };
       acc = 0;
       div = 0;
       @(posedge clk);
@@ -188,7 +160,6 @@ module sfp_row_tb;
       @(posedge clk);
     end
 
-    pmem_rd = 0;
     $display("------------------------------------------------------------");
     if (err_count == 0) begin
       $display("  PASS  %0d rows x %0d cols  all match estimated result", ROWS, col);
