@@ -6,9 +6,10 @@ Verilog RTL and testbenches for single/dual-core MAC + SFP normalization. Simula
 
 - [x] MAC array TB (single-core)
 - [ ] SFP row TB (single-core)
-- [ ] Full dual-core flow
+- [ ] SFP row TB (dual-core)
 - [ ] Vproduct verification
 - [ ] Core integration
+- [ ] Full dual-core flow
 
 ## Requirements
 
