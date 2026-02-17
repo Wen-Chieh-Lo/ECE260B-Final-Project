@@ -96,6 +96,7 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
     end
     else begin
        div_q <= div ;
+      //  $display("acc = %0d", acc);
        if (acc) begin
       
          sum_q <= 

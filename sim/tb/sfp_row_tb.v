@@ -126,6 +126,7 @@ module sfp_row_tb;
       @(posedge clk);
       acc = 1;
       @(posedge clk);
+      @(posedge clk);
       acc = 0;
       @(posedge clk);
       div = 1;

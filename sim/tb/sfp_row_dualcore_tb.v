@@ -63,7 +63,7 @@ module sfp_row_dualcore_tb;
   always #5 clk = ~clk;
 
   initial begin
-    $dumpfile("sim/waveform/sfp_row_dual.vcd");
+    $dumpfile("sim/waveform/sfp_row_dualcore.vcd");
     $dumpvars(0, sfp_row_dualcore_tb);
 
     // Random sum_in (other core's sum) so divisor = sum_this_core + sum_in
@@ -124,20 +124,24 @@ module sfp_row_dualcore_tb;
       d6 = mac_data[r*col+6];
       d7 = mac_data[r*col+7];
       sfp_in_drive = { d7, d6, d5, d4, d3, d2, d1, d0 };
+      $display("sfp_in_drive = %0d", sfp_in_drive);
       acc = 0;
       div = 0;
       fifo_ext_rd = 0;
       @(posedge clk);
       acc = 1;
       @(posedge clk);
+      @(posedge clk);
       acc = 0;
       @(posedge clk);   // one cycle after acc so FIFO write has settled
       fifo_ext_rd = 1;
+      @(posedge clk);
       #0.5;             // sample sum_out this cycle (FIFO out = current rd_ptr; rd_ptr advances at next posedge)
       if (sum_out !== sum_abs_golden[r]) begin
-        $display("  row %0d sum_out MISMATCH: RTL %0d != golden %0d", r, sum_out, sum_abs_golden[r]);
+        $display("  [test1 sum_out] row %0d FAIL: fifo_ext_rd -> sum_out = %0d, expected sum_abs = %0d", r, sum_out, sum_abs_golden[r]);
         sum_err_count = sum_err_count + 1;
-      end
+      end else
+        $display("  [test1 sum_out] row %0d PASS: fifo_ext_rd -> sum_out = %0d (expected sum_abs)", r, sum_out);
       @(posedge clk);
       fifo_ext_rd = 0;
       @(posedge clk);
@@ -173,13 +177,9 @@ module sfp_row_dualcore_tb;
     end
 
     $display("");
-    $display("##### sum_out (fifo_ext_rd) summary #####");
-    if (sum_err_count == 0)
-      $display("  PASS  sum_out matches sum_abs for all %0d rows", ROWS);
-    else
-      $display("  FAIL  sum_out %0d mismatches", sum_err_count);
-
+    $display("##### error summary #####");
     $display("------------------------------------------------------------");
+    
     if (err_count == 0 && sum_err_count == 0) begin
       $display("  PASS  sfp_out + sum_out  all match (divisor = sum_abs + sum_in)");
       $display("------------------------------------------------------------");
