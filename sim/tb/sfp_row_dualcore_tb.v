@@ -8,7 +8,8 @@ module sfp_row_dualcore_tb;
   parameter col = 8;
   parameter bw = 8;
   parameter bw_psum = 2*bw+3;  // 20
-  parameter out_shift = 8;
+  parameter out_shift = 7;
+  parameter bw_out = out_shift + 1'b1;
 
   integer mac_file, r, c, captured_data;
   integer mac_data [0:ROWS*col-1];
@@ -16,7 +17,7 @@ module sfp_row_dualcore_tb;
   integer sum_abs_golden [0:ROWS-1];  // sum(|row|) per row for sum_out check
   integer u0, u1, u2, u3, u4, u5, u6, u7;
   integer err_count, row_err, sum_err_count;
-  integer sum_abs, divisor, signed_val;
+  integer sum_abs, divisor, unsigned_val;
   reg [bw_psum-1:0] d0, d1, d2, d3, d4, d5, d6, d7;
 
   reg reset = 1;
@@ -31,7 +32,7 @@ module sfp_row_dualcore_tb;
   wire [bw_psum+3:0] sum_in = sum_in_drive;
   wire [bw_psum+3:0] sum_out;
 
-  wire [col*bw_psum-1:0] sfp_out;
+  wire [col*bw_out-1:0] sfp_out;
 
   task read_int;
     input integer fd;
@@ -63,7 +64,7 @@ module sfp_row_dualcore_tb;
   always #5 clk = ~clk;
 
   initial begin
-    $dumpfile("sim/waveform/sfp_row_dual.vcd");
+    $dumpfile("sim/waveform/sfp_row_dualcore.vcd");
     $dumpvars(0, sfp_row_dualcore_tb);
 
     // Random sum_in (other core's sum) so divisor = sum_this_core + sum_in
@@ -95,17 +96,21 @@ module sfp_row_dualcore_tb;
     for (r = 0; r < ROWS; r = r + 1) begin
       sum_abs = 0;
       for (c = 0; c < col; c = c + 1) begin
-        signed_val = mac_data[r*col + c];
-        if (signed_val[bw_psum-1] == 1'b1)
-          signed_val = ~(signed_val-1'b1);
-        sum_abs = sum_abs + signed_val;
+        unsigned_val = mac_data[r*col + c];
+        if (unsigned_val[bw_psum-1] == 1'b1)
+          unsigned_val = ~(unsigned_val-1'b1);
+        sum_abs = sum_abs + unsigned_val;
       end
       if (sum_abs == 0) sum_abs = 1;
       sum_abs_golden[r] = sum_abs;
       divisor = sum_abs + sum_in_drive;
       if (divisor == 0) divisor = 1;
-      for (c = 0; c < col; c = c + 1)
-        estimated[r*col + c] = $signed({mac_data[r*col + c], {out_shift{1'b0}}}) / $signed(divisor);
+      for (c = 0; c < col; c = c + 1) begin
+        unsigned_val = mac_data[r*col + c];
+        if (unsigned_val[bw_psum-1] == 1'b1)
+          unsigned_val = ~(unsigned_val-1'b1);
+        estimated[r*col + c] = {unsigned_val, {out_shift{1'b0}}} / divisor;
+      end
     end
 
     // ----- (1) After acc: fifo_ext_rd -> check sum_out == sum_abs_golden
@@ -124,20 +129,24 @@ module sfp_row_dualcore_tb;
       d6 = mac_data[r*col+6];
       d7 = mac_data[r*col+7];
       sfp_in_drive = { d7, d6, d5, d4, d3, d2, d1, d0 };
+      $display("sfp_in_drive = %0d", sfp_in_drive);
       acc = 0;
       div = 0;
       fifo_ext_rd = 0;
       @(posedge clk);
       acc = 1;
       @(posedge clk);
+      @(posedge clk);
       acc = 0;
       @(posedge clk);   // one cycle after acc so FIFO write has settled
       fifo_ext_rd = 1;
+      @(posedge clk);
       #0.5;             // sample sum_out this cycle (FIFO out = current rd_ptr; rd_ptr advances at next posedge)
       if (sum_out !== sum_abs_golden[r]) begin
-        $display("  row %0d sum_out MISMATCH: RTL %0d != golden %0d", r, sum_out, sum_abs_golden[r]);
+        $display("  [test1 sum_out] row %0d FAIL: fifo_ext_rd -> sum_out = %0d, expected sum_abs = %0d", r, sum_out, sum_abs_golden[r]);
         sum_err_count = sum_err_count + 1;
-      end
+      end else
+        $display("  [test1 sum_out] row %0d PASS: fifo_ext_rd -> sum_out = %0d (expected sum_abs)", r, sum_out);
       @(posedge clk);
       fifo_ext_rd = 0;
       @(posedge clk);
@@ -147,14 +156,14 @@ module sfp_row_dualcore_tb;
       div = 0;
       @(posedge clk);
       @(posedge clk);  // sfp_out valid one cycle after div
-      u0 = $signed(sfp_out[bw_psum*1-1 -: bw_psum]);
-      u1 = $signed(sfp_out[bw_psum*2-1 -: bw_psum]);
-      u2 = $signed(sfp_out[bw_psum*3-1 -: bw_psum]);
-      u3 = $signed(sfp_out[bw_psum*4-1 -: bw_psum]);
-      u4 = $signed(sfp_out[bw_psum*5-1 -: bw_psum]);
-      u5 = $signed(sfp_out[bw_psum*6-1 -: bw_psum]);
-      u6 = $signed(sfp_out[bw_psum*7-1 -: bw_psum]);
-      u7 = $signed(sfp_out[bw_psum*8-1 -: bw_psum]);
+      u0 = $signed(sfp_out[bw_out*1-1 -: bw_out]);
+      u1 = $signed(sfp_out[bw_out*2-1 -: bw_out]);
+      u2 = $signed(sfp_out[bw_out*3-1 -: bw_out]);
+      u3 = $signed(sfp_out[bw_out*4-1 -: bw_out]);
+      u4 = $signed(sfp_out[bw_out*5-1 -: bw_out]);
+      u5 = $signed(sfp_out[bw_out*6-1 -: bw_out]);
+      u6 = $signed(sfp_out[bw_out*7-1 -: bw_out]);
+      u7 = $signed(sfp_out[bw_out*8-1 -: bw_out]);
       $display("   [%0d]   RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", r, u0, u1, u2, u3, u4, u5, u6, u7);
       $display("         golden: %7d %7d %7d %7d %7d %7d %7d %7d",
         estimated[r*col+0], estimated[r*col+1], estimated[r*col+2], estimated[r*col+3],
@@ -173,13 +182,9 @@ module sfp_row_dualcore_tb;
     end
 
     $display("");
-    $display("##### sum_out (fifo_ext_rd) summary #####");
-    if (sum_err_count == 0)
-      $display("  PASS  sum_out matches sum_abs for all %0d rows", ROWS);
-    else
-      $display("  FAIL  sum_out %0d mismatches", sum_err_count);
-
+    $display("##### error summary #####");
     $display("------------------------------------------------------------");
+    
     if (err_count == 0 && sum_err_count == 0) begin
       $display("  PASS  sfp_out + sum_out  all match (divisor = sum_abs + sum_in)");
       $display("------------------------------------------------------------");
