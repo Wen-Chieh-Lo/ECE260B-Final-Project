@@ -28,7 +28,7 @@ make help       # list targets
 | Target           | Config            | filelist (in filelists/)   |  Remarks
 | ---------------- | ----------------- | -------------------------- | ---------
 | `fullchip`       | fullchip          | filelist                   |
-| `mac`            | core              | filelist_core              | checkout macro LOAD_OTHER_NORM_FILE in core_tb.v 
+| `core`           | core              | filelist_core              | checkout macro LOAD_OTHER_NORM_FILE in core_tb.v 
 | `mac`            | mac_array         | filelist_mac               |
 | `dual`           | fullchip_dual     | filelist_dual              |
 | `sfp_row`        | sfp_row           | filelist_sfp_row           |
