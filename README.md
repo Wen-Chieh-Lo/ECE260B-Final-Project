@@ -25,14 +25,14 @@ make all        # run all configurations
 make help       # list targets
 ```
 
-| Target          | Config            | filelist (in filelists/)   |
-| ---------------- | ----------------- | -------------------------- |
+| Target           | Config            | filelist (in filelists/)   |  Remarks
+| ---------------- | ----------------- | -------------------------- | ---------
 | `fullchip`       | fullchip          | filelist                   |
+| `mac`            | core              | filelist_core              | checkout macro LOAD_OTHER_NORM_FILE in core_tb.v 
 | `mac`            | mac_array         | filelist_mac               |
 | `dual`           | fullchip_dual     | filelist_dual              |
 | `sfp_row`        | sfp_row           | filelist_sfp_row           |
 | `sfp_row_dual`   | sfp_row dual-core | filelist_sfp_row_dual      |
-| `vproduct`       | Vproduct (norm)   | filelist_vproduct          |
 
 Waveforms: `sim/waveform/*.vcd` after each run.
 
