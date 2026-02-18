@@ -1,7 +1,12 @@
 // Mac verification: TB + DUT (mac_array_top) in one file.
-// Flow: Q/K files -> qmem/kmem write -> K load -> execute -> sample ofifo out, compare to golden.
+// Phase 1 (QK product): Q/K files -> qmem/kmem write -> K load -> execute -> sample pmem out, compare to golden.
+// Phase 2 (Normalize ): sfu_row takes input from pmem, and store output into kmem. Golden is displayed by tb simultaneously.
+// Phase 3 (VN product): LOAD_OTHER_NORM_FILE decides whether we use TA's norm.txt. Other than that, the flow is identical to phase 1.   
+
+// `define LOAD_OTHER_NORM_FILE     // If you want to use TA's norm.txt 
 
 `timescale 1ns/1ps
+
 
 module core_tb;
 
@@ -120,14 +125,14 @@ module core_tb;
       #0.5 clk = 1'b0;
       qmem_wr = 1;
       if (q > 0) qkmem_add = qkmem_add + 1;
-      mem_in[1*bw-1:0*bw] = Q[q][0];
-      mem_in[2*bw-1:1*bw] = Q[q][1];
-      mem_in[3*bw-1:2*bw] = Q[q][2];
-      mem_in[4*bw-1:3*bw] = Q[q][3];
-      mem_in[5*bw-1:4*bw] = Q[q][4];
-      mem_in[6*bw-1:5*bw] = Q[q][5];
-      mem_in[7*bw-1:6*bw] = Q[q][6];
-      mem_in[8*bw-1:7*bw] = Q[q][7];
+      mem_in[1*bw-1:0*bw] = Q[q][7];
+      mem_in[2*bw-1:1*bw] = Q[q][6];
+      mem_in[3*bw-1:2*bw] = Q[q][5];
+      mem_in[4*bw-1:3*bw] = Q[q][4];
+      mem_in[5*bw-1:4*bw] = Q[q][3];
+      mem_in[6*bw-1:5*bw] = Q[q][2];
+      mem_in[7*bw-1:6*bw] = Q[q][1];
+      mem_in[8*bw-1:7*bw] = Q[q][0];
       #0.5 clk = 1'b1;
     end
     #0.5 clk = 1'b0;
@@ -140,14 +145,14 @@ module core_tb;
       #0.5 clk = 1'b0;
       kmem_wr = 1;
       if (q > 0) qkmem_add = qkmem_add + 1;
-      mem_in[1*bw-1:0*bw] = K[q][0];
-      mem_in[2*bw-1:1*bw] = K[q][1];
-      mem_in[3*bw-1:2*bw] = K[q][2];
-      mem_in[4*bw-1:3*bw] = K[q][3];
-      mem_in[5*bw-1:4*bw] = K[q][4];
-      mem_in[6*bw-1:5*bw] = K[q][5];
-      mem_in[7*bw-1:6*bw] = K[q][6];
-      mem_in[8*bw-1:7*bw] = K[q][7];
+      mem_in[1*bw-1:0*bw] = K[q][7];
+      mem_in[2*bw-1:1*bw] = K[q][6];
+      mem_in[3*bw-1:2*bw] = K[q][5];
+      mem_in[4*bw-1:3*bw] = K[q][4];
+      mem_in[5*bw-1:4*bw] = K[q][3];
+      mem_in[6*bw-1:5*bw] = K[q][2];
+      mem_in[7*bw-1:6*bw] = K[q][1];
+      mem_in[8*bw-1:7*bw] = K[q][0];
       #0.5 clk = 1'b1;
     end
     #0.5 clk = 1'b0;
@@ -211,13 +216,13 @@ module core_tb;
     #0.5 clk = 1'b1; 
     row = q;
     $display("   [%0d]   RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", row,
-      $signed(pmem_out[0*bw_psum +: bw_psum]), $signed(pmem_out[1*bw_psum +: bw_psum]),
-      $signed(pmem_out[2*bw_psum +: bw_psum]), $signed(pmem_out[3*bw_psum +: bw_psum]),
-      $signed(pmem_out[4*bw_psum +: bw_psum]), $signed(pmem_out[5*bw_psum +: bw_psum]),
-      $signed(pmem_out[6*bw_psum +: bw_psum]), $signed(pmem_out[7*bw_psum +: bw_psum]));
+      $signed(pmem_out[7*bw_psum +: bw_psum]), $signed(pmem_out[6*bw_psum +: bw_psum]),
+      $signed(pmem_out[5*bw_psum +: bw_psum]), $signed(pmem_out[4*bw_psum +: bw_psum]),
+      $signed(pmem_out[3*bw_psum +: bw_psum]), $signed(pmem_out[2*bw_psum +: bw_psum]),
+      $signed(pmem_out[1*bw_psum +: bw_psum]), $signed(pmem_out[0*bw_psum +: bw_psum]));
     $display("         golden: %7d %7d %7d %7d %7d %7d %7d %7d",
-      result[row][7], result[row][6], result[row][5], result[row][4],
-      result[row][3], result[row][2], result[row][1], result[row][0]);
+      result[row][0], result[row][1], result[row][2], result[row][3],
+      result[row][4], result[row][5], result[row][6], result[row][7]);
     row_err = 0;
     for (c = 0; c < col; c = c+1) begin
       if ($signed(pmem_out[c*bw_psum +: bw_psum]) !== result[row][golden_col[c]]) begin
@@ -269,37 +274,31 @@ module core_tb;
 
     $display("");
     $display("##### sfp processing #####");
+    $display("estimated:        col0    col1    col2    col3    col4    col5    col6    col7 ");
+    $display("to kmem  :       63:56   55:48   47:40   39:32   31:24   23:16   15: 8    7: 0 ");
     sfp_processing = 1'b1;
     pmem_add = 0;
     qkmem_add = 0;
     pmem_rd = 1;
+
+    
     for (q = 0; q < col; q = q + 1) begin
-      #0.5 clk = 1'b0;
-      #0.5 clk = 1'b1;
-
-      #0.5 clk = 1'b0; 
-      #0.5 clk = 1'b1; sfp_acc = 1'b1;
-      #0.5 clk = 1'b0;
-      #0.5 clk = 1'b1;
-
-      #0.5 clk = 1'b0; 
-      #0.5 clk = 1'b1; sfp_acc = 1'b0;
-
-      #0.5 clk = 1'b0; 
-      #0.5 clk = 1'b1; sfp_div = 1'b1;
-      #0.5 clk = 1'b0;
-      #0.5 clk = 1'b1;
-
-      #0.5 clk = 1'b0; 
-      #0.5 clk = 1'b1; sfp_div = 1'b0;
-
-      #0.5 clk = 1'b0;
-      #0.5 clk = 1'b1; kmem_wr = 1'b1;
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 1
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_acc = 1'b1; //posedge 2
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 3
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_acc = 1'b0; //posedge 4
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_div = 1'b1; //posedge 5
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 6
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_div = 1'b0; //posedge 7
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1; kmem_wr = 1'b1; //posedge 8
       $display("");
-      $display("estimated:     %2d %2d %2d %2d %2d %2d %2d %2d ", estimated[q*col + 0], estimated[q*col + 1], estimated[q*col + 2], estimated[q*col + 3], estimated[q*col + 4], estimated[q*col + 5], estimated[q*col + 6], estimated[q*col + 7]);
-      #0.5 clk = 1'b0;
-      #0.5 clk = 1'b1; kmem_wr = 1'b0; 
+      $display("estimated:     %7d %7d %7d %7d %7d %7d %7d %7d ", 
+                                estimated[q*col + 0], estimated[q*col + 1], 
+                                estimated[q*col + 2], estimated[q*col + 3], 
+                                estimated[q*col + 4], estimated[q*col + 5], 
+                                estimated[q*col + 6], estimated[q*col + 7]);
 
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1; kmem_wr = 1'b0; //posedge 9
       pmem_add = pmem_add + 1;
       qkmem_add = qkmem_add + 1;
     end
@@ -341,13 +340,16 @@ module core_tb;
     end
 
 
-///// Norm data txt reading /////
-$display("##### norm data txt reading #####");
-  for (q=0; q<10; q=q+1) begin
-    #0.5 clk = 1'b0;   
-    #0.5 clk = 1'b1;   
-  end
+  ///// Norm data txt reading /////
+  $display("##### norm data txt reading #####");
+  for (q=0; q<10; q=q+1) #0.5 clk = 1'b0; #0.5 clk = 1'b1;   
   reset = 0;
+  
+
+  `ifdef LOAD_OTHER_NORM_FILE
+  //**************************//
+  //   LOAD_OTHER_NORM_FILE   //
+  //**************************//
   qkvn_file = $fopen("sim/pattern/norm.txt", "r");
   // N := [total_cycle-1:0][col-1:0]
   for (q=0; q<total_cycle; q=q+1) begin
@@ -356,12 +358,35 @@ $display("##### norm data txt reading #####");
           N[q][j] = captured_data;
     end
   end
-/////////////////////////////////
 
+  `else
+  //*****************************//
+  // Calculate N from QK product //
+  //*****************************//
+  for (q=0; q<total_cycle; q=q+1) begin
+    for (j=0; j<col; j=j+1) begin
+          N[q][j] = estimated[q*col+j];
+    end
+  end
+
+`endif
+
+// $display("##### Estimated multiplication result #####");
+    for (t = 0; t < total_cycle; t = t+1)
+      for (q = 0; q < col; q = q+1)
+        result[t][q] = 0;
+    for (t = 0; t < total_cycle; t = t+1) begin
+      for (q = 0; q < col; q = q+1) begin
+        for (k = 0; k < pr; k = k+1)
+          result[t][q] = result[t][q] + V_T[t][k] * N[q][k];
+        // temp5b = result[t][q];
+        // temp16b = {temp16b[139:0], temp5b};
+      end
+      // $display("prd @cycle%2d: %40h", t, temp16b);
+    end
 
 
 ///// Qmem writing  /////
-
 $display("##### Qmem writing  #####");
   qkmem_add = 0;
   for (q=0; q<total_cycle; q=q+1) begin
@@ -369,22 +394,14 @@ $display("##### Qmem writing  #####");
     #0.5 clk = 1'b0;  
     qmem_wr = 1;  if (q>0) qkmem_add = qkmem_add + 1; 
     
-    mem_in[1*bw-1:0*bw] = V_T[q][0];
-    mem_in[2*bw-1:1*bw] = V_T[q][1];
-    mem_in[3*bw-1:2*bw] = V_T[q][2];
-    mem_in[4*bw-1:3*bw] = V_T[q][3];
-    mem_in[5*bw-1:4*bw] = V_T[q][4];
-    mem_in[6*bw-1:5*bw] = V_T[q][5];
-    mem_in[7*bw-1:6*bw] = V_T[q][6];
-    mem_in[8*bw-1:7*bw] = V_T[q][7];
-    mem_in[9*bw-1:8*bw] = V_T[q][8];
-    mem_in[10*bw-1:9*bw] = V_T[q][9];
-    mem_in[11*bw-1:10*bw] = V_T[q][10];
-    mem_in[12*bw-1:11*bw] = V_T[q][11];
-    mem_in[13*bw-1:12*bw] = V_T[q][12];
-    mem_in[14*bw-1:13*bw] = V_T[q][13];
-    mem_in[15*bw-1:14*bw] = V_T[q][14];
-    mem_in[16*bw-1:15*bw] = V_T[q][15];
+    mem_in[1*bw-1:0*bw] = V_T[q][7];
+    mem_in[2*bw-1:1*bw] = V_T[q][6];
+    mem_in[3*bw-1:2*bw] = V_T[q][5];
+    mem_in[4*bw-1:3*bw] = V_T[q][4];
+    mem_in[5*bw-1:4*bw] = V_T[q][3];
+    mem_in[6*bw-1:5*bw] = V_T[q][2];
+    mem_in[7*bw-1:6*bw] = V_T[q][1];
+    mem_in[8*bw-1:7*bw] = V_T[q][0];
 
     #0.5 clk = 1'b1;  
 
@@ -400,7 +417,7 @@ $display("##### Qmem writing  #####");
 
 
 
-
+`ifdef LOAD_OTHER_NORM_FILE
 ///// Kmem writing  /////
 
 $display("##### Kmem writing #####");
@@ -410,22 +427,14 @@ $display("##### Kmem writing #####");
     #0.5 clk = 1'b0;  
     kmem_wr = 1; if (q>0) qkmem_add = qkmem_add + 1; 
     
-    mem_in[1*bw-1:0*bw] = N[q][0];
-    mem_in[2*bw-1:1*bw] = N[q][1];
-    mem_in[3*bw-1:2*bw] = N[q][2];
-    mem_in[4*bw-1:3*bw] = N[q][3];
-    mem_in[5*bw-1:4*bw] = N[q][4];
-    mem_in[6*bw-1:5*bw] = N[q][5];
-    mem_in[7*bw-1:6*bw] = N[q][6];
-    mem_in[8*bw-1:7*bw] = N[q][7];
-    mem_in[9*bw-1:8*bw] = N[q][8];
-    mem_in[10*bw-1:9*bw] = N[q][9];
-    mem_in[11*bw-1:10*bw] = N[q][10];
-    mem_in[12*bw-1:11*bw] = N[q][11];
-    mem_in[13*bw-1:12*bw] = N[q][12];
-    mem_in[14*bw-1:13*bw] = N[q][13];
-    mem_in[15*bw-1:14*bw] = N[q][14];
-    mem_in[16*bw-1:15*bw] = N[q][15];
+    mem_in[1*bw-1:0*bw] = N[q][7];
+    mem_in[2*bw-1:1*bw] = N[q][6];
+    mem_in[3*bw-1:2*bw] = N[q][5];
+    mem_in[4*bw-1:3*bw] = N[q][4];
+    mem_in[5*bw-1:4*bw] = N[q][3];
+    mem_in[6*bw-1:5*bw] = N[q][2];
+    mem_in[7*bw-1:6*bw] = N[q][1];
+    mem_in[8*bw-1:7*bw] = N[q][0];
 
     #0.5 clk = 1'b1;  
 
@@ -436,7 +445,7 @@ $display("##### Kmem writing #####");
   qkmem_add = 0;
   #0.5 clk = 1'b1;  
 ///////////////////////////////////////////
-
+`endif
 
 
 for (q=0; q<2; q=q+1) begin
@@ -510,19 +519,7 @@ $display("##### execute #####");
 
 
 
-// $display("##### Estimated multiplication result #####");
-    for (t = 0; t < total_cycle; t = t+1)
-      for (q = 0; q < col; q = q+1)
-        result[t][q] = 0;
-    for (t = 0; t < total_cycle; t = t+1) begin
-      for (q = 0; q < col; q = q+1) begin
-        for (k = 0; k < pr; k = k+1)
-          result[t][q] = result[t][q] + V_T[t][k] * N[q][k];
-        // temp5b = result[t][q];
-        // temp16b = {temp16b[139:0], temp5b};
-      end
-      // $display("prd @cycle%2d: %40h", t, temp16b);
-    end
+
 
 // RTL column order: col c holds dot with K[7-c], so compare to result[t][7-c]
     for (c = 0; c < col; c = c+1)
@@ -540,13 +537,13 @@ $display("##### execute #####");
     #0.5 clk = 1'b1; 
     row = q;
     $display("   [%0d]   RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", row,
-      $signed(pmem_out[0*bw_psum +: bw_psum]), $signed(pmem_out[1*bw_psum +: bw_psum]),
-      $signed(pmem_out[2*bw_psum +: bw_psum]), $signed(pmem_out[3*bw_psum +: bw_psum]),
-      $signed(pmem_out[4*bw_psum +: bw_psum]), $signed(pmem_out[5*bw_psum +: bw_psum]),
-      $signed(pmem_out[6*bw_psum +: bw_psum]), $signed(pmem_out[7*bw_psum +: bw_psum]));
+      $signed(pmem_out[7*bw_psum +: bw_psum]), $signed(pmem_out[6*bw_psum +: bw_psum]),
+      $signed(pmem_out[5*bw_psum +: bw_psum]), $signed(pmem_out[4*bw_psum +: bw_psum]),
+      $signed(pmem_out[3*bw_psum +: bw_psum]), $signed(pmem_out[2*bw_psum +: bw_psum]),
+      $signed(pmem_out[1*bw_psum +: bw_psum]), $signed(pmem_out[0*bw_psum +: bw_psum]));
     $display("         golden: %7d %7d %7d %7d %7d %7d %7d %7d",
-      result[row][7], result[row][6], result[row][5], result[row][4],
-      result[row][3], result[row][2], result[row][1], result[row][0]);
+      result[row][0], result[row][1], result[row][2], result[row][3],
+      result[row][4], result[row][5], result[row][6], result[row][7]);
     row_err = 0;
     for (c = 0; c < col; c = c+1) begin
       if ($signed(pmem_out[c*bw_psum +: bw_psum]) !== result[row][golden_col[c]]) begin

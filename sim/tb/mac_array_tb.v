@@ -177,14 +177,14 @@ module mac_array_tb;
       #0.5 clk = 1'b0;
       qmem_wr = 1;
       if (q > 0) qkmem_add = qkmem_add + 1;
-      mem_in[1*bw-1:0*bw] = Q[q][0];
-      mem_in[2*bw-1:1*bw] = Q[q][1];
-      mem_in[3*bw-1:2*bw] = Q[q][2];
-      mem_in[4*bw-1:3*bw] = Q[q][3];
-      mem_in[5*bw-1:4*bw] = Q[q][4];
-      mem_in[6*bw-1:5*bw] = Q[q][5];
-      mem_in[7*bw-1:6*bw] = Q[q][6];
-      mem_in[8*bw-1:7*bw] = Q[q][7];
+      mem_in[1*bw-1:0*bw] = Q[q][7];
+      mem_in[2*bw-1:1*bw] = Q[q][6];
+      mem_in[3*bw-1:2*bw] = Q[q][5];
+      mem_in[4*bw-1:3*bw] = Q[q][4];
+      mem_in[5*bw-1:4*bw] = Q[q][3];
+      mem_in[6*bw-1:5*bw] = Q[q][2];
+      mem_in[7*bw-1:6*bw] = Q[q][1];
+      mem_in[8*bw-1:7*bw] = Q[q][0];
       #0.5 clk = 1'b1;
     end
     #0.5 clk = 1'b0;
@@ -197,14 +197,14 @@ module mac_array_tb;
       #0.5 clk = 1'b0;
       kmem_wr = 1;
       if (q > 0) qkmem_add = qkmem_add + 1;
-      mem_in[1*bw-1:0*bw] = K[q][0];
-      mem_in[2*bw-1:1*bw] = K[q][1];
-      mem_in[3*bw-1:2*bw] = K[q][2];
-      mem_in[4*bw-1:3*bw] = K[q][3];
-      mem_in[5*bw-1:4*bw] = K[q][4];
-      mem_in[6*bw-1:5*bw] = K[q][5];
-      mem_in[7*bw-1:6*bw] = K[q][6];
-      mem_in[8*bw-1:7*bw] = K[q][7];
+      mem_in[1*bw-1:0*bw] = K[q][7];
+      mem_in[2*bw-1:1*bw] = K[q][6];
+      mem_in[3*bw-1:2*bw] = K[q][5];
+      mem_in[4*bw-1:3*bw] = K[q][4];
+      mem_in[5*bw-1:4*bw] = K[q][3];
+      mem_in[6*bw-1:5*bw] = K[q][2];
+      mem_in[7*bw-1:6*bw] = K[q][1];
+      mem_in[8*bw-1:7*bw] = K[q][0];
       #0.5 clk = 1'b1;
     end
     #0.5 clk = 1'b0;
@@ -263,13 +263,13 @@ module mac_array_tb;
       #0.5;  // sample before posedge: mac_out = row being read (result[q])
       row = q;
       $display("   [%0d]   RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", row,
-        $signed(mac_out[0*bw_psum +: bw_psum]), $signed(mac_out[1*bw_psum +: bw_psum]),
-        $signed(mac_out[2*bw_psum +: bw_psum]), $signed(mac_out[3*bw_psum +: bw_psum]),
-        $signed(mac_out[4*bw_psum +: bw_psum]), $signed(mac_out[5*bw_psum +: bw_psum]),
-        $signed(mac_out[6*bw_psum +: bw_psum]), $signed(mac_out[7*bw_psum +: bw_psum]));
+        $signed(mac_out[7*bw_psum +: bw_psum]), $signed(mac_out[6*bw_psum +: bw_psum]),
+        $signed(mac_out[5*bw_psum +: bw_psum]), $signed(mac_out[4*bw_psum +: bw_psum]),
+        $signed(mac_out[3*bw_psum +: bw_psum]), $signed(mac_out[2*bw_psum +: bw_psum]),
+        $signed(mac_out[1*bw_psum +: bw_psum]), $signed(mac_out[0*bw_psum +: bw_psum]));
       $display("         golden: %7d %7d %7d %7d %7d %7d %7d %7d",
-        result[row][7], result[row][6], result[row][5], result[row][4],
-        result[row][3], result[row][2], result[row][1], result[row][0]);
+        result[row][0], result[row][1], result[row][2], result[row][3],
+        result[row][4], result[row][5], result[row][6], result[row][7]);
       row_err = 0;
       for (c = 0; c < col; c = c+1) begin
         if ($signed(mac_out[c*bw_psum +: bw_psum]) !== result[row][golden_col[c]]) begin
