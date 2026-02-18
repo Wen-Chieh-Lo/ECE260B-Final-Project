@@ -13,10 +13,11 @@ wire   [bw_psum*col-1:0] pmem_out;
 input  [pr*bw-1:0] mem_in;
 input  clk;
 // input  [16:0] inst; 
-input  [18:0] inst;
+input  [19:0] inst;
 input  reset;
 
 wire  [pr*bw-1:0] mac_in;
+wire  [pr*bw-1:0] kmem_in;
 wire  [pr*bw-1:0] kmem_out;
 wire  [pr*bw-1:0] qmem_out;
 wire  [bw_psum*col-1:0] pmem_in;
@@ -24,16 +25,22 @@ wire  [bw_psum*col-1:0] fifo_out;
 wire  [bw_psum*col-1:0] sfp_out;
 wire  [bw_psum*col-1:0] array_out;
 wire  [col-1:0] fifo_wr;
-wire  ofifo_rd;
+wire  sfp_processing;
+wire fifo_valid;
 wire [3:0] qkmem_add;
+wire [3:0] kmem_add;
 wire [3:0] pmem_add;
 
 wire  qmem_rd;
 wire  qmem_wr; 
 wire  kmem_rd;
 wire  kmem_wr; 
-wire  pmem_rd;
-wire  pmem_wr; 
+wire  pmem_rd, ext_pmem_rd, int_pmem_rd;       // external comes from tb.
+wire  pmem_wr, ext_pmem_wr, int_pmem_wr;       // internal comes from controller inside the core
+wire  VN_mode;
+
+reg   [2:0] sfp_counter;                       // counts from 0 to 7. acc=1 @cnt=1; div=1 @cnt=3,4
+reg   [2:0] fifo_valid_cnt;
 
 
 wire sfp_acc;                         // SFP accumulating for normalization
@@ -42,27 +49,40 @@ wire sfp_fifo_ext_rd;                 // SFP start to output FIFO -> sfp_sum_out
 wire [bw_psum+3:0] sfp_sum_in;        // SFP sum input, is always 0 in single port
 wire [bw_psum+3:0] sfp_sum_out;       // SFP sum output, float in single core
 
-assign sfp_acc = inst[17];            // set as controlled by primary input, may changed to internal FSM
-assign sfp_div = inst[18];            // set as controlled by primary input, may changed to internal FSM
+assign VN_mode = inst[19];            // in QK mode, ofifo out goes through sfp and then store into kmem
+                                      // in VN mode, ofifo out goes to pmem.
+
+
+assign kmem_in = mem_in;
+assign pmem_in = fifo_out;
+assign pmem_wr = fifo_valid;
+assign pmem_add = inst[2]? inst[11:8] : fifo_valid_cnt;
+
+
+
+// assign sfp_acc = inst[17];            // set as controlled by primary input, may changed to internal FSM
+// assign sfp_div = inst[18];            // set as controlled by primary input, may changed to internal FSM
+assign sfp_acc = (sfp_counter==3'd1);
+assign sfp_div = (sfp_counter==3'd3) || (sfp_counter==3'd4);
 assign sfp_fifo_ext_rd = 1'b0;    // unused in single core
 assign sfp_sum_in = {bw_psum+4{1'b0}}; // unused in single core
 
 assign out = pmem_out;
 
-assign ofifo_rd = inst[16];
+assign sfp_processing = inst[16];
 assign qkmem_add = inst[15:12];
-assign pmem_add = inst[11:8];
+// assign pmem_add = inst[11:8];
 
 assign qmem_rd = inst[5];
 assign qmem_wr = inst[4];
 assign kmem_rd = inst[3];
 assign kmem_wr = inst[2];
 assign pmem_rd = inst[1];
-assign pmem_wr = inst[0];
+// assign pmem_wr = inst[0];
 
 assign mac_in  = inst[6] ? kmem_out : qmem_out;
 // assign pmem_in = fifo_out;
-assign pmem_in = sfp_div ? sfp_out : fifo_out;           // not determined, but sfp_out should be ready in the cycle when div is enabled
+// assign pmem_in = sfp_div ? sfp_out : fifo_out;           // not determined, but sfp_out should be ready in the cycle when div is enabled
 
 mac_array #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) mac_array_instance (
         .in(mac_in), 
@@ -78,7 +98,7 @@ ofifo #(.bw(bw_psum), .col(col))  ofifo_inst (
         .clk(clk),
         .in(array_out),
         .wr(fifo_wr),
-        .rd(ofifo_rd),
+        .rd(fifo_valid),
         .o_valid(fifo_valid),
         .out(fifo_out)
 );
@@ -95,7 +115,7 @@ sram_w16 #(.sram_bit(pr*bw)) qmem_instance (
 
 sram_w16 #(.sram_bit(pr*bw)) kmem_instance (
         .CLK(clk),
-        .D(mem_in),
+        .D(kmem_in),
         .Q(kmem_out),
         .CEN(!(kmem_rd||kmem_wr)),
         .WEN(!kmem_wr), 
@@ -120,7 +140,7 @@ sfp_row #(.col(col), .bw(bw)) sfp_instance (
 	.fifo_ext_rd(sfp_fifo_ext_rd),
 	.sum_in(sfp_sum_in),
 	.sum_out(sfp_sum_out),
-	.sfp_in(pmem_out),
+	.sfp_in(fifo_out),
 	.sfp_out(sfp_out)
 );
 
@@ -132,6 +152,22 @@ sfp_row #(.col(col), .bw(bw)) sfp_instance (
          $display("Memory write to PSUM mem add %x %x ", pmem_add, pmem_in); 
   end
 
+  always @(posedge clk ) begin
+	if(~sfp_processing) begin
+		sfp_counter <= 3'd0;    
+	end
+	else begin
+		sfp_counter <= sfp_counter + 1'd1;
+	end
+  end
 
+  always @(posedge clk ) begin
+	if(~fifo_valid) begin
+		fifo_valid_cnt <= 3'd0;    
+	end
+	else begin
+		fifo_valid_cnt <= fifo_valid_cnt + 1'd1;
+	end
+  end
 
 endmodule
