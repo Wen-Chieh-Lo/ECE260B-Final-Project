@@ -1,5 +1,6 @@
 """
-Read MAC output matrix from file, then L1-normalize along a chosen axis.
+Don't use. 
+Read MAC output matrix from file, then normalize along a chosen axis.
 
   axis=0: normalize each column  (each column / sum(|column|))
   axis=1: normalize each row     (each row / sum(|row|))
@@ -75,10 +76,7 @@ def quantize_to_bits(norm_float: np.ndarray, bits: int = 20) -> np.ndarray:
     return np.clip(q, -half, half - 1)
 
 
-def signed_to_unsigned_twos_complement(signed_arr: np.ndarray, bits: int) -> np.ndarray:
-    """Convert 2's complement signed values to unsigned bit pattern [0, 2^N-1] for file output."""
-    mask = (1 << bits) - 1
-    return (signed_arr.astype(np.int64) & mask).astype(np.int64)
+
 
 
 def main():

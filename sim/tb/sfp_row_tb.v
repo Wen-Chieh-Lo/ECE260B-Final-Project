@@ -9,7 +9,7 @@ module sfp_row_tb;
   parameter col = 8;
   parameter bw = 8;
   parameter bw_psum = 2*bw+3;  // 20
-  parameter out_shift = 8;
+  parameter out_shift = 7;
   parameter bw_out = out_shift + 1'b1;
 
   integer mac_file, r, c, captured_data;
