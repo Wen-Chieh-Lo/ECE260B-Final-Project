@@ -60,9 +60,8 @@ def normalize_l1_along_axis(M: np.ndarray, axis: int) -> np.ndarray:
     axis=0: each column / sum(|column|)
     axis=1: each row / sum(|row|)
     """
-    M = np.asarray(M, dtype=np.float64)
-    sum_abs = np.abs(M).sum(axis=axis, keepdims=True)
-    sum_abs = np.where(sum_abs > 0, sum_abs, 1.0)
+    M = np.abs(np.asarray(M, dtype=np.float64))
+    sum_abs = M.sum(axis=1, keepdims=True)
     return M / sum_abs
 
 
