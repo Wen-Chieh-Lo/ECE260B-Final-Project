@@ -1,7 +1,12 @@
 // Mac verification: TB + DUT (mac_array_top) in one file.
-// Flow: Q/K files -> qmem/kmem write -> K load -> execute -> sample ofifo out, compare to golden.
+// Phase 1 (QK product): Q/K files -> qmem/kmem write -> K load -> execute -> sample pmem out, compare to golden.
+// Phase 2 (Normalize ): sfu_row takes input from pmem, and store output into kmem. Golden is displayed by tb simultaneously.
+// Phase 3 (VN product): LOAD_OTHER_NORM_FILE decides whether we use TA's norm.txt. Other than that, the flow is identical to phase 1.   
+
+// `define LOAD_OTHER_NORM_FILE     // If you want to use TA's norm.txt 
 
 `timescale 1ns/1ps
+
 
 module core_tb;
 
@@ -269,37 +274,31 @@ module core_tb;
 
     $display("");
     $display("##### sfp processing #####");
+    $display("estimated:        col7    col6    col5    col4    col3    col2    col1    col0 ");
+    $display("to kmem  :       63:56   55:48   47:40   39:32   31:24   23:16   15: 8    7: 0 ");
     sfp_processing = 1'b1;
     pmem_add = 0;
     qkmem_add = 0;
     pmem_rd = 1;
+
+    
     for (q = 0; q < col; q = q + 1) begin
-      #0.5 clk = 1'b0;
-      #0.5 clk = 1'b1;
-
-      #0.5 clk = 1'b0; 
-      #0.5 clk = 1'b1; sfp_acc = 1'b1;
-      #0.5 clk = 1'b0;
-      #0.5 clk = 1'b1;
-
-      #0.5 clk = 1'b0; 
-      #0.5 clk = 1'b1; sfp_acc = 1'b0;
-
-      #0.5 clk = 1'b0; 
-      #0.5 clk = 1'b1; sfp_div = 1'b1;
-      #0.5 clk = 1'b0;
-      #0.5 clk = 1'b1;
-
-      #0.5 clk = 1'b0; 
-      #0.5 clk = 1'b1; sfp_div = 1'b0;
-
-      #0.5 clk = 1'b0;
-      #0.5 clk = 1'b1; kmem_wr = 1'b1;
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 1
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_acc = 1'b1; //posedge 2
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 3
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_acc = 1'b0; //posedge 4
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_div = 1'b1; //posedge 5
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 6
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_div = 1'b0; //posedge 7
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1; kmem_wr = 1'b1; //posedge 8
       $display("");
-      $display("estimated:     %2d %2d %2d %2d %2d %2d %2d %2d ", estimated[q*col + 0], estimated[q*col + 1], estimated[q*col + 2], estimated[q*col + 3], estimated[q*col + 4], estimated[q*col + 5], estimated[q*col + 6], estimated[q*col + 7]);
-      #0.5 clk = 1'b0;
-      #0.5 clk = 1'b1; kmem_wr = 1'b0; 
+      $display("estimated:     %7d %7d %7d %7d %7d %7d %7d %7d ", 
+                                estimated[q*col + 7], estimated[q*col + 6], 
+                                estimated[q*col + 5], estimated[q*col + 4], 
+                                estimated[q*col + 3], estimated[q*col + 2], 
+                                estimated[q*col + 1], estimated[q*col + 0]);
 
+      #0.5 clk = 1'b0; #0.5 clk = 1'b1; kmem_wr = 1'b0; //posedge 9
       pmem_add = pmem_add + 1;
       qkmem_add = qkmem_add + 1;
     end
@@ -341,13 +340,16 @@ module core_tb;
     end
 
 
-///// Norm data txt reading /////
-$display("##### norm data txt reading #####");
-  for (q=0; q<10; q=q+1) begin
-    #0.5 clk = 1'b0;   
-    #0.5 clk = 1'b1;   
-  end
+  ///// Norm data txt reading /////
+  $display("##### norm data txt reading #####");
+  for (q=0; q<10; q=q+1) #0.5 clk = 1'b0; #0.5 clk = 1'b1;   
   reset = 0;
+  
+
+  `ifdef LOAD_OTHER_NORM_FILE
+  //**************************//
+  //   LOAD_OTHER_NORM_FILE   //
+  //**************************//
   qkvn_file = $fopen("sim/pattern/norm.txt", "r");
   // N := [total_cycle-1:0][col-1:0]
   for (q=0; q<total_cycle; q=q+1) begin
@@ -356,12 +358,35 @@ $display("##### norm data txt reading #####");
           N[q][j] = captured_data;
     end
   end
-/////////////////////////////////
 
+  `else
+  //*****************************//
+  // Calculate N from QK product //
+  //*****************************//
+  for (q=0; q<total_cycle; q=q+1) begin
+    for (j=0; j<col; j=j+1) begin
+          N[q][j] = estimated[q*col+j];
+    end
+  end
+
+`endif
+
+// $display("##### Estimated multiplication result #####");
+    for (t = 0; t < total_cycle; t = t+1)
+      for (q = 0; q < col; q = q+1)
+        result[t][q] = 0;
+    for (t = 0; t < total_cycle; t = t+1) begin
+      for (q = 0; q < col; q = q+1) begin
+        for (k = 0; k < pr; k = k+1)
+          result[t][q] = result[t][q] + V_T[t][k] * N[q][k];
+        // temp5b = result[t][q];
+        // temp16b = {temp16b[139:0], temp5b};
+      end
+      // $display("prd @cycle%2d: %40h", t, temp16b);
+    end
 
 
 ///// Qmem writing  /////
-
 $display("##### Qmem writing  #####");
   qkmem_add = 0;
   for (q=0; q<total_cycle; q=q+1) begin
@@ -400,7 +425,7 @@ $display("##### Qmem writing  #####");
 
 
 
-
+`ifdef LOAD_OTHER_NORM_FILE
 ///// Kmem writing  /////
 
 $display("##### Kmem writing #####");
@@ -436,7 +461,7 @@ $display("##### Kmem writing #####");
   qkmem_add = 0;
   #0.5 clk = 1'b1;  
 ///////////////////////////////////////////
-
+`endif
 
 
 for (q=0; q<2; q=q+1) begin
@@ -510,19 +535,7 @@ $display("##### execute #####");
 
 
 
-// $display("##### Estimated multiplication result #####");
-    for (t = 0; t < total_cycle; t = t+1)
-      for (q = 0; q < col; q = q+1)
-        result[t][q] = 0;
-    for (t = 0; t < total_cycle; t = t+1) begin
-      for (q = 0; q < col; q = q+1) begin
-        for (k = 0; k < pr; k = k+1)
-          result[t][q] = result[t][q] + V_T[t][k] * N[q][k];
-        // temp5b = result[t][q];
-        // temp16b = {temp16b[139:0], temp5b};
-      end
-      // $display("prd @cycle%2d: %40h", t, temp16b);
-    end
+
 
 // RTL column order: col c holds dot with K[7-c], so compare to result[t][7-c]
     for (c = 0; c < col; c = c+1)

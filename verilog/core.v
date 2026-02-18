@@ -25,6 +25,7 @@ wire  [pr*bw-1:0] qmem_out;
 wire  [bw_psum*col-1:0] pmem_in;
 wire  [bw_psum*col-1:0] fifo_out;
 wire  [bw*col-1:0] sfp_out;
+wire  [bw*col-1:0] sfp_out_endian_flip;
 wire  [bw_psum*col-1:0] array_out;
 wire  [col-1:0] fifo_wr;
 wire  sfp_processing;
@@ -57,13 +58,17 @@ assign VN_mode = inst[19];            // in QK mode, ofifo out goes through sfp 
                                       // in VN mode, ofifo out goes to pmem.
 
 
-assign kmem_in = sfp_processing? sfp_out : mem_in;
+assign sfp_out_endian_flip = {sfp_out[0*col +: bw], sfp_out[1*col +: bw], 
+							  sfp_out[2*col +: bw], sfp_out[3*col +: bw], 
+							  sfp_out[4*col +: bw], sfp_out[5*col +: bw], 
+							  sfp_out[6*col +: bw], sfp_out[7*col +: bw]};
+
+assign kmem_in = sfp_processing? sfp_out_endian_flip : mem_in;
 assign pmem_in = fifo_out;
 assign pmem_wr = fifo_valid;
 assign pmem_add = (inst[0]||inst[1])? inst[11:8] : fifo_valid_cnt;
 assign pmem_rd = sfp_processing || inst[1];
 
-reg sfp_processing_D1;
 
 
 
@@ -161,7 +166,7 @@ sfp_row #(.col(col), .bw(bw), .bw_psum(bw_psum), .out_shift(sfp_out_shift)) sfp_
   //////////// For printing purpose ////////////
   always @(posedge clk) begin
       if(sfp_processing && kmem_wr)
-		 $display("Write to kmem: %2d %2d %2d %2d %2d %2d %2d %2d",
+		 $display("Write to kmem: %7d %7d %7d %7d %7d %7d %7d %7d",
 		 	$signed(kmem_in[7*bw +: bw]), $signed(kmem_in[6*bw +: bw]), 
 			$signed(kmem_in[5*bw +: bw]), $signed(kmem_in[4*bw +: bw]), 
 			$signed(kmem_in[3*bw +: bw]), $signed(kmem_in[2*bw +: bw]), 
