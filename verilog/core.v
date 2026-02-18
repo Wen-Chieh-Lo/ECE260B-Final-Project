@@ -57,13 +57,7 @@ wire [bw_psum+3:0] sfp_sum_out;       // SFP sum output, float in single core
 assign VN_mode = inst[19];            // in QK mode, ofifo out goes through sfp and then store into kmem
                                       // in VN mode, ofifo out goes to pmem.
 
-
-assign sfp_out_endian_flip = {sfp_out[0*col +: bw], sfp_out[1*col +: bw], 
-							  sfp_out[2*col +: bw], sfp_out[3*col +: bw], 
-							  sfp_out[4*col +: bw], sfp_out[5*col +: bw], 
-							  sfp_out[6*col +: bw], sfp_out[7*col +: bw]};
-
-assign kmem_in = sfp_processing? sfp_out_endian_flip : mem_in;
+assign kmem_in = sfp_processing? sfp_out : mem_in;
 assign pmem_in = fifo_out;
 assign pmem_wr = fifo_valid;
 assign pmem_add = (inst[0]||inst[1])? inst[11:8] : fifo_valid_cnt;
