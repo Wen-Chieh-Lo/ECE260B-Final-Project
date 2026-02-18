@@ -10,6 +10,7 @@ module core_tb;
   parameter bw_psum = 2*bw+3;
   parameter pr = 8;
   parameter col = 8;
+  parameter sfp_out_shift = 7;
 
   integer qkvn_file, qkvn_scan_file, captured_data;
   integer weight [col*pr-1:0];
@@ -19,7 +20,13 @@ module core_tb;
   integer V_T[total_cycle-1:0][pr-1:0];
   integer result [total_cycle-1:0][col-1:0];
   integer sum [total_cycle-1:0];
-  integer i, j, k, t, p, q, s, u, m;
+  integer i, j, k, t, p, q, s, u, m, r, c;
+
+  integer estimated [0:total_cycle*col-1];   // computed from mac_data (same formula as sfp_row)
+  integer u0, u1, u2, u3, u4, u5, u6, u7;
+  integer err_count;
+  integer err, row_err, row;
+  integer sum_abs, divisor, unsigned_val;
 
   reg reset = 1;
   reg clk = 0;
@@ -39,7 +46,6 @@ module core_tb;
   reg [bw_psum*col-1:0] temp16b;
 
   wire [bw_psum*col-1:0] pmem_out;
-  integer err, row_err, row, c;
   integer golden_col [0:7];  // RTL col c -> golden result[t][golden_col[c]] (chain mapping)
 
   assign inst[19] = VN_mode;
@@ -238,7 +244,24 @@ module core_tb;
   end
   $display("");
 
-
+  // ----- Estimated: same as sfp_row (sum_abs = sum of |row|, divisor = sum_abs>>7, out[c] = signed(row[c])/divisor)
+    $display("##### Estimated normalization (sum_abs>>7, then signed divide) #####");
+    for (r = 0; r < total_cycle; r = r + 1) begin
+      sum_abs = 0;
+      for (c = 0; c < col; c = c + 1) begin
+        unsigned_val = result[r][c];
+        if (unsigned_val[bw_psum-1] == 1'b1)
+          unsigned_val = ~(unsigned_val-1'b1);
+        sum_abs = sum_abs + unsigned_val;
+      end
+      if (sum_abs == 0) sum_abs = 1;
+      for (c = 0; c < col; c = c + 1) begin
+        unsigned_val = result[r][c];
+        if (unsigned_val[bw_psum-1] == 1'b1)
+          unsigned_val = ~(unsigned_val-1'b1); 
+        estimated[r*col + c] = {unsigned_val, {sfp_out_shift{1'b0}}} / sum_abs;
+      end
+    end
 
 
 
@@ -272,6 +295,8 @@ module core_tb;
 
       #0.5 clk = 1'b0;
       #0.5 clk = 1'b1; kmem_wr = 1'b1;
+      $display("");
+      $display("estimated:     %2d %2d %2d %2d %2d %2d %2d %2d ", estimated[q*col + 0], estimated[q*col + 1], estimated[q*col + 2], estimated[q*col + 3], estimated[q*col + 4], estimated[q*col + 5], estimated[q*col + 6], estimated[q*col + 7]);
       #0.5 clk = 1'b0;
       #0.5 clk = 1'b1; kmem_wr = 1'b0; 
 
@@ -279,23 +304,276 @@ module core_tb;
       qkmem_add = qkmem_add + 1;
     end
 
+    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+    sfp_processing = 1'b0;
+    pmem_rd = 1'b0;
+   
+    $display("------------------------------------------------------------");
+    $display("Please check manually, since there's no output port for kmem.");
+    $display("------------------------------------------------------------");
+    $display("");
+
     
-    for (q = 0; q < 5; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
-    qkvn_file = $fopen("sim/pattern/norm_out_q8.txt", "r");
-    for (q = 0; q < col; q = q+1) begin
-      for (j = 0; j < pr; j = j+1) begin
-        qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
-        K[q][j] = captured_data;
+
+    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+
+
+
+
+    $display("");
+    $display("VN Product Phase");
+    VN_mode = 1'b1;
+    reset = 1'b1;
+    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+    reset = 1'b0;
+    
+
+
+  ///// V data txt reading /////
+  $display("##### V data txt reading #####");
+    qkvn_file = $fopen("sim/pattern/vdata.txt", "r");
+    // V_T := [pr-1:0][col-1:0]
+    for (q=0; q<col; q=q+1) begin
+      for (j=0; j<pr; j=j+1) begin
+            qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
+            V_T[j][q] = captured_data;
       end
-      $display("Golden Pattern:           (%2d %2d %2d %2d %2d %2d %2d %2d)", K[q][0], K[q][1], K[q][2], K[q][3], K[q][4], K[q][5], K[q][6], K[q][7]);
     end
 
 
+///// Norm data txt reading /////
+$display("##### norm data txt reading #####");
+  for (q=0; q<10; q=q+1) begin
+    #0.5 clk = 1'b0;   
+    #0.5 clk = 1'b1;   
+  end
+  reset = 0;
+  qkvn_file = $fopen("sim/pattern/norm.txt", "r");
+  // N := [total_cycle-1:0][col-1:0]
+  for (q=0; q<total_cycle; q=q+1) begin
+    for (j=0; j<col; j=j+1) begin
+          qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
+          N[q][j] = captured_data;
+    end
+  end
+/////////////////////////////////
 
 
 
-    $display("VN Product Phase");
-    VN_mode = 1'b1;
+///// Qmem writing  /////
+
+$display("##### Qmem writing  #####");
+  qkmem_add = 0;
+  for (q=0; q<total_cycle; q=q+1) begin
+
+    #0.5 clk = 1'b0;  
+    qmem_wr = 1;  if (q>0) qkmem_add = qkmem_add + 1; 
+    
+    mem_in[1*bw-1:0*bw] = V_T[q][0];
+    mem_in[2*bw-1:1*bw] = V_T[q][1];
+    mem_in[3*bw-1:2*bw] = V_T[q][2];
+    mem_in[4*bw-1:3*bw] = V_T[q][3];
+    mem_in[5*bw-1:4*bw] = V_T[q][4];
+    mem_in[6*bw-1:5*bw] = V_T[q][5];
+    mem_in[7*bw-1:6*bw] = V_T[q][6];
+    mem_in[8*bw-1:7*bw] = V_T[q][7];
+    mem_in[9*bw-1:8*bw] = V_T[q][8];
+    mem_in[10*bw-1:9*bw] = V_T[q][9];
+    mem_in[11*bw-1:10*bw] = V_T[q][10];
+    mem_in[12*bw-1:11*bw] = V_T[q][11];
+    mem_in[13*bw-1:12*bw] = V_T[q][12];
+    mem_in[14*bw-1:13*bw] = V_T[q][13];
+    mem_in[15*bw-1:14*bw] = V_T[q][14];
+    mem_in[16*bw-1:15*bw] = V_T[q][15];
+
+    #0.5 clk = 1'b1;  
+
+  end
+
+
+  #0.5 clk = 1'b0;  
+  qmem_wr = 0; 
+  qkmem_add = 0;
+  #0.5 clk = 1'b1;  
+///////////////////////////////////////////
+
+
+
+
+
+///// Kmem writing  /////
+
+$display("##### Kmem writing #####");
+
+  for (q=0; q<col; q=q+1) begin
+
+    #0.5 clk = 1'b0;  
+    kmem_wr = 1; if (q>0) qkmem_add = qkmem_add + 1; 
+    
+    mem_in[1*bw-1:0*bw] = N[q][0];
+    mem_in[2*bw-1:1*bw] = N[q][1];
+    mem_in[3*bw-1:2*bw] = N[q][2];
+    mem_in[4*bw-1:3*bw] = N[q][3];
+    mem_in[5*bw-1:4*bw] = N[q][4];
+    mem_in[6*bw-1:5*bw] = N[q][5];
+    mem_in[7*bw-1:6*bw] = N[q][6];
+    mem_in[8*bw-1:7*bw] = N[q][7];
+    mem_in[9*bw-1:8*bw] = N[q][8];
+    mem_in[10*bw-1:9*bw] = N[q][9];
+    mem_in[11*bw-1:10*bw] = N[q][10];
+    mem_in[12*bw-1:11*bw] = N[q][11];
+    mem_in[13*bw-1:12*bw] = N[q][12];
+    mem_in[14*bw-1:13*bw] = N[q][13];
+    mem_in[15*bw-1:14*bw] = N[q][14];
+    mem_in[16*bw-1:15*bw] = N[q][15];
+
+    #0.5 clk = 1'b1;  
+
+  end
+
+  #0.5 clk = 1'b0;  
+  kmem_wr = 0;  
+  qkmem_add = 0;
+  #0.5 clk = 1'b1;  
+///////////////////////////////////////////
+
+
+
+for (q=0; q<2; q=q+1) begin
+    #0.5 clk = 1'b0;  
+    #0.5 clk = 1'b1;   
+  end
+
+
+
+
+/////  K data loading  /////
+$display("##### K data loading to processor #####");
+
+  for (q=0; q<col+1; q=q+1) begin
+    #0.5 clk = 1'b0;  
+    load = 1; 
+    if (q==1) kmem_rd = 1;
+    if (q>1) begin
+       qkmem_add = qkmem_add + 1;
+    end
+
+    #0.5 clk = 1'b1;  
+  end
+
+  #0.5 clk = 1'b0;  
+  kmem_rd = 0; qkmem_add = 0;
+  #0.5 clk = 1'b1;  
+
+  #0.5 clk = 1'b0;  
+  load = 0; 
+  #0.5 clk = 1'b1;  
+
+///////////////////////////////////////////
+
+ for (q=0; q<10; q=q+1) begin
+    #0.5 clk = 1'b0;   
+    #0.5 clk = 1'b1;   
+ end
+
+
+
+
+
+///// execution  /////
+$display("##### execute #####");
+
+  for (q=0; q<total_cycle; q=q+1) begin
+    #0.5 clk = 1'b0;  
+    execute = 1; 
+    qmem_rd = 1;
+
+    if (q>0) begin
+       qkmem_add = qkmem_add + 1;
+    end
+
+    #0.5 clk = 1'b1;  
+  end
+
+  #0.5 clk = 1'b0;  
+  qmem_rd = 0; qkmem_add = 0; execute = 0;
+  #0.5 clk = 1'b1;  
+
+
+///////////////////////////////////////////
+
+ for (q=0; q<10; q=q+1) begin
+    #0.5 clk = 1'b0;   
+    #0.5 clk = 1'b1;   
+ end
+
+
+
+
+// $display("##### Estimated multiplication result #####");
+    for (t = 0; t < total_cycle; t = t+1)
+      for (q = 0; q < col; q = q+1)
+        result[t][q] = 0;
+    for (t = 0; t < total_cycle; t = t+1) begin
+      for (q = 0; q < col; q = q+1) begin
+        for (k = 0; k < pr; k = k+1)
+          result[t][q] = result[t][q] + V_T[t][k] * N[q][k];
+        // temp5b = result[t][q];
+        // temp16b = {temp16b[139:0], temp5b};
+      end
+      // $display("prd @cycle%2d: %40h", t, temp16b);
+    end
+
+// RTL column order: col c holds dot with K[7-c], so compare to result[t][7-c]
+    for (c = 0; c < col; c = c+1)
+      golden_col[c] = 7 - c;
+  $display("VN phase verification start (checking pmem content)\n");
+  $display("##### sample pmem content & compare to golden #####");
+  $display("  [row]  RTL   :    col0    col1    col2    col3    col4    col5    col6    col7");
+  $display("         golden:    ----    ----    ----    ----    ----    ----    ----    ----\n");
+  err = 0;
+  
+  #0.5 clk = 1'b0;pmem_rd = 1'b1; pmem_add=4'd0;
+  #0.5 clk = 1'b1;
+  for (q = 0; q < total_cycle; q = q+1) begin
+    #0.5 clk = 1'b0; pmem_add = pmem_add+1; // sample before posedge: pmem_out = row being read (result[q])
+    #0.5 clk = 1'b1; 
+    row = q;
+    $display("   [%0d]   RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", row,
+      $signed(pmem_out[0*bw_psum +: bw_psum]), $signed(pmem_out[1*bw_psum +: bw_psum]),
+      $signed(pmem_out[2*bw_psum +: bw_psum]), $signed(pmem_out[3*bw_psum +: bw_psum]),
+      $signed(pmem_out[4*bw_psum +: bw_psum]), $signed(pmem_out[5*bw_psum +: bw_psum]),
+      $signed(pmem_out[6*bw_psum +: bw_psum]), $signed(pmem_out[7*bw_psum +: bw_psum]));
+    $display("         golden: %7d %7d %7d %7d %7d %7d %7d %7d",
+      result[row][7], result[row][6], result[row][5], result[row][4],
+      result[row][3], result[row][2], result[row][1], result[row][0]);
+    row_err = 0;
+    for (c = 0; c < col; c = c+1) begin
+      if ($signed(pmem_out[c*bw_psum +: bw_psum]) !== result[row][golden_col[c]]) begin
+        $display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c, $signed(pmem_out[c*bw_psum +: bw_psum]), result[row][golden_col[c]]);
+        err = err + 1;
+        row_err = row_err + 1;
+      end
+    end
+    $display("       %s", (row_err == 0) ? "[OK]" : "[MISMATCH]");
+    $display("");
+    
+  end
+  #0.5 clk = 1'b0;
+  pmem_rd = 1'b0;
+  #0.5 clk = 1'b1;
+
+  $display("------------------------------------------------------------");
+  if (err == 0) begin
+    $display("  PASS  %0d rows x %0d cols  all match estimated result", total_cycle, col);
+    $display("------------------------------------------------------------");
+  end else begin
+    $display("  FAIL  %0d mismatches", err);
+    $display("------------------------------------------------------------");
+  end
+  $display("");
+
+
 
 
 

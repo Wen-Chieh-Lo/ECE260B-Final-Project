@@ -5,7 +5,7 @@ module core (clk, sum_in, sum_out, mem_in, out, inst, reset);
 parameter col = 8;
 parameter bw = 8;
 parameter bw_psum = 2*bw+3;
-parameter sfp_out_shift = 8;
+parameter sfp_out_shift = 7;
 parameter pr = 8;
 
 input  [bw_psum+3:0] sum_in;
@@ -24,7 +24,7 @@ wire  [pr*bw-1:0] kmem_out;
 wire  [pr*bw-1:0] qmem_out;
 wire  [bw_psum*col-1:0] pmem_in;
 wire  [bw_psum*col-1:0] fifo_out;
-wire  [bw_psum*col-1:0] sfp_out;
+wire  [bw*col-1:0] sfp_out;
 wire  [bw_psum*col-1:0] array_out;
 wire  [col-1:0] fifo_wr;
 wire  sfp_processing;
@@ -44,7 +44,6 @@ wire  pmem_rd, ext_pmem_rd, int_pmem_rd;       // external comes from tb.
 wire  pmem_wr, ext_pmem_wr, int_pmem_wr;       // internal comes from controller inside the core
 wire  VN_mode;
 
-reg   [2:0] sfp_counter;                       // counts from 0 to 7. acc=1 @cnt=1; div=1 @cnt=3,4
 reg   [2:0] fifo_valid_cnt;
 
 
@@ -58,23 +57,23 @@ assign VN_mode = inst[19];            // in QK mode, ofifo out goes through sfp 
                                       // in VN mode, ofifo out goes to pmem.
 
 
-assign kmem_in = mem_in;
+assign kmem_in = sfp_processing? sfp_out : mem_in;
 assign pmem_in = fifo_out;
 assign pmem_wr = fifo_valid;
-assign pmem_add = inst[2]? inst[11:8] : fifo_valid_cnt;
+assign pmem_add = (inst[0]||inst[1])? inst[11:8] : fifo_valid_cnt;
+assign pmem_rd = sfp_processing || inst[1];
+
+reg sfp_processing_D1;
 
 
 
-// assign sfp_acc = inst[17];            // set as controlled by primary input, may changed to internal FSM
-// assign sfp_div = inst[18];            // set as controlled by primary input, may changed to internal FSM
-assign sfp_acc = (sfp_counter==3'd1);
-assign sfp_div = (sfp_counter==3'd3) || (sfp_counter==3'd4);
 assign sfp_fifo_ext_rd = 1'b0;    // unused in single core
 assign sfp_sum_in = {bw_psum+4{1'b0}}; // unused in single core
 
 assign vprod_mode = inst[19];
-assign sfp_div  = inst[18];            // set as controlled by primary input, may changed to internal FSM
-assign sfp_acc  = inst[17];            // set as controlled by primary input, may changed to internal FSM
+
+assign sfp_div = inst[18]; // set as controlled by primary input, may changed to internal FSM
+assign sfp_acc = inst[17]; // set as controlled by primary input, may changed to internal FSM
 assign sfp_processing = inst[16];
 assign qkmem_add= inst[15:12];
 // assign pmem_add = inst[11:8];
@@ -84,14 +83,12 @@ assign qmem_rd  = inst[5];
 assign qmem_wr  = inst[4];
 assign kmem_rd  = inst[3];
 assign kmem_wr  = inst[2];
-assign pmem_rd  = inst[1];
+// assign pmem_rd  = inst[1];
 // assign pmem_wr  = inst[0];
 
 assign mac_in  = inst[6] ? kmem_out : qmem_out;
-// assign pmem_in = fifo_out;
 assign out = pmem_out;
 
-// assign pmem_in = fifo_out; 
 
 mac_array #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) mac_array_instance (
         .in(mac_in), 
@@ -149,7 +146,7 @@ sfp_row #(.col(col), .bw(bw), .bw_psum(bw_psum), .out_shift(sfp_out_shift)) sfp_
 	.fifo_ext_rd(sfp_fifo_ext_rd),
 	.sum_in(sfp_sum_in),
 	.sum_out(sfp_sum_out),
-	.sfp_in(fifo_out),
+	.sfp_in(pmem_out),
 	.sfp_out(sfp_out)
 );
 
@@ -161,14 +158,18 @@ sfp_row #(.col(col), .bw(bw), .bw_psum(bw_psum), .out_shift(sfp_out_shift)) sfp_
 //          $display("Memory write to PSUM mem add %x %x ", pmem_add, pmem_in); 
 //   end
 
-  always @(posedge clk ) begin
-	if(~sfp_processing) begin
-		sfp_counter <= 3'd0;    
-	end
-	else begin
-		sfp_counter <= sfp_counter + 1'd1;
-	end
+  //////////// For printing purpose ////////////
+  always @(posedge clk) begin
+      if(sfp_processing && kmem_wr)
+		 $display("Write to kmem: %2d %2d %2d %2d %2d %2d %2d %2d",
+		 	$signed(kmem_in[7*bw +: bw]), $signed(kmem_in[6*bw +: bw]), 
+			$signed(kmem_in[5*bw +: bw]), $signed(kmem_in[4*bw +: bw]), 
+			$signed(kmem_in[3*bw +: bw]), $signed(kmem_in[2*bw +: bw]), 
+			$signed(kmem_in[1*bw +: bw]), $signed(kmem_in[0*bw +: bw])
+		 ); 
+		 
   end
+
 
   always @(posedge clk ) begin
 	if(~fifo_valid) begin
