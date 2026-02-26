@@ -99,15 +99,14 @@ $(SIM_TARGETS):
 	@echo ">>> Waveform: sim/waveform/$(WAVEFORM) (GTKWave or any VCD viewer) <<<"
 
 # ----- Synthesis -----
-SYN_TARGET ?= core
-# If TARGET was given on the command line and is a valid syn target, use it for SYN_TARGET
-ifneq ($(origin TARGET), default)
-ifneq ($(TARGET), fullchip)
-SYN_TARGET = $(TARGET)
-endif
+# Use TARGET if it is a valid syn target; otherwise fall back to core
+ifeq ($(filter $(TARGET),$(SYN_TARGETS)),)
+  SYN_TARGET := core
+else
+  SYN_TARGET := $(TARGET)
 endif
 
-TOP_MODULE  = $(word 2,$(subst :, ,$(filter $(SYN_TARGET):%,$(TARGET_TOP_MODULE_table))))
+TOP_MODULE   = $(word 2,$(subst :, ,$(filter $(SYN_TARGET):%,$(TARGET_TOP_MODULE_table))))
 SYN_FILELIST = $(SYN_FILELISTS_DIR)/$(word 2,$(subst :, ,$(filter $(SYN_TARGET):%,$(TARGET_FILELIST_table))))
 
 syn:
@@ -119,9 +118,11 @@ clean:
 	@echo "Removed $(OUT)"
 
 help:
-	@echo "Usage:  make sim [TARGET=<name>]   make syn [TARGET=<name>]"
+	@echo "Usage:  make sim [TARGET=<name>]   make syn [TARGET=<name>]   make all [TARGET=<name>]"
 	@echo ""
-	@echo "Simulation TARGET: fullchip(default) | core | mac | dual | sfp_row | sfp_row_dual"
-	@echo "Synthesis  TARGET: core(default) | sfp_row | mac"
+	@echo "TARGET controls both sim and syn:"
+	@echo "  sim valid: fullchip(default) | core | mac | dual | sfp_row | sfp_row_dual"
+	@echo "  syn valid: core(default)     | sfp_row | mac"
+	@echo "  (if TARGET is sim-only, syn falls back to its default: core)"
 	@echo ""
-	@echo "Other: make all [TARGET=<name>] (sim+syn), make clean"
+	@echo "Other: make clean"
