@@ -1,0 +1,12 @@
+// --- testbench ---
+./sim/tb/sfp_row_tb.v
+
+// --- SFP row ---
+./verilog/sfp_row.v
+
+// --- memory ---
+./verilog/memory/sram_w16.v
+./verilog/memory/fifo_depth16.v
+./verilog/memory/fifo_mux_16_1.v
+./verilog/memory/fifo_mux_8_1.v
+./verilog/memory/fifo_mux_2_1.v
