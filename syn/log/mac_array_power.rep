@@ -1,0 +1,329 @@
+Loading db file '/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db'
+Information: Propagating switching activity (low effort zero delay simulation). (PWR-6)
+Warning: Design has unannotated primary inputs. (PWR-414)
+Warning: Design has unannotated sequential cell outputs. (PWR-415)
+ 
+****************************************
+Report : power
+        -analysis_effort low
+Design : mac_array
+Version: K-2015.06-SP2
+Date   : Thu Feb 26 07:16:50 2026
+****************************************
+
+
+Library(s) Used:
+
+    tcbn65gpluswc (File: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db)
+
+
+Operating Conditions: WCCOM   Library: tcbn65gpluswc
+Wire Load Model Mode: segmented
+
+Design        Wire Load Model            Library
+------------------------------------------------
+mac_array              ZeroWireload      tcbn65gpluswc
+mac_col_bw8_bw_psum19_pr8_col_id1
+                       ZeroWireload      tcbn65gpluswc
+mac_col_bw8_bw_psum19_pr8_col_id2
+                       ZeroWireload      tcbn65gpluswc
+mac_col_bw8_bw_psum19_pr8_col_id3
+                       ZeroWireload      tcbn65gpluswc
+mac_col_bw8_bw_psum19_pr8_col_id4
+                       ZeroWireload      tcbn65gpluswc
+mac_col_bw8_bw_psum19_pr8_col_id5
+                       ZeroWireload      tcbn65gpluswc
+mac_col_bw8_bw_psum19_pr8_col_id6
+                       ZeroWireload      tcbn65gpluswc
+mac_col_bw8_bw_psum19_pr8_col_id7
+                       ZeroWireload      tcbn65gpluswc
+mac_col_bw8_bw_psum19_pr8_col_id8
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_0
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_1
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_2
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_3
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_4
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_5
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_6
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_7
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_1_DW02_mult_0
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_1_DW02_mult_1
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_1_DW02_mult_2
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_1_DW02_mult_3
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_1_DW02_mult_4
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_1_DW02_mult_5
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_1_DW02_mult_6
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_1_DW02_mult_7
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_2_DW02_mult_0
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_2_DW02_mult_1
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_2_DW02_mult_2
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_2_DW02_mult_3
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_2_DW02_mult_4
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_2_DW02_mult_5
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_2_DW02_mult_6
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_2_DW02_mult_7
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_3_DW02_mult_0
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_3_DW02_mult_1
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_3_DW02_mult_2
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_3_DW02_mult_3
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_3_DW02_mult_4
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_3_DW02_mult_5
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_3_DW02_mult_6
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_3_DW02_mult_7
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_4_DW02_mult_0
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_4_DW02_mult_1
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_4_DW02_mult_2
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_4_DW02_mult_3
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_4_DW02_mult_4
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_4_DW02_mult_5
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_4_DW02_mult_6
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_4_DW02_mult_7
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_5_DW02_mult_0
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_5_DW02_mult_1
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_5_DW02_mult_2
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_5_DW02_mult_3
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_5_DW02_mult_4
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_5_DW02_mult_5
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_5_DW02_mult_6
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_5_DW02_mult_7
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_6_DW02_mult_0
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_6_DW02_mult_1
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_6_DW02_mult_2
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_6_DW02_mult_3
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_6_DW02_mult_4
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_6_DW02_mult_5
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_6_DW02_mult_6
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_6_DW02_mult_7
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_7_DW02_mult_0
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_7_DW02_mult_1
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_7_DW02_mult_2
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_7_DW02_mult_3
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_7_DW02_mult_4
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_7_DW02_mult_5
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_7_DW02_mult_6
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_7_DW02_mult_7
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_0_DW02_mult_0
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_0_DW02_mult_1
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_0_DW02_mult_2
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_0_DW02_mult_3
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_0_DW02_mult_4
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_0_DW02_mult_5
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_0_DW02_mult_6
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_0_DW02_mult_7
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_0_DW01_add_17
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_0_DW01_add_18
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_0_DW01_add_20
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_0_DW01_add_21
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_7_DW01_add_17
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_7_DW01_add_18
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_7_DW01_add_20
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_7_DW01_add_21
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_6_DW01_add_17
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_6_DW01_add_18
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_6_DW01_add_20
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_6_DW01_add_21
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_5_DW01_add_17
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_5_DW01_add_18
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_5_DW01_add_20
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_5_DW01_add_21
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_4_DW01_add_17
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_4_DW01_add_18
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_4_DW01_add_20
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_4_DW01_add_21
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_3_DW01_add_17
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_3_DW01_add_18
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_3_DW01_add_20
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_3_DW01_add_21
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_2_DW01_add_17
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_2_DW01_add_18
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_2_DW01_add_20
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_2_DW01_add_21
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_1_DW01_add_17
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_1_DW01_add_18
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_1_DW01_add_20
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_0_DW01_add_22
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_7_DW01_add_22
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_6_DW01_add_22
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_5_DW01_add_22
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_4_DW01_add_22
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_3_DW01_add_22
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_2_DW01_add_22
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_1_DW01_add_22
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_0_DW01_add_34
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_0_DW01_add_37
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_7_DW01_add_34
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_7_DW01_add_37
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_6_DW01_add_34
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_6_DW01_add_37
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_5_DW01_add_34
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_5_DW01_add_37
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_4_DW01_add_34
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_4_DW01_add_37
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_3_DW01_add_34
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_3_DW01_add_37
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_2_DW01_add_34
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_2_DW01_add_37
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_1_DW01_add_34
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_1_DW01_add_36
+                       ZeroWireload      tcbn65gpluswc
+mac_8in_bw8_bw_psum19_pr8_1_DW01_add_38
+                       ZeroWireload      tcbn65gpluswc
+
+
+Global Operating Voltage = 0.9  
+Power-specific unit information :
+    Voltage Units = 1V
+    Capacitance Units = 1.000000pf
+    Time Units = 1ns
+    Dynamic Power Units = 1mW    (derived from V,C,T units)
+    Leakage Power Units = 1nW
+
+
+  Cell Internal Power  =   8.5980 mW   (85%)
+  Net Switching Power  =   1.4616 mW   (15%)
+                         ---------
+Total Dynamic Power    =  10.0596 mW  (100%)
+
+Cell Leakage Power     =   1.5810 mW
+
+
+                 Internal         Switching           Leakage            Total
+Power Group      Power            Power               Power              Power   (   %    )  Attrs
+--------------------------------------------------------------------------------------------------
+io_pad             0.0000            0.0000            0.0000            0.0000  (   0.00%)
+memory             0.0000            0.0000            0.0000            0.0000  (   0.00%)
+black_box          0.0000            0.0000            0.0000            0.0000  (   0.00%)
+clock_network      0.0000            0.0000            0.0000            0.0000  (   0.00%)
+register           6.1531        5.2581e-02        1.0548e+05            6.3111  (  54.22%)
+sequential         0.0000            0.0000            0.0000            0.0000  (   0.00%)
+combinational      2.4449            1.4090        1.4755e+06            5.3294  (  45.78%)
+--------------------------------------------------------------------------------------------------
+Total              8.5980 mW         1.4616 mW     1.5810e+06 nW        11.6405 mW
+1

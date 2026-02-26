@@ -5,6 +5,7 @@
 if { ![info exists top_module] }    { set top_module    sfp_row }
 if { ![info exists rtlPath] }       { set rtlPath       [file normalize [file join [pwd] ..]] }
 if { ![info exists filelist_path] } { set filelist_path "syn/filelists/filelist_sfp_row" }
+if { ![info exists syn_effort] }    { set syn_effort    high }
 
 set filelist_full [file join $rtlPath $filelist_path]
 
@@ -41,16 +42,10 @@ set dont_use_cells 1
 set dont_use_cell_list ""
 
 remove_design -all
-if {[file exists template]} {
-	exec rm -rf template
-}
-exec mkdir template
-if {![file exists log]} {
-    exec mkdir log
-}
-if {![file exists gate]} {
-	exec mkdir gate
-}
+if {![file exists work]} { exec mkdir work }
+if {![file exists log]}  { exec mkdir log }
+if {![file exists gate]} { exec mkdir gate }
+set_svf work/default.svf
 
 sh date
 sh echo hostname
@@ -62,7 +57,7 @@ set compile_no_new_cells_at_top_level false
 set hdlin_enable_vpp true
 set hdlin_auto_save_templates false
 
-define_design_lib WORK -path .template
+define_design_lib WORK -path work/.template
 set verilogout_single_bit false
 
 # read RTL from filelist (no testbench)
@@ -108,8 +103,17 @@ current_design $top_module
 
 
 # Compile
-# Source user compile options
-compile_ultra -no_autoungroup -timing_high_effort_script -exact_map
+echo "========================================================"
+echo " Synthesis effort: $syn_effort"
+echo "========================================================"
+
+if { $syn_effort == "low" } {
+    compile -map_effort low
+} elseif { $syn_effort == "medium" } {
+    compile -map_effort medium
+} else {
+    compile_ultra -no_autoungroup -timing_high_effort_script -exact_map
+}
 
 # Write Out Design - Hierarchical
 current_design $top_module
@@ -152,6 +156,14 @@ if {  [sizeof_collection $unmapped_designs] != 0 } {
 sh date
 sh uptime
 
-# Done
+# Move DC runtime artifacts to work/ to keep syn/ clean
+foreach f {command.log filenames.log} {
+    if { [file exists $f] } { file rename -force $f work/$f }
+}
+foreach d [glob -nocomplain alib-*] {
+    file rename -force $d work/$d
+}
+
 echo "run.scr completed successfully"
 
+exit

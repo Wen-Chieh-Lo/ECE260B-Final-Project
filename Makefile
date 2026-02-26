@@ -2,9 +2,9 @@
 # ECE260B Final Project - Simulation and Synthesis Makefile
 # =============================================================================
 #
-# Usage:  make sim  [TARGET=<name>]   -- run simulation
-#         make syn  [TARGET=<name>]   -- run synthesis (Design Compiler)
-#         make all  [TARGET=<name>]   -- run sim + syn (and pnr when added) for one target
+# Usage:  make sim  [TARGET=<name>]                       -- run simulation
+#         make syn  [TARGET=<name>] [SYN_EFFORT=<level>]  -- run synthesis (Design Compiler)
+#         make all  [TARGET=<name>] [SYN_EFFORT=<level>]  -- run sim + syn for one target
 #
 # Simulation targets (TARGET=):
 #   target        description              filelist (in sim/filelists/)
@@ -109,8 +109,11 @@ endif
 TOP_MODULE   = $(word 2,$(subst :, ,$(filter $(SYN_TARGET):%,$(TARGET_TOP_MODULE_table))))
 SYN_FILELIST = $(SYN_FILELISTS_DIR)/$(word 2,$(subst :, ,$(filter $(SYN_TARGET):%,$(TARGET_FILELIST_table))))
 
+# Synthesis effort: low | medium | high  (built-in default: high)
+SYN_EFFORT ?= high
+
 syn:
-	@cd $(SYNDIR) && dc_shell -f run_dc.tcl -x "set top_module $(TOP_MODULE); set rtlPath $(PROJ_ROOT); set filelist_path {$(SYN_FILELIST)}"
+	@cd $(SYNDIR) && dc_shell -f run_dc.tcl -x "set top_module $(TOP_MODULE); set rtlPath $(PROJ_ROOT); set filelist_path {$(SYN_FILELIST)}; set syn_effort $(SYN_EFFORT)"
 
 # ----- Utilities -----
 clean:
@@ -118,11 +121,18 @@ clean:
 	@echo "Removed $(OUT)"
 
 help:
-	@echo "Usage:  make sim [TARGET=<name>]   make syn [TARGET=<name>]   make all [TARGET=<name>]"
+	@echo "Usage:  make sim [TARGET=<name>]"
+	@echo "        make syn [TARGET=<name>] [SYN_EFFORT=low|medium|high]"
+	@echo "        make all [TARGET=<name>] [SYN_EFFORT=low|medium|high]"
 	@echo ""
 	@echo "TARGET controls both sim and syn:"
 	@echo "  sim valid: fullchip(default) | core | mac | dual | sfp_row | sfp_row_dual"
 	@echo "  syn valid: core(default)     | sfp_row | mac"
 	@echo "  (if TARGET is sim-only, syn falls back to its default: core)"
+	@echo ""
+	@echo "SYN_EFFORT (default: high):"
+	@echo "  low    - fast mapping, good for RTL sanity check"
+	@echo "  medium - standard optimization, balanced speed/quality"
+	@echo "  high   - full compile_ultra, slowest, for pre-PnR"
 	@echo ""
 	@echo "Other: make clean"
