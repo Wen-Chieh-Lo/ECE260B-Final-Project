@@ -1,30 +1,53 @@
 # =============================================================================
-# ECE260B Final Project - Simulation Makefile
+# ECE260B Final Project - Simulation and Synthesis Makefile
 # =============================================================================
 #
-# Usage:  make [target]
+# Usage:  make sim  [TARGET=<name>]   -- run simulation
+#         make syn  [TARGET=<name>]   -- run synthesis (Design Compiler)
+#         make all  [TARGET=<name>]   -- run sim + syn (and pnr when added) for one target
 #
-#   target        description              filelist (in filelists/)
+# Simulation targets (TARGET=):
+#   target        description              filelist (in sim/filelists/)
 #   ------------- -----------------------  --------------------------
-#   (default)     fullchip single-core     filelist
-#   fullchip      same as default          filelist
-#   core		  single core			   filelist_core
+#   fullchip      fullchip single-core     filelist            (default)
+#   core          single core              filelist_core
 #   mac           mac_array                filelist_mac
 #   dual          fullchip dual-core       filelist_dual
 #   sfp_row       sfp_row single-core      filelist_sfp_row
 #   sfp_row_dual  sfp_row dual-core        filelist_sfp_row_dual
-#   all           run all of the above
 #
-# Waveforms: sim/waveform/*.vcd (fullchip.vcd, mac_array.vcd, ...)
+# Synthesis targets (TARGET=):
+#   target   top_module   filelist (in syn/filelists/)  SDC         outputs
+#   -------- ------------ ---------------------------- ----------- --------------------------
+#   core     core         filelist_core                 common.sdc  gate/core.out.v     (default)
+#   sfp_row  sfp_row      filelist_sfp_row              common.sdc  gate/sfp_row.out.v
+#   mac      mac_array    filelist_mac                  common.sdc  gate/mac_array.out.v
+#
+# Defaults can also be set in USER_DEFINE_TASK_VARS (command-line overrides that file).
+# Waveforms  : sim/waveform/*.vcd
+# Syn reports: syn/log/<top>_area.rep, <top>_timing.rep, <top>_power.rep
+#
 # =============================================================================
 
-FILELISTS_DIR := filelists
-IVERILOG      := iverilog
-VVP           := vvp
-OUT           := sim/compiled
+# ----- User-defined defaults (overridden by command line) -----
+-include USER_DEFINE_TASK_VARS
 
-# Target -> filelist (used by rules below)
-#   make target  reads  filelists/<filelist>
+# ----- Tool and path configuration -----
+SIM_FILELISTS_DIR := sim/filelists
+SYN_FILELISTS_DIR := syn/filelists
+IVERILOG          := iverilog
+VVP               := vvp
+OUT               := sim/compiled
+SYNDIR            := syn
+
+ifneq ($(strip $(PROJECT_REPO_PATH)),)
+  PROJ_ROOT := $(PROJECT_REPO_PATH)
+else
+  PROJ_ROOT := $(CURDIR)
+endif
+
+# ----- Lookup tables -----
+# target -> filelist filename (shared between sim and syn for filelist name lookup)
 TARGET_FILELIST_table := \
 	fullchip:filelist \
 	core:filelist_core \
@@ -33,7 +56,7 @@ TARGET_FILELIST_table := \
 	sfp_row:filelist_sfp_row \
 	sfp_row_dual:filelist_sfp_row_dual
 
-# Target -> waveform .vcd name
+# target -> waveform filename
 TARGET_WAVEFORM_table := \
 	fullchip:fullchip.vcd \
 	core:core.vcd \
@@ -42,50 +65,70 @@ TARGET_WAVEFORM_table := \
 	sfp_row:sfp_row.vcd \
 	sfp_row_dual:sfp_row_dualcore.vcd
 
+# target -> RTL top_module name (synthesis only; differs where make-target != module name)
+TARGET_TOP_MODULE_table := \
+	core:core \
+	mac:mac_array \
+	sfp_row:sfp_row
+
 SIM_TARGETS := fullchip core mac dual sfp_row sfp_row_dual
+SYN_TARGETS := sfp_row core mac
 
 $(foreach p,$(TARGET_FILELIST_table),$(eval $(firstword $(subst :, ,$(p))): FILELIST_NAME := $(word 2,$(subst :, ,$(p)))))
-$(foreach p,$(TARGET_WAVEFORM_table),$(eval $(firstword $(subst :, ,$(p))): WAVEFORM := $(word 2,$(subst :, ,$(p)))))
+$(foreach p,$(TARGET_WAVEFORM_table),$(eval $(firstword $(subst :, ,$(p))): WAVEFORM     := $(word 2,$(subst :, ,$(p)))))
 
-.PHONY: all clean help default $(SIM_TARGETS)
+# ----- Phony declarations -----
+.PHONY: all clean help default sim syn $(SIM_TARGETS)
 
-default: fullchip
+default: sim
 
-all: $(SIM_TARGETS)
-	@echo "--- All done. Waveforms: sim/waveform/*.vcd ---"
+# ----- Simulation -----
+TARGET ?= fullchip
+sim: $(TARGET)
+
+# ----- All: sim + syn (+ pnr in the future) for a single TARGET -----
+all:
+	$(MAKE) sim TARGET=$(TARGET)
+	$(MAKE) syn TARGET=$(TARGET)
 
 $(SIM_TARGETS):
 	@mkdir -p sim
-	$(IVERILOG) -o $(OUT) -f $(FILELISTS_DIR)/$(FILELIST_NAME)
+	$(IVERILOG) -o $(OUT) -f $(SIM_FILELISTS_DIR)/$(FILELIST_NAME)
 	$(VVP) $(OUT)
 	@echo ""
 	@echo ">>> Waveform: sim/waveform/$(WAVEFORM) (GTKWave or any VCD viewer) <<<"
 
-# Compile only: make compile [TARGET=mac]
-TARGET ?= fullchip
-compile:
+# ----- Synthesis -----
+SYN_TARGET ?= core
+# If TARGET was given on the command line and is a valid syn target, use it for SYN_TARGET
+ifneq ($(origin TARGET), default)
+ifneq ($(TARGET), fullchip)
+SYN_TARGET = $(TARGET)
+endif
+endif
+
+TOP_MODULE  = $(word 2,$(subst :, ,$(filter $(SYN_TARGET):%,$(TARGET_TOP_MODULE_table))))
+SYN_FILELIST = $(SYN_FILELISTS_DIR)/$(word 2,$(subst :, ,$(filter $(SYN_TARGET):%,$(TARGET_FILELIST_table))))
+
+syn:
+	@cd $(SYNDIR) && dc_shell -f run_dc.tcl -x "set top_module $(TOP_MODULE); set rtlPath $(PROJ_ROOT); set filelist_path {$(SYN_FILELIST)}"
+
+# ----- Utilities -----
+# Compile iverilog only (no run): make compile-mac
+compile-%:
 	@mkdir -p sim
-	@fl=$$(echo '$(TARGET_FILELIST_table)' | tr ' ' '\n' | grep '^$(TARGET):' | cut -d: -f2); \
-	$(IVERILOG) -o $(OUT) -f $(FILELISTS_DIR)/$$fl; \
-	echo "Built $(OUT). Run '$(VVP) $(OUT)' to generate waveform."
+	@fl=$$(echo '$(TARGET_FILELIST_table)' | tr ' ' '\n' | grep '^$*: ' | cut -d: -f2); \
+	$(IVERILOG) -o $(OUT) -f $(SIM_FILELISTS_DIR)/$$fl; \
+	echo "Built $(OUT). Run '$(VVP) $(OUT)' to simulate."
 
 clean:
 	rm -f $(OUT)
 	@echo "Removed $(OUT)"
 
 help:
-	@echo "Targets (make <target> = build + run):"
+	@echo "Usage:  make sim [TARGET=<name>]   make syn [TARGET=<name>]"
 	@echo ""
-	@echo "  target         filelist               waveform"
-	@echo "  ------------   -------------------   -------------------------"
-	@echo "  fullchip       filelist               fullchip.vcd"
-	@echo "  core           filelist_core          core.vcd"
-	@echo "  mac            filelist_mac           mac_array.vcd"
-	@echo "  dual           filelist_dual          fullchip_dual.vcd"
-	@echo "  sfp_row        filelist_sfp_row       sfp_row.vcd"
-	@echo "  sfp_row_dual   filelist_sfp_row_dual  sfp_row_dualcore.vcd"
+	@echo "Simulation TARGET: fullchip(default) | core | mac | dual | sfp_row | sfp_row_dual"
+	@echo "Synthesis  TARGET: core(default) | sfp_row | mac"
 	@echo ""
-	@echo "  all            run all above"
-	@echo "  compile TARGET=<target>   compile only (no run)"
-	@echo "  clean          remove sim/compiled"
-	@echo "  help           this message"
+	@echo "Other: make all [TARGET=<name>] (sim+syn), make compile-<target>, make clean"
