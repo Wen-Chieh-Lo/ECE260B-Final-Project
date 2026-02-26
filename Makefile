@@ -114,13 +114,6 @@ syn:
 	@cd $(SYNDIR) && dc_shell -f run_dc.tcl -x "set top_module $(TOP_MODULE); set rtlPath $(PROJ_ROOT); set filelist_path {$(SYN_FILELIST)}"
 
 # ----- Utilities -----
-# Compile iverilog only (no run): make compile-mac
-compile-%:
-	@mkdir -p sim
-	@fl=$$(echo '$(TARGET_FILELIST_table)' | tr ' ' '\n' | grep '^$*: ' | cut -d: -f2); \
-	$(IVERILOG) -o $(OUT) -f $(SIM_FILELISTS_DIR)/$$fl; \
-	echo "Built $(OUT). Run '$(VVP) $(OUT)' to simulate."
-
 clean:
 	rm -f $(OUT)
 	@echo "Removed $(OUT)"
@@ -131,4 +124,4 @@ help:
 	@echo "Simulation TARGET: fullchip(default) | core | mac | dual | sfp_row | sfp_row_dual"
 	@echo "Synthesis  TARGET: core(default) | sfp_row | mac"
 	@echo ""
-	@echo "Other: make all [TARGET=<name>] (sim+syn), make compile-<target>, make clean"
+	@echo "Other: make all [TARGET=<name>] (sim+syn), make clean"
