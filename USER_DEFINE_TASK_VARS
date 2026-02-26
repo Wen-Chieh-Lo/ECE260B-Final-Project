@@ -1,0 +1,22 @@
+# =============================================================================
+# USER_DEFINE_TASK_VARS
+# =============================================================================
+# Set personal defaults here so you don't need to type TARGET=... every time.
+# Command-line arguments (e.g. make sim TARGET=core) always override this file.
+# Leave a value blank to fall back to the Makefile's built-in default.
+# =============================================================================
+
+# Simulation default target  (make sim)
+# Options: fullchip | core | mac | dual | sfp_row | sfp_row_dual
+# Built-in default: fullchip
+TARGET =
+
+# Synthesis default target  (make syn / make all)
+# Options: core | sfp_row | mac
+# Built-in default: core
+SYN_TARGET =
+
+# Absolute path to project root (directory that contains verilog/, syn/, sim/).
+# Leave blank to use the directory where "make" is invoked.
+# Example: PROJECT_REPO_PATH = /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project
+PROJECT_REPO_PATH =
