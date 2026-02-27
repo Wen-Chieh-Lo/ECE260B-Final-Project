@@ -115,7 +115,7 @@ Run `make parse` to regenerate the summary.
 | Design        | Before repipelining                          | After repipelining                    |
 |---------------|----------------------------------------------|---------------------------------------|
 | **core**      | 243.5k um² · 24.8 ns · VIOLATED (-23.7 ns)   | 175.8k um² (-28%) · 0.95 ns · MET     |
-| **mac_array** | 116.8k um² · VIOLATED (-1.6 ns)              | 69.5k um² (-40%) · 0.968 ns · MET     |
+| **mac_array** | 116.8k um² · 2.62 ns · VIOLATED (-1.6 ns)    | 69.5k um² (-40%) · 0.968 ns · MET     |
 | **sfp_row**   | 53.9k um² · 25 ns · VIOLATED (-23.9 ns)      | 24.7k um² (-54%) · 0.97 ns · MET      |
 
 **Conclusion:** Repipelining (div_longdiv, sum8_2stage) breaks the critical path from combinational divider/sum into multiple register stages, reducing data arrival from ~25 ns to under ~1 ns and meeting the 1.2 ns clock. Area changes with pipeline registers: core and mac_array shrink due to logic restructuring; sfp_row shrinks significantly as div_longdiv replaces the combinational divider.
