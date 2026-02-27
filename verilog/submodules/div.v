@@ -22,16 +22,14 @@ endmodule
 // divisor < LUT_SIZE: LUT[i]=2^RECIP_BITS/i (exact). divisor >= LUT_SIZE: use scaled.
 // -----------------------------------------------------------------------------
 module div_lut #(
-  parameter bw_psum     = 19,
-  parameter out_shift   = 7,
-  parameter LUT_ADDR_W  = 12,
-  parameter RECIP_BITS  = 30
+  parameter bw_psum   = 19,
+  parameter out_shift = 7
 ) (
   input  [bw_psum-1:0] in,
   input  signed [bw_psum-1:0] divisor,
   output [bw_psum-1:0] out
 );
-  
+  assign out = {in, {out_shift{1'b0}}} / divisor;
 endmodule
 
 

@@ -106,7 +106,41 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   );
 
 
-  `ifdef SFP_LONGDIV
+  `ifdef SFP_LUT10DIV
+    div_lut #(.bw_psum(bw_psum), .out_shift(out_shift)) div0 (
+      .in(abs[bw_psum*1-1 : bw_psum*0]),
+      .divisor(sum_2core), .out(div_out0)
+    );
+    div_lut #(.bw_psum(bw_psum), .out_shift(out_shift)) div1 (
+      .in(abs[bw_psum*2-1 : bw_psum*1]),
+      .divisor(sum_2core), .out(div_out1)
+    );
+    div_lut #(.bw_psum(bw_psum), .out_shift(out_shift)) div2 (
+      .in(abs[bw_psum*3-1 : bw_psum*2]),
+      .divisor(sum_2core), .out(div_out2)
+    );
+    div_lut #(.bw_psum(bw_psum), .out_shift(out_shift)) div3 (
+      .in(abs[bw_psum*4-1 : bw_psum*3]),
+      .divisor(sum_2core), .out(div_out3)
+    );
+    div_lut #(.bw_psum(bw_psum), .out_shift(out_shift)) div4 (
+      .in(abs[bw_psum*5-1 : bw_psum*4]),
+      .divisor(sum_2core), .out(div_out4)
+    );
+    div_lut #(.bw_psum(bw_psum), .out_shift(out_shift)) div5 (
+      .in(abs[bw_psum*6-1 : bw_psum*5]),
+      .divisor(sum_2core), .out(div_out5)
+    );
+    div_lut #(.bw_psum(bw_psum), .out_shift(out_shift)) div6 (
+      .in(abs[bw_psum*7-1 : bw_psum*6]),
+      .divisor(sum_2core), .out(div_out6)
+    );
+    div_lut #(.bw_psum(bw_psum), .out_shift(out_shift)) div7 (
+      .in(abs[bw_psum*8-1 : bw_psum*7]),
+      .divisor(sum_2core), .out(div_out7)
+    );
+    assign div_done = div;
+  `elsif SFP_LONGDIV
     div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div0 (
       .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*1-1 : bw_psum*0]),
       .divisor(sum_2core), .out(div_out0), .done(div_done)
