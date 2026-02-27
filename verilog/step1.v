@@ -1,17 +1,20 @@
+// step1: fullchip dual-core top
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
-module fullchip (clk_0, clk_1, mem_in_0, mem_in_1, inst, reset);
+module step1 (clk_0, clk_1, mem_in_0, mem_in_1, inst, reset);
 
 parameter col = 8;
 parameter bw = 8;
 parameter bw_psum = 2*bw+4;
 parameter pr = 16;
 
-input  clk; 
+input  clk_0;
+input  clk_1;
 input  [pr*bw-1:0] mem_in_0; 
 input  [pr*bw-1:0] mem_in_1; 
 input  [18:0] inst; 
 input  reset;
+output [bw_psum*col*2-1:0] out;
 
 wire [18:0] inst_0;
 wire [18:0] inst_1;

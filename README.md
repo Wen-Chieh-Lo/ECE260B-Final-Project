@@ -10,7 +10,7 @@ Verilog RTL and testbenches for single/dual-core MAC + SFP normalization.
 - [x] Core integration
 - [x] SFP repipelining (div_longdiv, sum8_2stage)
 - [x] MAC repipelining
-- [ ] Full dual-core flow
+- [ ] step1 flow (fullchip dual-core)
 
 ## Synthesis checklist
 
@@ -46,7 +46,7 @@ Default targets, project path, and Verilog defines can be set in `USER_DEFINE_TA
 | `fullchip`    | fullchip single-core    | `filelist`                    |
 | `core`        | single core             | `filelist_core`               |
 | `mac`         | mac_array               | `filelist_mac`                |
-| `dual`        | fullchip dual-core      | `filelist_dual`               |
+| `step1`       | step1 (fullchip dual-core) | `filelist_step1`            |
 | `sfp_row`     | sfp_row single-core     | `filelist_sfp_row`            |
 | `sfp_row_dual`| sfp_row dual-core       | `filelist_sfp_row_dual`       |
 

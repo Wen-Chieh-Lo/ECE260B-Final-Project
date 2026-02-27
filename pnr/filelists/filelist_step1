@@ -1,8 +1,8 @@
 // --- testbench ---
-./sim/tb/fullchip_dual_tb.v
+./sim/tb/step1_tb.v
 
 // --- top / core ---
-./verilog/fullchip_dual.v
+./verilog/step1.v
 ./verilog/core_dual.v
 ./verilog/sync.v
 ./verilog/submodules/sum8.v

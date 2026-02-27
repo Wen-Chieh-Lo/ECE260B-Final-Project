@@ -1,17 +1,12 @@
 // --- testbench ---
-./sim/tb/fullchip_dual_tb.v
+./sim/tb/step1_tb.v
 
 // --- top / core ---
-./verilog/fullchip_dual.v
-./verilog/core_dual.v
-./verilog/sync.v
-./verilog/submodules/sum8.v
-./verilog/submodules/div.v
-./verilog/sfp_row.v
+./verilog/step1.v
 
 // --- MAC ---
 ./verilog/mac/mac_col.v
-./verilog/mac/mac_16in.v
+./verilog/mac/mac_8in.v
 ./verilog/mac/mac_array.v
 
 // --- memory / FIFO ---

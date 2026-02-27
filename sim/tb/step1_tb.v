@@ -1,9 +1,10 @@
+// step1: fullchip dual-core testbench
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
 
 `timescale 1ns/1ps
 
-module fullchip_tb;
+module step1_tb;
 
 parameter total_cycle = 8;   // how many streamed Q vectors will be processed
 parameter bw = 8;            // Q & K vector bit precision
@@ -71,7 +72,7 @@ reg [bw_psum*col-1:0] temp16b;
 
 
 
-fullchip #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) fullchip_instance (
+step1 #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) step1_instance (
       .reset(reset),
       .clk_0(clk), 
       .clk_1(clk), 
@@ -83,8 +84,8 @@ fullchip #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) fullchip_instance (
 
 initial begin 
 
-  $dumpfile("sim/waveform/fullchip_dual.vcd");
-  $dumpvars(0,fullchip_tb);
+  $dumpfile("sim/waveform/step1.vcd");
+  $dumpvars(0,step1_tb);
 
 
 
