@@ -1,7 +1,7 @@
 #@ # 
 #@ # Running dc_shell Version K-2015.06-SP2 for linux64 -- Aug 31, 2015
-#@ # Date:   Thu Feb 26 07:22:17 2026
-#@ # Run by: c8chiu@ieng6-ece-02.ucsd.edu
+#@ # Date:   Fri Feb 27 01:37:23 2026
+#@ # Run by: w4lo@ieng6-ece-07.ucsd.edu
 #@ 
 
 source /software/nonrdist64/dc-2015.06-64/admin/setup/.synopsys_dc.setup
@@ -3788,17 +3788,17 @@ source /software/nonrdist64/dc-2015.06-64/admin/setup/.synopsys_dc.setup
 #@ }
 #@ # -- End source /software/nonrdist64/dc-2015.06-64/admin/setup/.synopsys_dc.setup
 
-set top_module core; set rtlPath /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project; set filelist_path {syn/filelists/filelist_core}; set syn_effort low
-source -echo -verbose /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/syn/run_dc.tcl
-#@ # -- Starting source /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/syn/run_dc.tcl
+set top_module mac_array; set rtlPath /home/linux/ieng6/ECE260B_WI26_A00/w4lo/ECE260B-Final-Project; set filelist_path {syn/filelists/filelist_mac}; set syn_effort high
+source -echo -verbose /home/linux/ieng6/ECE260B_WI26_A00/w4lo/ECE260B-Final-Project/syn/run_dc.tcl
+#@ # -- Starting source /home/linux/ieng6/ECE260B_WI26_A00/w4lo/ECE260B-Final-Project/syn/run_dc.tcl
 
 #@ # =============================================================================
 #@ # Parameters: set by Makefile (make syn TARGET=mac) or dc_shell -x "set top_module ..."
 #@ # Defaults below used only when run standalone.
 #@ # =============================================================================
-#@ if { ![info exists top_module] }    { set top_module    sfp_row }
+#@ if { ![info exists top_module] }    { set top_module    mac }
 #@ if { ![info exists rtlPath] }       { set rtlPath       [file normalize [file join [pwd] ..]] }
-#@ if { ![info exists filelist_path] } { set filelist_path "syn/filelists/filelist_sfp_row" }
+#@ if { ![info exists filelist_path] } { set filelist_path "syn/filelists/filelist_mac" }
 #@ if { ![info exists syn_effort] }    { set syn_effort    high }
 #@ 
 #@ set filelist_full [file join $rtlPath $filelist_path]
@@ -3846,6 +3846,9 @@ source -echo -verbose /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Pr
 #@ sh echo uptime
 #@ 
 #@ #Compiler directives
+#@ set_optimize_registers true
+#@ set_cost_priority -delay
+#@ set_max_area 0
 #@ set compile_effort   "high"
 #@ set compile_no_new_cells_at_top_level false
 #@ set hdlin_enable_vpp true
@@ -3906,7 +3909,7 @@ source -echo -verbose /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Pr
 #@ } elseif { $syn_effort == "medium" } {
 #@     compile -map_effort medium
 #@ } else {
-#@     compile_ultra -no_autoungroup -timing_high_effort_script -exact_map
+#@     compile_ultra -retime
 #@ }
 #@ 
 #@ # Write Out Design - Hierarchical
