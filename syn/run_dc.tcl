@@ -2,9 +2,9 @@
 # Parameters: set by Makefile (make syn TARGET=mac) or dc_shell -x "set top_module ..."
 # Defaults below used only when run standalone.
 # =============================================================================
-if { ![info exists top_module] }    { set top_module    sfp_row }
+if { ![info exists top_module] }    { set top_module    mac }
 if { ![info exists rtlPath] }       { set rtlPath       [file normalize [file join [pwd] ..]] }
-if { ![info exists filelist_path] } { set filelist_path "syn/filelists/filelist_sfp_row" }
+if { ![info exists filelist_path] } { set filelist_path "syn/filelists/filelist_mac" }
 if { ![info exists syn_effort] }    { set syn_effort    high }
 
 set filelist_full [file join $rtlPath $filelist_path]
@@ -52,6 +52,9 @@ sh echo hostname
 sh echo uptime
 
 #Compiler directives
+set_optimize_registers true
+set_cost_priority -delay
+set_max_area 0
 set compile_effort   "high"
 set compile_no_new_cells_at_top_level false
 set hdlin_enable_vpp true
@@ -112,7 +115,7 @@ if { $syn_effort == "low" } {
 } elseif { $syn_effort == "medium" } {
     compile -map_effort medium
 } else {
-    compile_ultra -no_autoungroup -timing_high_effort_script -exact_map
+    compile_ultra -retime
 }
 
 # Write Out Design - Hierarchical

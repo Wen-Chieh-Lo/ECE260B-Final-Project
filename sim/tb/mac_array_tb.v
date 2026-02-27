@@ -241,11 +241,14 @@ module mac_array_tb;
       #0.5 clk = 1'b1;
     end
     #0.5 clk = 1'b0;
+    execute = 0;
     qmem_rd = 0;
     qkmem_add = 0;
-    execute = 0;
     #0.5 clk = 1'b1;
-
+    #0.5 clk = 1'b0;
+    #0.5 clk = 1'b1;
+    #0.5 clk = 1'b0;
+    #0.5 clk = 1'b1;
     for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
 
     // RTL column order: col c holds dot with K[7-c], so compare to result[t][7-c]

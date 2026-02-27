@@ -18,9 +18,9 @@ TARGET = mac
 #   medium - standard optimization (compile -map_effort medium); balanced speed/quality
 #   high   - full compile_ultra with timing high-effort script; slowest, for pre-PnR
 # Built-in default: high
-SYN_EFFORT = low
+SYN_EFFORT = high
 
 # Absolute path to project root (directory that contains verilog/, syn/, sim/).
 # Leave blank to use the directory where "make" is invoked.
 # Example: PROJECT_REPO_PATH = /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project
-PROJECT_REPO_PATH =
+PROJECT_REPO_PATH = /home/linux/ieng6/ECE260B_WI26_A00/w4lo/ECE260B-Final-Project
