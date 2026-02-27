@@ -10,6 +10,12 @@ module sfp_row_dualcore_tb;
   parameter bw_psum = 2*bw+3;  // 20
   parameter out_shift = 7;
   parameter bw_out = out_shift + 1'b1;
+  parameter sfp_acc_lat = 1;
+  `ifdef SFP_LONGDIV
+    parameter sfp_div_lat = 8;  // div_longdiv: 1 input reg + 6 iter + 1
+  `else
+    parameter sfp_div_lat = 0;
+  `endif
 
   integer mac_file, r, c, captured_data;
   integer mac_data [0:ROWS*col-1];
@@ -138,16 +144,17 @@ module sfp_row_dualcore_tb;
       @(posedge clk);
       @(posedge clk);
       acc = 0;
-      @(posedge clk);   // one cycle after acc so FIFO write has settled
+      @(posedge clk);   // one cycle after acc so FIFO write has settled (acc_d1)
+      repeat(sfp_acc_lat) @(posedge clk);
       fifo_ext_rd = 1;
-      @(posedge clk);
-      #0.5;             // sample sum_out this cycle (FIFO out = current rd_ptr; rd_ptr advances at next posedge)
+      #0.5;             // sample sum_out before posedge (FIFO out is comb, rd_ptr advances at posedge)
       if (sum_out !== sum_abs_golden[r]) begin
         $display("  [test1 sum_out] row %0d FAIL: fifo_ext_rd -> sum_out = %0d, expected sum_abs = %0d", r, sum_out, sum_abs_golden[r]);
         sum_err_count = sum_err_count + 1;
       end else
         $display("  [test1 sum_out] row %0d PASS: fifo_ext_rd -> sum_out = %0d (expected sum_abs)", r, sum_out);
-      @(posedge clk);
+      @(posedge clk);   // advance rd_ptr (1st read consumed)
+      @(posedge clk);   // 2nd read: skip duplicate (we write 2 entries per row)
       fifo_ext_rd = 0;
       @(posedge clk);
       div = 1;
@@ -155,7 +162,7 @@ module sfp_row_dualcore_tb;
       @(posedge clk);
       div = 0;
       @(posedge clk);
-      @(posedge clk);  // sfp_out valid one cycle after div
+      repeat(sfp_div_lat) @(posedge clk);  // wait for div_longdiv latency
       u0 = $signed(sfp_out[bw_out*1-1 -: bw_out]);
       u1 = $signed(sfp_out[bw_out*2-1 -: bw_out]);
       u2 = $signed(sfp_out[bw_out*3-1 -: bw_out]);

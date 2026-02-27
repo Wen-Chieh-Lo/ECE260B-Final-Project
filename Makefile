@@ -78,7 +78,7 @@ $(foreach p,$(TARGET_FILELIST_table),$(eval $(firstword $(subst :, ,$(p))): FILE
 $(foreach p,$(TARGET_WAVEFORM_table),$(eval $(firstword $(subst :, ,$(p))): WAVEFORM     := $(word 2,$(subst :, ,$(p)))))
 
 # ----- Phony declarations -----
-.PHONY: all clean help default sim syn $(SIM_TARGETS)
+.PHONY: all clean help default sim syn parse $(SIM_TARGETS)
 
 default: sim
 
@@ -91,9 +91,12 @@ all:
 	$(MAKE) sim TARGET=$(TARGET)
 	$(MAKE) syn TARGET=$(TARGET)
 
+# User defines: -DSFP_LONGDIV etc. for iverilog (from USER_DEFINE_TASK_VARS)
+IVERILOG_DEFINES = $(patsubst %,-D%,$(USER_DEFINES))
+
 $(SIM_TARGETS):
 	@mkdir -p sim
-	$(IVERILOG) -o $(OUT) -f $(SIM_FILELISTS_DIR)/$(FILELIST_NAME)
+	$(IVERILOG) $(IVERILOG_DEFINES) -o $(OUT) -f $(SIM_FILELISTS_DIR)/$(FILELIST_NAME)
 	$(VVP) $(OUT)
 	@echo ""
 	@echo ">>> Waveform: sim/waveform/$(WAVEFORM) (GTKWave or any VCD viewer) <<<"
@@ -113,9 +116,12 @@ SYN_FILELIST = $(SYN_FILELISTS_DIR)/$(word 2,$(subst :, ,$(filter $(SYN_TARGET):
 SYN_EFFORT ?= high
 
 syn:
-	@cd $(SYNDIR) && dc_shell -f run_dc.tcl -x "set top_module $(TOP_MODULE); set rtlPath $(PROJ_ROOT); set filelist_path {$(SYN_FILELIST)}; set syn_effort $(SYN_EFFORT)"
+	@cd $(SYNDIR) && dc_shell -f run_dc.tcl -x "set top_module $(TOP_MODULE); set rtlPath $(PROJ_ROOT); set filelist_path {$(SYN_FILELIST)}; set syn_effort $(SYN_EFFORT); set syn_defines {$(USER_DEFINES)}"
 
 # ----- Utilities -----
+parse:  ## Parse syn/log/*.rep and print summary (uses shell script; no Python needed)
+	@bash $(SYNDIR)/parse_reports.sh $(SYNDIR)/log
+
 clean:
 	rm -f $(OUT)
 	@echo "Removed $(OUT)"
@@ -134,5 +140,11 @@ help:
 	@echo "  low    - fast mapping, good for RTL sanity check"
 	@echo "  medium - standard optimization, balanced speed/quality"
 	@echo "  high   - full compile_ultra, slowest, for pre-PnR"
+	@echo ""
+	@echo "USER_DEFINES (in USER_DEFINE_TASK_VARS):"
+	@echo "  Space-separated Verilog macros, e.g. SFP_LONGDIV LOAD_OTHER_NORM_FILE"
+	@echo "  Applied to both sim (iverilog -D) and syn (DC -define)"
+	@echo ""
+	@echo "  make parse  - Parse syn/log/*.rep summary (shell script, no Python)"
 	@echo ""
 	@echo "Other: make clean"
