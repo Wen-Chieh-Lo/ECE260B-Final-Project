@@ -1,4 +1,6 @@
 // --- SFP row ---
+./verilog/submodules/sum8.v
+./verilog/submodules/div.v
 ./verilog/sfp_row.v
 
 // --- memory ---

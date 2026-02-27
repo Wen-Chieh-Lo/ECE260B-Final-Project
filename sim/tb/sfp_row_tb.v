@@ -3,6 +3,8 @@
 
 `timescale 1ns/1ps
 
+
+
 module sfp_row_tb;
 
   parameter ROWS = 8;
@@ -11,6 +13,12 @@ module sfp_row_tb;
   parameter bw_psum = 2*bw+3;  // 20
   parameter out_shift = 7;
   parameter bw_out = out_shift + 1'b1;
+  parameter sfp_acc_lat = 1;
+  `ifdef SFP_LONGDIV
+    parameter sfp_div_lat = 7;
+  `else
+    parameter sfp_div_lat = 0;
+  `endif
 
   integer mac_file, r, c, captured_data;
   integer mac_data [0:ROWS*col-1];   // row-major: row*col + c
@@ -133,12 +141,13 @@ module sfp_row_tb;
       @(posedge clk);
       acc = 0;
       @(posedge clk);
+      repeat(sfp_acc_lat) @(posedge clk);
       div = 1;
       @(posedge clk);
       @(posedge clk);
       div = 0;
       @(posedge clk);
-      @(posedge clk);  // sfp_out valid one cycle after div
+      repeat(sfp_div_lat) @(posedge clk);  // div_longdiv latency = 7 cycles
       u0 = $signed(sfp_out[bw_out*1-1 -: bw_out]);
       u1 = $signed(sfp_out[bw_out*2-1 -: bw_out]);
       u2 = $signed(sfp_out[bw_out*3-1 -: bw_out]);
@@ -153,14 +162,14 @@ module sfp_row_tb;
         estimated[r*col+0], estimated[r*col+1], estimated[r*col+2], estimated[r*col+3],
         estimated[r*col+4], estimated[r*col+5], estimated[r*col+6], estimated[r*col+7]);
       row_err = 0;
-      if (u0 != estimated[r*col+0]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col0 MISMATCH (RTL %d != golden %d)", u0, estimated[r*col+0]); end
-      if (u1 != estimated[r*col+1]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col1 MISMATCH (RTL %d != golden %d)", u1, estimated[r*col+1]); end
-      if (u2 != estimated[r*col+2]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col2 MISMATCH (RTL %d != golden %d)", u2, estimated[r*col+2]); end
-      if (u3 != estimated[r*col+3]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col3 MISMATCH (RTL %d != golden %d)", u3, estimated[r*col+3]); end
-      if (u4 != estimated[r*col+4]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col4 MISMATCH (RTL %d != golden %d)", u4, estimated[r*col+4]); end
-      if (u5 != estimated[r*col+5]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col5 MISMATCH (RTL %d != golden %d)", u5, estimated[r*col+5]); end
-      if (u6 != estimated[r*col+6]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col6 MISMATCH (RTL %d != golden %d)", u6, estimated[r*col+6]); end
-      if (u7 != estimated[r*col+7]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col7 MISMATCH (RTL %d != golden %d)", u7, estimated[r*col+7]); end
+      if (u0 !== estimated[r*col+0]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col0 MISMATCH (RTL %d != golden %d)", u0, estimated[r*col+0]); end
+      if (u1 !== estimated[r*col+1]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col1 MISMATCH (RTL %d != golden %d)", u1, estimated[r*col+1]); end
+      if (u2 !== estimated[r*col+2]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col2 MISMATCH (RTL %d != golden %d)", u2, estimated[r*col+2]); end
+      if (u3 !== estimated[r*col+3]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col3 MISMATCH (RTL %d != golden %d)", u3, estimated[r*col+3]); end
+      if (u4 !== estimated[r*col+4]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col4 MISMATCH (RTL %d != golden %d)", u4, estimated[r*col+4]); end
+      if (u5 !== estimated[r*col+5]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col5 MISMATCH (RTL %d != golden %d)", u5, estimated[r*col+5]); end
+      if (u6 !== estimated[r*col+6]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col6 MISMATCH (RTL %d != golden %d)", u6, estimated[r*col+6]); end
+      if (u7 !== estimated[r*col+7]) begin row_err = row_err + 1; err_count = err_count + 1; $display("       >>> col7 MISMATCH (RTL %d != golden %d)", u7, estimated[r*col+7]); end
       $display("       %s", (row_err == 0) ? "[OK]" : "[MISMATCH]");
       $display("");
       @(posedge clk);

@@ -1,5 +1,6 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
+
 module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_out);
 
   parameter col = 8;
@@ -19,6 +20,11 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   output [bw_psum+3:0] sum_out;
   wire [bw_psum+3:0] sum_this_core;
   wire signed [bw_psum-1:0] sum_2core;
+  wire [bw_psum+3:0] sum8_out;
+  wire [bw_psum-1:0] div_out0, div_out1, div_out2, div_out3;
+  wire [bw_psum-1:0] div_out4, div_out5, div_out6, div_out7;
+  reg  div_start;
+  wire div_done;
   wire signed [bw_psum-1:0] sfp_in_sign0;
   wire signed [bw_psum-1:0] sfp_in_sign1;
   wire signed [bw_psum-1:0] sfp_in_sign2;
@@ -40,6 +46,7 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
 
   reg [bw_psum+3:0] sum_q;
   reg fifo_wr;
+  reg acc_d1;  // acc delayed 1 cycle: sum_q updates first, then fifo captures next cycle
 
   assign sfp_in_sign0 =  sfp_in[bw_psum*1-1 : bw_psum*0];
   assign sfp_in_sign1 =  sfp_in[bw_psum*2-1 : bw_psum*1];
@@ -91,39 +98,116 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
      .reset(reset)
   );
 
+  sum8_2stage #(.bw_psum(bw_psum)) sum8_inst (
+    .clk(clk),
+    .reset(reset),
+    .in(abs),
+    .sum(sum8_out)
+  );
+
+
+  `ifdef SFP_LONGDIV
+    div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div0 (
+      .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*1-1 : bw_psum*0]),
+      .divisor(sum_2core), .out(div_out0), .done(div_done)
+    );
+    div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div1 (
+      .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*2-1 : bw_psum*1]),
+      .divisor(sum_2core), .out(div_out1), .done()
+    );
+    div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div2 (
+      .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*3-1 : bw_psum*2]),
+      .divisor(sum_2core), .out(div_out2), .done()
+    );
+    div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div3 (
+      .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*4-1 : bw_psum*3]),
+      .divisor(sum_2core), .out(div_out3), .done()
+    );
+    div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div4 (
+      .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*5-1 : bw_psum*4]),
+      .divisor(sum_2core), .out(div_out4), .done()
+    );
+    div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div5 (
+      .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*6-1 : bw_psum*5]),
+      .divisor(sum_2core), .out(div_out5), .done()
+    );
+    div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div6 (
+      .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*7-1 : bw_psum*6]),
+      .divisor(sum_2core), .out(div_out6), .done()
+    );
+    div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div7 (
+      .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*8-1 : bw_psum*7]),
+      .divisor(sum_2core), .out(div_out7), .done()
+    );
+  `else
+    div #(.bw_psum(bw_psum), .out_shift(out_shift)) div0 (
+      .in(abs[bw_psum*1-1 : bw_psum*0]),
+      .divisor(sum_2core), .out(div_out0)
+    );
+    div #(.bw_psum(bw_psum), .out_shift(out_shift)) div1 (
+      .in(abs[bw_psum*2-1 : bw_psum*1]),
+      .divisor(sum_2core), .out(div_out1)
+    );
+    div #(.bw_psum(bw_psum), .out_shift(out_shift)) div2 (
+      .in(abs[bw_psum*3-1 : bw_psum*2]),
+      .divisor(sum_2core), .out(div_out2)
+    );
+    div #(.bw_psum(bw_psum), .out_shift(out_shift)) div3 (
+      .in(abs[bw_psum*4-1 : bw_psum*3]),
+      .divisor(sum_2core), .out(div_out3)
+    );
+    div #(.bw_psum(bw_psum), .out_shift(out_shift)) div4 (
+      .in(abs[bw_psum*5-1 : bw_psum*4]),
+      .divisor(sum_2core), .out(div_out4)
+    );
+    div #(.bw_psum(bw_psum), .out_shift(out_shift)) div5 (
+      .in(abs[bw_psum*6-1 : bw_psum*5]),
+      .divisor(sum_2core), .out(div_out5)
+    );
+    div #(.bw_psum(bw_psum), .out_shift(out_shift)) div6 (
+      .in(abs[bw_psum*7-1 : bw_psum*6]),
+      .divisor(sum_2core), .out(div_out6)
+    );
+    div #(.bw_psum(bw_psum), .out_shift(out_shift)) div7 (
+      .in(abs[bw_psum*8-1 : bw_psum*7]),
+      .divisor(sum_2core), .out(div_out7)
+    );
+    assign div_done = div;
+  `endif
+
   always @ (posedge clk) begin
     if (reset) begin
       fifo_wr <= 0;
+      div_start <= 0;
+      acc_d1 <= 0;
     end
     else begin
        div_q <= div ;
+       acc_d1 <= acc;
       //  $display("acc = %0d", acc);
        if (acc) begin
-      
-         sum_q <= 
-           {4'b0, abs[bw_psum*1-1 : bw_psum*0]} +
-           {4'b0, abs[bw_psum*2-1 : bw_psum*1]} +
-           {4'b0, abs[bw_psum*3-1 : bw_psum*2]} +
-           {4'b0, abs[bw_psum*4-1 : bw_psum*3]} +
-           {4'b0, abs[bw_psum*5-1 : bw_psum*4]} +
-           {4'b0, abs[bw_psum*6-1 : bw_psum*5]} +
-           {4'b0, abs[bw_psum*7-1 : bw_psum*6]} +
-           {4'b0, abs[bw_psum*8-1 : bw_psum*7]} ;
-         fifo_wr <= 1;
+         sum_q <= sum8_out;
        end
-       else begin
-         fifo_wr <= 0;
+       fifo_wr <= acc_d1;  // write 1 cycle after sum_q updates (aligns sum8/sum8_2stage)
+       if (!acc) begin
    
          if (div) begin
-           sfp_out_sign0 <= {abs[bw_psum*1-1 : bw_psum*0], {out_shift{1'b0}}} / sum_2core;
-           sfp_out_sign1 <= {abs[bw_psum*2-1 : bw_psum*1], {out_shift{1'b0}}} / sum_2core;
-           sfp_out_sign2 <= {abs[bw_psum*3-1 : bw_psum*2], {out_shift{1'b0}}} / sum_2core;
-           sfp_out_sign3 <= {abs[bw_psum*4-1 : bw_psum*3], {out_shift{1'b0}}} / sum_2core;
-           sfp_out_sign4 <= {abs[bw_psum*5-1 : bw_psum*4], {out_shift{1'b0}}} / sum_2core;
-           sfp_out_sign5 <= {abs[bw_psum*6-1 : bw_psum*5], {out_shift{1'b0}}} / sum_2core;
-           sfp_out_sign6 <= {abs[bw_psum*7-1 : bw_psum*6], {out_shift{1'b0}}} / sum_2core;
-           sfp_out_sign7 <= {abs[bw_psum*8-1 : bw_psum*7], {out_shift{1'b0}}} / sum_2core;
+           div_start     <= 1'b1;
+         end else begin
+           div_start     <= 1'b0;
          end
+
+         if (div_done) begin
+           sfp_out_sign0 <= div_out0;
+           sfp_out_sign1 <= div_out1;
+           sfp_out_sign2 <= div_out2;
+           sfp_out_sign3 <= div_out3;
+           sfp_out_sign4 <= div_out4;
+           sfp_out_sign5 <= div_out5;
+           sfp_out_sign6 <= div_out6;
+           sfp_out_sign7 <= div_out7;
+         end
+
        end
    end
  end

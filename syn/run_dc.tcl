@@ -64,8 +64,15 @@ define_design_lib WORK -path work/.template
 set verilogout_single_bit false
 
 # read RTL from filelist (no testbench)
-foreach vfile $rtl_files {
-	analyze -format verilog -lib WORK $vfile
+# syn_defines: optional list of defines from Makefile (USER_DEFINES in USER_DEFINE_TASK_VARS)
+if { [info exists syn_defines] && [llength $syn_defines] > 0 } {
+	foreach vfile $rtl_files {
+		analyze -format verilog -define $syn_defines -lib WORK $vfile
+	}
+} else {
+	foreach vfile $rtl_files {
+		analyze -format verilog -lib WORK $vfile
+	}
 }
 
 elaborate $top_module -lib WORK -update

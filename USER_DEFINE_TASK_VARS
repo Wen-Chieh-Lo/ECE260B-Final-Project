@@ -10,7 +10,7 @@
 # sim options: fullchip | core | mac | dual | sfp_row | sfp_row_dual  (built-in default: fullchip)
 # syn options: core | sfp_row | mac                                   (built-in default: core)
 # If TARGET is a sim-only value (e.g. fullchip, dual), syn falls back to its built-in default.
-TARGET = mac
+TARGET = core
 
 # Synthesis effort level (make syn / make all)
 # Options: low | medium | high
@@ -23,4 +23,9 @@ SYN_EFFORT = high
 # Absolute path to project root (directory that contains verilog/, syn/, sim/).
 # Leave blank to use the directory where "make" is invoked.
 # Example: PROJECT_REPO_PATH = /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project
-PROJECT_REPO_PATH = /home/linux/ieng6/ECE260B_WI26_A00/w4lo/ECE260B-Final-Project
+PROJECT_REPO_PATH = 
+
+# Verilog preprocessor defines for simulation (iverilog -D) and synthesis (DC -define).
+# Space-separated macro names, e.g.: SFP_LONGDIV LOAD_OTHER_NORM_FILE
+# Leave blank for no extra defines.
+USER_DEFINES = SFP_LONGDIV

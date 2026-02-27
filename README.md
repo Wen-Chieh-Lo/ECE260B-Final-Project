@@ -2,14 +2,14 @@
 
 Verilog RTL and testbenches for single/dual-core MAC + SFP normalization.
 
-## Verification checklist
+## TODO checklist
 
 - [x] MAC array TB (single-core)
 - [x] SFP row TB (single-core)
 - [x] SFP row TB (dual-core)
 - [x] Core integration
-- [ ] MAC repipelining
-- [ ] SFP repipelining
+- [x] SFP repipelining (div_longdiv, sum8_2stage)
+- [x] MAC repipelining
 - [ ] Full dual-core flow
 
 ## Synthesis checklist
@@ -19,7 +19,7 @@ All runs below used `SYN_EFFORT=low`; re-run with `SYN_EFFORT=high` for pre-PnR 
 - [x] mac_array synthesized (`make syn TARGET=mac SYN_EFFORT=low`)
 - [x] sfp_row synthesized (`make syn TARGET=sfp_row SYN_EFFORT=low`)
 - [x] core synthesized (`make syn TARGET=core SYN_EFFORT=low`)
-- [ ] All timing closed (see results below)
+- [x] All timing closed (see results below)
 
 ## Quick Start
 
@@ -30,10 +30,14 @@ make syn                          # synthesize core (default, SYN_EFFORT=high)
 make syn TARGET=mac               # synthesize a specific target
 make syn TARGET=mac SYN_EFFORT=low  # fast mapping for quick sanity check
 make all TARGET=core              # run sim + syn for the same target
+make parse                        # parse syn/log/*.rep and print summary
 make help                         # list all targets and options
 ```
 
-Default targets and project path can be set in `USER_DEFINE_TASK_VARS` (see that file for details).
+Default targets, project path, and Verilog defines can be set in `USER_DEFINE_TASK_VARS`:
+- `TARGET` — default sim/syn target
+- `SYN_EFFORT` — low | medium | high
+- `USER_DEFINES` — space-separated macros (e.g. `SFP_LONGDIV`) applied to sim and syn
 
 ## Simulation targets
 
@@ -58,13 +62,14 @@ Waveforms are written to `sim/waveform/*.vcd` after each run.
 
 Reports are written to `syn/log/<top>_area.rep`, `<top>_timing.rep`, `<top>_power.rep`.
 
-Run `python3.6 syn/parse_reports.py` to print a formatted summary
-(see [Synthesis results](#synthesis-results) at the bottom of this file).
+Run `make parse` (or `bash syn/parse_reports.sh`) to print a formatted summary.
+If Python has symbol/version issues, the shell script works without Python.
 
 ## Project layout
 
 ```
 verilog/          RTL (core, fullchip, sync, sfp_row, ofifo)
+verilog/submodules/  div, div_longdiv, sum8, sum8_2stage
 verilog/mac/      MAC column and array
 verilog/memory/   SRAM, FIFO, mux
 sim/tb/           Testbenches
@@ -76,9 +81,10 @@ syn/filelists/    RTL filelists for synthesis (no testbench)
 syn/gate/         Synthesized netlist output
 syn/log/          Synthesis reports (area, timing, power)
 syn/work/         DC intermediate files (alib, logs, .template)
+syn/parse_reports.sh  Report summary script (no Python needed)
 ```
 
-Report parser: `syn/parse_reports.py` — run with `python3.6` to summarize all designs in `syn/log/`.
+Report parser: `make parse` or `bash syn/parse_reports.sh` — summarizes all designs in `syn/log/`.
 
 ## I/O delay spec (for TB result checking)
 
@@ -87,7 +93,9 @@ When to sample RTL outputs to compare against golden. All delays in clock cycles
 | Block           | Assert                   | Sample output               |
 | --------------- | ------------------------ | --------------------------- |
 | **mac_array**   | `ofifo_rd = 1` (per row) | `out` valid **same cycle**  |
-| **sfp_row**     | `div = 1` for one cycle  | `sfp_out` valid **1 cycle after** |
+| **sfp_row**     | `div = 1` for one cycle  | `sfp_out` valid **~8 cycles after** (div_longdiv latency) |
+
+With `SFP_LONGDIV` defined, the divider uses `div_longdiv` (FSM, ~8 cycles). TBs use `sfp_div_lat` and `sfp_acc_lat` parameters to align sampling.
 
 ## Discussion
 
@@ -100,9 +108,20 @@ When to sample RTL outputs to compare against golden. All delays in clock cycles
 ## Synthesis results
 
 All three designs synthesized with `SYN_EFFORT=low`, clock period 1.2 ns (TSMC 65 nm GP WC).
-Run `python3.6 syn/parse_reports.py` to regenerate.
+Run `make parse` to regenerate the summary.
 
-```
+### Analysis summary
+
+| Design        | Before repipelining                          | After repipelining                    |
+|---------------|----------------------------------------------|---------------------------------------|
+| **core**      | 243.5k um² · 24.8 ns · VIOLATED (-23.7 ns)   | 175.8k um² (-28%) · 0.95 ns · MET     |
+| **mac_array** | 116.8k um² · VIOLATED (-1.6 ns)              | 69.5k um² (-40%) · MET                |
+| **sfp_row**   | 53.9k um² · 25 ns · VIOLATED (-23.9 ns)      | 24.7k um² (-54%) · 0.97 ns · MET      |
+
+**Conclusion:** Repipelining (div_longdiv, sum8_2stage) breaks the critical path from combinational divider/sum into multiple register stages, reducing data arrival from ~25 ns to under ~1 ns and meeting the 1.2 ns clock. Area changes with pipeline registers: core and mac_array shrink due to logic restructuring; sfp_row shrinks significantly as div_longdiv replaces the combinational divider.
+
+#### Before repipelining
+``` 
 +--------------------------------------------------------------------------------+
 |  Design: core                                                                  |
 +================================================================================+
@@ -160,3 +179,63 @@ Run `python3.6 syn/parse_reports.py` to regenerate.
 |                                                                                |
 +--------------------------------------------------------------------------------+
 ```
+
+#### After repipelining
+``` 
++--------------------------------------------------------------------------------+
+|  Design: core                                                                  |
++================================================================================+
+|                                                                                |
+|  [ Area ]                                                                      |
+|  Total cell area                                                 175820.762 um2|
+|                                                                                |
+|  [ Power ]                                                                     |
+|  Total Dynamic Power                                                 72.0683 mW|
+|  Cell Leakage Power                                                   1.2643 mW|
+|                                                                                |
+|  [ Timing - worst path ]                                                       |
+|  Startpoint                               sfp_instance/div0_divisor_fix_reg_10_|
+|  Endpoint                                   sfp_instance/div0_remainder_reg_18_|
+|  Data arrival time                                                     0.950 ns|
+|  Slack (MET)                                                   [PASS] +0.000 ns|
+|                                                                                |
++--------------------------------------------------------------------------------+
+
++--------------------------------------------------------------------------------+
+|  Design: mac_array                                                             |
++================================================================================+
+|                                                                                |
+|  [ Area ]                                                                      |
+|  Total cell area                                                  69490.440 um2|
+|                                                                                |
+|  [ Power ]                                                                     |
+|  Total Dynamic Power                                                 18.8235 mW|
+|  Cell Leakage Power                                                 584.1715 uW|
+|                                                                                |
+|  [ Timing - worst path ]                                                       |
+|  Startpoint                             col_idx_1__mac_col_inst_query_q_reg_38_|
+|  Endpoint                          ...ol_inst_mac_8in_instance_product4_reg_12_|
+|  Data arrival time                                                     0.968 ns|
+|  Slack (MET)                                                   [PASS] +0.000 ns|
+|                                                                                |
++--------------------------------------------------------------------------------+
+
++--------------------------------------------------------------------------------+
+|  Design: sfp_row                                                               |
++================================================================================+
+|                                                                                |
+|  [ Area ]                                                                      |
+|  Total cell area                                                  24698.160 um2|
+|                                                                                |
+|  [ Power ]                                                                     |
+|  Total Dynamic Power                                                 11.9368 mW|
+|  Cell Leakage Power                                                 144.8709 uW|
+|                                                                                |
+|  [ Timing - worst path ]                                                       |
+|  Startpoint                                                         sfp_in[151]|
+|  Endpoint                                               sum8_inst_s67_r_reg_17_|
+|  Data arrival time                                                     0.968 ns|
+|  Slack (MET)                                                   [PASS] +0.000 ns|
+|                                                                                |
++--------------------------------------------------------------------------------+
+``` 

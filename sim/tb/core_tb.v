@@ -16,6 +16,12 @@ module core_tb;
   parameter pr = 8;
   parameter col = 8;
   parameter sfp_out_shift = 7;
+  parameter sfp_acc_lat = 1;
+  `ifdef SFP_LONGDIV
+    parameter sfp_div_lat = 8;  // div_longdiv: 1 input reg + 6 iter + 1
+  `else
+    parameter sfp_div_lat = 0;
+  `endif
 
   integer qkvn_file, qkvn_scan_file, captured_data;
   integer weight [col*pr-1:0];
@@ -194,6 +200,11 @@ module core_tb;
     execute = 0;
     #0.5 clk = 1'b1;
 
+    #0.5 clk = 1'b0;
+    #0.5 clk = 1'b1;
+    #0.5 clk = 1'b0;
+    #0.5 clk = 1'b1;
+
     for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
 
 
@@ -287,9 +298,11 @@ module core_tb;
       #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_acc = 1'b1; //posedge 2
       #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 3
       #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_acc = 1'b0; //posedge 4
+      for (s = 0; s < sfp_acc_lat; s = s + 1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
       #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_div = 1'b1; //posedge 5
       #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 6
       #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_div = 1'b0; //posedge 7
+      for (s = 0; s < sfp_div_lat; s = s + 1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
       #0.5 clk = 1'b0; #0.5 clk = 1'b1; kmem_wr = 1'b1; //posedge 8
       $display("");
       $display("estimated:     %7d %7d %7d %7d %7d %7d %7d %7d ", 
@@ -507,6 +520,11 @@ $display("##### execute #####");
   #0.5 clk = 1'b0;  
   qmem_rd = 0; qkmem_add = 0; execute = 0;
   #0.5 clk = 1'b1;  
+
+  #0.5 clk = 1'b0;
+  #0.5 clk = 1'b1;
+  #0.5 clk = 1'b0;
+  #0.5 clk = 1'b1;
 
 
 ///////////////////////////////////////////
