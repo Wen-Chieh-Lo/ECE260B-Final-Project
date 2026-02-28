@@ -2,7 +2,7 @@
 
 Verilog RTL and testbenches for single/dual-core MAC + SFP normalization.
 
-## TODO checklist
+## Project TODO checklist
 
 - [x] MAC array TB (single-core)
 - [x] SFP row TB (single-core)
@@ -10,7 +10,13 @@ Verilog RTL and testbenches for single/dual-core MAC + SFP normalization.
 - [x] Core integration
 - [x] SFP repipelining (div_longdiv, sum8_2stage)
 - [x] MAC repipelining
-- [ ] step1 flow (fullchip dual-core)
+- [ ] step1 flow (step1.v + step1_tb.v + GLS)
+- [ ] fullchip protocol + integration
+- [ ] SRAM pnr
+- [ ] core hierachy-pnr
+
+## Alpha TODO list
+- [ ] LUT-DIV
 
 ## Synthesis checklist
 
