@@ -4,19 +4,62 @@ Verilog RTL and testbenches for single/dual-core MAC + SFP normalization.
 
 ## Project TODO checklist
 
+### Completed
 - [x] MAC array TB (single-core)
 - [x] SFP row TB (single-core)
 - [x] SFP row TB (dual-core)
 - [x] Core integration
 - [x] SFP repipelining (div_longdiv, sum8_2stage)
 - [x] MAC repipelining
-- [ ] step1 flow (step1.v + step1_tb.v + GLS)
+- [x] step1 flow (step1.v + step1_tb.v + GLS)
+- [x] step1 + core synthesis & GLS
+- [x] Step 2 (core = step1+sfp_row) GLS
+
+### Main steps (planned)
+
+| Step       | Scope                 | GLS     | PnR       | Notes                              |
+|------------|-----------------------|---------|-----------|------------------------------------|
+| **Step 1** | step1                 | ✓       | planned   | GLS done                           |
+| **Step 2** | core (step1+sfp_row)  | ✓       | —         | GLS done                           |
+| **Step 3** | —                     | planned | planned   | + post-PnR GLS                     |
+| **Step 4** | —                     | planned | planned   | synthesis + GLS + PnR              |
+| **Step 5** | —                     | —       | planned   | post-alphas                        |
+| **Step 6** | minor RTL             | —       | tentative | minor RTL change + full flow       |
+
+### GLS by authors
+
+| Step    | Owner                | Deadline          | Dependency |
+|---------|----------------------|-------------------|------------|
+| Step 1  | Wen-Chieh Lo         | Sat/Sun 11:59pm   | —          |
+| Step 2  | Chi-Han Chiu         | Sat 11:59pm       | Step 1     |
+| Step 4  | Nikhita Neelakanta   | next Fri max      | Step 2     |
+
+### PnR (vanilla, 13th)
+
+**Owners:** Shreeya Bhonsle, Ming-Yang Wu
+
+- [ ] Step 1 PnR
+- [ ] Step 3 PnR
+- [ ] Step 4 PnR
+- [ ] Step 5 PnR (post-alphas)
+- [ ] Step 6 PnR (minor, tentative)
+
+### Alphas (run in parallel with PnR)
+
+| # | Task                                                           | Owner                                           |
+|--:|----------------------------------------------------------------|-------------------------------------------------|
+| 1 | Minimize WNS (step1 alpha done); add pipelining where suitable | Wen-Chieh Lo, Nikhita Neelakanta, Chi-Han Chiu  |
+| 2 | Long Division replace by LUT                                   | Wen-Chieh Lo                                    |
+| 5 | Randomise input, increase input coverage                       | b1chiang@ucsd.edu                               |
+| 6 | Control Signal                                                 | b1chiang@ucsd.edu                               |
+
+### Other
+
 - [ ] fullchip protocol + integration
 - [ ] SRAM pnr
-- [ ] core hierachy-pnr
+- [ ] core hierarchy-pnr
 
-## Alpha TODO list
-- [ ] LUT-DIV
+**Workflow:** PnR, alphas, and Step 6 can proceed in parallel.
 
 ## Synthesis checklist
 
@@ -25,6 +68,7 @@ All runs below used `SYN_EFFORT=low`; re-run with `SYN_EFFORT=high` for pre-PnR 
 - [x] mac_array synthesized (`make syn TARGET=mac SYN_EFFORT=low`)
 - [x] sfp_row synthesized (`make syn TARGET=sfp_row SYN_EFFORT=low`)
 - [x] core synthesized (`make syn TARGET=core SYN_EFFORT=low`)
+- [x] step1 synthesized (`make syn TARGET=step1`)
 - [x] All timing closed (see results below)
 
 ## Quick Start
@@ -32,6 +76,8 @@ All runs below used `SYN_EFFORT=low`; re-run with `SYN_EFFORT=high` for pre-PnR 
 ```bash
 make sim                          # simulate fullchip (default)
 make sim TARGET=core              # simulate a specific target
+make gls TARGET=core              # gate-level sim (gls/tb + syn/gate + PDK)
+make gls TARGET=step1             # gate-level sim for step1
 make syn                          # synthesize core (default, SYN_EFFORT=high)
 make syn TARGET=mac               # synthesize a specific target
 make syn TARGET=mac SYN_EFFORT=low  # fast mapping for quick sanity check
@@ -52,7 +98,7 @@ Default targets, project path, and Verilog defines can be set in `USER_DEFINE_TA
 | `fullchip`    | fullchip single-core    | `filelist`                    |
 | `core`        | single core             | `filelist_core`               |
 | `mac`         | mac_array               | `filelist_mac`                |
-| `step1`       | step1 (fullchip dual-core) | `filelist_step1`            |
+| `step1`       | step1 (QK-only, no sfp)     | `filelist_step1`            |
 | `sfp_row`     | sfp_row single-core     | `filelist_sfp_row`            |
 | `sfp_row_dual`| sfp_row dual-core       | `filelist_sfp_row_dual`       |
 
@@ -63,6 +109,7 @@ Waveforms are written to `sim/waveform/*.vcd` after each run.
 | TARGET        | top_module  | filelist (in syn/filelists/) | SDC         | Outputs                  |
 | ------------- | ----------- | ---------------------------- | ----------- | ------------------------ |
 | `core`        | core        | `filelist_core`              | common.sdc  | `gate/core.out.v`        |
+| `step1`       | step1       | `filelist_step1`             | common.sdc  | `gate/step1.out.v`       |
 | `sfp_row`     | sfp_row     | `filelist_sfp_row`           | common.sdc  | `gate/sfp_row.out.v`     |
 | `mac`         | mac_array   | `filelist_mac`               | common.sdc  | `gate/mac_array.out.v`   |
 
@@ -74,7 +121,7 @@ If Python has symbol/version issues, the shell script works without Python.
 ## Project layout
 
 ```
-verilog/          RTL (core, fullchip, sync, sfp_row, ofifo)
+verilog/          RTL (core, step1, fullchip, sync, sfp_row, ofifo)
 verilog/submodules/  div, div_longdiv, sum8, sum8_2stage
 verilog/mac/      MAC column and array
 verilog/memory/   SRAM, FIFO, mux
@@ -82,6 +129,11 @@ sim/tb/           Testbenches
 sim/filelists/    Iverilog filelists (one per simulation target)
 sim/pattern/      Test vectors (kdata, mac_out, norm, etc.)
 sim/waveform/     Generated VCD files
+gls/              Gate-level simulation
+gls/tb/           GLS testbenches (paths: gls/waveform, gls/pattern)
+gls/filelists/   GLS filelists (DUT = syn/gate/*.out.v + PDK)
+gls/waveform/     GLS VCD output
+gls/pattern/     GLS test vectors
 syn/              Design Compiler scripts (run_dc.tcl, common.sdc)
 syn/filelists/    RTL filelists for synthesis (no testbench)
 syn/gate/         Synthesized netlist output

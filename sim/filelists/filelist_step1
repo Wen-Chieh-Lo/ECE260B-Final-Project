@@ -1,7 +1,7 @@
 // --- testbench ---
 ./sim/tb/step1_tb.v
 
-// --- top / core ---
+// --- top: step1 (core with sfp removed) ---
 ./verilog/step1.v
 
 // --- MAC ---

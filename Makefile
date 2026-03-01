@@ -12,14 +12,19 @@
 #   fullchip      fullchip single-core     filelist            (default)
 #   core          single core              filelist_core
 #   mac           mac_array                filelist_mac
-#   step1         step1 (fullchip dual-core) filelist_step1
+#   step1         step1 (QK-only, no sfp)   filelist_step1
 #   sfp_row       sfp_row single-core      filelist_sfp_row
 #   sfp_row_dual  sfp_row dual-core        filelist_sfp_row_dual
+#
+# Gate-level simulation:  make gls [TARGET=<name>]
+#   Uses gls/filelists/ + gls/tb/ + syn/gate/*.out.v + PDK
+#   Waveforms: gls/waveform/*.vcd
 #
 # Synthesis targets (TARGET=):
 #   target   top_module   filelist (in syn/filelists/)  SDC         outputs
 #   -------- ------------ ---------------------------- ----------- --------------------------
 #   core     core         filelist_core                 common.sdc  gate/core.out.v     (default)
+#   step1    step1        filelist_step1                common.sdc  gate/step1.out.v
 #   sfp_row  sfp_row      filelist_sfp_row              common.sdc  gate/sfp_row.out.v
 #   mac      mac_array    filelist_mac                  common.sdc  gate/mac_array.out.v
 #
@@ -34,10 +39,12 @@
 
 # ----- Tool and path configuration -----
 SIM_FILELISTS_DIR := sim/filelists
+GLS_FILELISTS_DIR := gls/filelists
 SYN_FILELISTS_DIR := syn/filelists
 IVERILOG          := iverilog
 VVP               := vvp
 OUT               := sim/compiled
+GLS_OUT      := gls/compiled
 SYNDIR            := syn
 
 ifneq ($(strip $(PROJECT_REPO_PATH)),)
@@ -69,22 +76,37 @@ TARGET_WAVEFORM_table := \
 TARGET_TOP_MODULE_table := \
 	core:core \
 	mac:mac_array \
-	sfp_row:sfp_row
+	sfp_row:sfp_row \
+	step1:step1
 
 SIM_TARGETS := fullchip core mac step1 sfp_row sfp_row_dual
-SYN_TARGETS := sfp_row core mac
+SYN_TARGETS := sfp_row core mac step1
 
 $(foreach p,$(TARGET_FILELIST_table),$(eval $(firstword $(subst :, ,$(p))): FILELIST_NAME := $(word 2,$(subst :, ,$(p)))))
 $(foreach p,$(TARGET_WAVEFORM_table),$(eval $(firstword $(subst :, ,$(p))): WAVEFORM     := $(word 2,$(subst :, ,$(p)))))
 
+# gls_* targets inherit filelist/waveform from sim target
+$(foreach p,$(TARGET_FILELIST_table),$(eval gls_$(firstword $(subst :, ,$(p))): FILELIST_NAME := $(word 2,$(subst :, ,$(p)))))
+$(foreach p,$(TARGET_WAVEFORM_table),$(eval gls_$(firstword $(subst :, ,$(p))): WAVEFORM     := $(word 2,$(subst :, ,$(p)))))
+
 # ----- Phony declarations -----
-.PHONY: all clean help default sim syn parse $(SIM_TARGETS)
+.PHONY: all clean help default sim syn gls parse $(SIM_TARGETS) $(addprefix gls_,$(SIM_TARGETS))
 
 default: sim
 
 # ----- Simulation -----
 TARGET ?= fullchip
 sim: $(TARGET)
+
+# ----- Gate-level simulation -----
+gls: gls_$(TARGET)
+
+$(addprefix gls_,$(SIM_TARGETS)):
+	@mkdir -p gls gls/waveform gls/pattern
+	$(IVERILOG) $(IVERILOG_DEFINES) -o $(GLS_OUT) -f $(GLS_FILELISTS_DIR)/$(FILELIST_NAME)
+	$(VVP) $(GLS_OUT)
+	@echo ""
+	@echo ">>> Gate sim waveform: gls/waveform/$(WAVEFORM) <<<"
 
 # ----- All: sim + syn (+ pnr in the future) for a single TARGET -----
 all:
@@ -123,17 +145,19 @@ parse:  ## Parse syn/log/*.rep and print summary (uses shell script; no Python n
 	@bash $(SYNDIR)/parse_reports.sh $(SYNDIR)/log
 
 clean:
-	rm -f $(OUT)
-	@echo "Removed $(OUT)"
+	rm -f $(OUT) $(GLS_OUT)
+	@echo "Removed $(OUT) $(GLS_OUT)"
 
 help:
 	@echo "Usage:  make sim [TARGET=<name>]"
+	@echo "        make gls [TARGET=<name>]  # gate-level sim (gls/tb + syn/gate + PDK)"
 	@echo "        make syn [TARGET=<name>] [SYN_EFFORT=low|medium|high]"
 	@echo "        make all [TARGET=<name>] [SYN_EFFORT=low|medium|high]"
 	@echo ""
 	@echo "TARGET controls both sim and syn:"
 	@echo "  sim valid: fullchip(default) | core | mac | step1 | sfp_row | sfp_row_dual"
-	@echo "  syn valid: core(default)     | sfp_row | mac"
+	@echo "  syn valid: core(default)     | step1 | sfp_row | mac"
+	@echo "  gls valid: same as sim (uses syn/gate/*.out.v + PDK)"
 	@echo "  (if TARGET is sim-only, syn falls back to its default: core)"
 	@echo ""
 	@echo "SYN_EFFORT (default: high):"

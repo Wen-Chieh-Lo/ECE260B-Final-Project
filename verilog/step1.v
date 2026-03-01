@@ -1,67 +1,109 @@
-// step1: fullchip dual-core top
+// step1: core with sfp_row removed. Copy of core.v, delete sfp.
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
-module step1 (clk_0, clk_1, mem_in_0, mem_in_1, inst, reset);
+module step1 (clk, mem_in, out, inst, reset);
 
 parameter col = 8;
 parameter bw = 8;
-parameter bw_psum = 2*bw+4;
-parameter pr = 16;
+parameter bw_psum = 2*bw+3;
+parameter pr = 8;
 
-input  clk_0;
-input  clk_1;
-input  [pr*bw-1:0] mem_in_0; 
-input  [pr*bw-1:0] mem_in_1; 
-input  [18:0] inst; 
+input  clk;
+input  [pr*bw-1:0] mem_in;
+output [bw_psum*col-1:0] out;
+wire   [bw_psum*col-1:0] pmem_out;
+input  [18:0] inst;
 input  reset;
-output [bw_psum*col*2-1:0] out;
 
-wire [18:0] inst_0;
-wire [18:0] inst_1;
-wire [bw_psum+3:0] sfp_sum_in_0;
-wire [bw_psum+3:0] sfp_sum_in_1;
-wire [bw_psum+3:0] sfp_sum_out_0;
-wire [bw_psum+3:0] sfp_sum_out_1;
-wire [bw_psum*col-1:0] out_0;
-wire [bw_psum*col-1:0] out_1;
+wire  [pr*bw-1:0] mac_in;
+wire  [pr*bw-1:0] kmem_out;
+wire  [pr*bw-1:0] qmem_out;
+wire  [bw_psum*col-1:0] pmem_in;
+wire  [bw_psum*col-1:0] fifo_out;
+wire  [bw_psum*col-1:0] array_out;
+wire  [col-1:0] fifo_wr;
+wire fifo_valid;
+wire [3:0] qkmem_add;
+wire [3:0] pmem_add;
+wire [1:0] mac_inst;
 
-assign inst_0 = inst;
-assign inst_1 = inst;
-assign sfp_sum_in_0 = sfp_sum_out_1_sync;
-assign sfp_sum_in_1 = sfp_sum_out_0_sync;
+wire  qmem_rd;
+wire  qmem_wr; 
+wire  kmem_rd;
+wire  kmem_wr; 
+wire  pmem_rd;
+wire  pmem_wr;
 
-assign out = {out_1, out_0};
+reg   [2:0] fifo_valid_cnt;
 
-core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) core_instance_0 (
-      .reset(reset), 
-      .clk(clk_0), 
-      .mem_in(mem_in_0), 
-      .inst(inst_0),
-      .sfp_sum_in(sfp_sum_in_0),
-      .sfp_sum_out(sfp_sum_out_0),
-      .out(out_0)
+assign pmem_in = fifo_out;
+assign pmem_wr = fifo_valid;
+assign pmem_add = (inst[0]||inst[1])? inst[11:8] : fifo_valid_cnt;
+assign pmem_rd = inst[1];
+
+assign qkmem_add = inst[15:12];
+assign mac_inst = inst[7:6];
+assign qmem_rd  = inst[5];
+assign qmem_wr  = inst[4];
+assign kmem_rd  = inst[3];
+assign kmem_wr  = inst[2];
+
+assign mac_in  = inst[6] ? kmem_out : qmem_out;
+assign out = pmem_out;
+
+mac_array #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) mac_array_instance (
+        .in(mac_in), 
+        .clk(clk), 
+        .reset(reset), 
+        .inst(mac_inst),     
+        .fifo_wr(fifo_wr),     
+	.out(array_out)
 );
 
-core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) core_instance_1 (
-      .reset(reset), 
-      .clk(clk_1), 
-      .mem_in(mem_in_1), 
-      .inst(inst_1),
-      .sfp_sum_in(sfp_sum_in_1),
-      .sfp_sum_out(sfp_sum_out_1),
-      .out(out_1)
+ofifo #(.bw(bw_psum), .col(col))  ofifo_inst (
+        .reset(reset),
+        .clk(clk),
+        .in(array_out),
+        .wr(fifo_wr),
+        .rd(fifo_valid),
+        .o_valid(fifo_valid),
+        .out(fifo_out)
 );
 
-sync sync_instance_0 (
-      .clk(clk_1), 
-      .in(sfp_sum_out_0),
-      .out(sfp_sum_out_0_sync)
-);
-sync sync_instance_1 (
-      .clk(clk_0), 
-      .in(sfp_sum_out_1),
-      .out(sfp_sum_out_1_sync)
+sram_w16 #(.sram_bit(pr*bw)) qmem_instance (
+        .CLK(clk),
+        .D(mem_in),
+        .Q(qmem_out),
+        .CEN(!(qmem_rd||qmem_wr)),
+        .WEN(!qmem_wr), 
+        .A(qkmem_add)
 );
 
+sram_w16 #(.sram_bit(pr*bw)) kmem_instance (
+        .CLK(clk),
+        .D(mem_in),
+        .Q(kmem_out),
+        .CEN(!(kmem_rd||kmem_wr)),
+        .WEN(!kmem_wr), 
+        .A(qkmem_add)
+);
+
+sram_w16 #(.sram_bit(col*bw_psum)) psum_mem_instance (
+        .CLK(clk),
+        .D(pmem_in),
+        .Q(pmem_out),
+        .CEN(!(pmem_rd||pmem_wr)),
+        .WEN(!pmem_wr), 
+        .A(pmem_add)
+);
+
+  always @(posedge clk ) begin
+	if(~fifo_valid) begin
+		fifo_valid_cnt <= 3'd0;    
+	end
+	else begin
+		fifo_valid_cnt <= fifo_valid_cnt + 1'd1;
+	end
+  end
 
 endmodule

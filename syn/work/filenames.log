@@ -82,11 +82,17 @@
 /software/nonrdist64/dc-2015.06-64/auxx/gui/common/schematic/DialogPathSchematicFanInOut.tcl
 /software/nonrdist64/dc-2015.06-64/auxx/gui/common/schematic/DialogPathSchematicAddPaths.tcl
 /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/syn/run_dc.tcl
-/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/verilog/submodules/sum8.v
+/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/verilog/core.v
 /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db
+/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/verilog/sync.v
+/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/verilog/submodules/sum8.v
 /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/verilog/submodules/div.v
 /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/verilog/sfp_row.v
+/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/verilog/mac/mac_col.v
+/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/verilog/mac/mac_8in.v
+/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/verilog/mac/mac_array.v
 /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/verilog/memory/sram_w16.v
+/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/verilog/ofifo.v
 /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/verilog/memory/fifo_depth16.v
 /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/verilog/memory/fifo_mux_16_1.v
 /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/verilog/memory/fifo_mux_8_1.v
@@ -96,7 +102,6 @@
 /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/syn/common.sdc
 /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db
 /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/syn/alib-52/tcbn65gpluswc.db.alib
-/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/syn/alib-52/alib_analyze_libs.tcl.e
 /software/nonrdist64/dc-2015.06-64/libraries/syn/dw_foundation.sldb
 /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db
 /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/syn/alib-52/tcbn65gpluswc.db.alib
