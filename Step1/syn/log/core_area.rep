@@ -1,0 +1,65 @@
+ 
+****************************************
+Report : area
+Design : core
+Version: K-2015.06-SP2
+Date   : Sat Feb 28 23:08:38 2026
+****************************************
+
+Information: Updating design information... (UID-85)
+Warning: Design 'core' contains 1 high-fanout nets. A fanout number of 1000 will be used for delay calculations involving these nets. (TIM-134)
+Library(s) Used:
+
+    tcbn65gpluswc (File: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db)
+
+Number of ports:                        16180
+Number of nets:                         44528
+Number of cells:                        26544
+Number of combinational cells:          20596
+Number of sequential cells:              5776
+Number of macros/black boxes:               0
+Number of buf/inv:                       2720
+Number of references:                       6
+
+Combinational area:              71362.080155
+Buf/Inv area:                     4004.640116
+Noncombinational area:           47772.360229
+Macro/Black Box area:                0.000000
+Net Interconnect area:      undefined  (Wire load has zero net area)
+
+Total cell area:                119134.440384
+Total area:                 undefined
+1
+ 
+****************************************
+Report : reference
+Design : core
+Version: K-2015.06-SP2
+Date   : Sat Feb 28 23:08:40 2026
+****************************************
+
+Attributes:
+    b - black box (unknown)
+   bo - allows boundary optimization
+    d - dont_touch
+   mo - map_only
+    h - hierarchical
+    n - noncombinational
+    r - removable
+    s - synthetic operator
+    u - contains unmapped logic
+
+Reference          Library       Unit Area   Count    Total Area   Attributes
+-----------------------------------------------------------------------------
+MUX2D0             tcbn65gpluswc
+                                  3.240000      64    207.360001  
+NR2D2              tcbn65gpluswc
+                                  2.520000       2      5.040000  
+mac_array_col8_bw8_bw_psum19_pr8
+                              57277.800017       1  57277.800017  h, n
+ofifo_col8_bw19               35980.200163       1  35980.200163  h, n
+sram_w16_sram_bit64_0         12835.440101       1  12835.440101  h, n
+sram_w16_sram_bit64_1         12828.600101       1  12828.600101  h, n
+-----------------------------------------------------------------------------
+Total 6 references                                  119134.440384
+1

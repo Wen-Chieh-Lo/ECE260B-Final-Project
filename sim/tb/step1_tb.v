@@ -44,7 +44,7 @@ module step1_tb;
   assign inst[1] = pmem_rd;
   assign inst[0] = pmem_wr;
 
-  step1 #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) step1_instance (
+  core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) step1_instance (
     .reset(reset),
     .clk(clk),
     .mem_in(mem_in),
