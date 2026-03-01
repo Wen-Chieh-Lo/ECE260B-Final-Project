@@ -11,15 +11,15 @@ Verilog RTL and testbenches for single/dual-core MAC + SFP normalization.
 - [x] Core integration
 - [x] SFP repipelining (div_longdiv, sum8_2stage)
 - [x] MAC repipelining
-- [x] step1 flow (step1.v + step1_tb.v + GLS)
-- [x] step1 + core synthesis & GLS
+- [x] step1 flow (in Step1/ folder: step1.v + step1_tb.v + GLS)
+- [x] step1 + core synthesis & GLS (in Step1/ folder)
 - [x] Step 2 (core = step1+sfp_row) GLS
 
 ### Main steps (planned)
 
 | Step       | Scope                 | GLS     | PnR       | Notes                              |
 |------------|-----------------------|---------|-----------|------------------------------------|
-| **Step 1** | step1                 | ✓       | planned   | GLS done                           |
+| **Step 1** | step1 (in Step1/)     | ✓       | planned   | GLS done                           |
 | **Step 2** | core (step1+sfp_row)  | ✓       | —         | GLS done                           |
 | **Step 3** | —                     | planned | planned   | + post-PnR GLS                     |
 | **Step 4** | —                     | planned | planned   | synthesis + GLS + PnR              |
@@ -68,7 +68,7 @@ All runs below used `SYN_EFFORT=low`; re-run with `SYN_EFFORT=high` for pre-PnR 
 - [x] mac_array synthesized (`make syn TARGET=mac SYN_EFFORT=low`)
 - [x] sfp_row synthesized (`make syn TARGET=sfp_row SYN_EFFORT=low`)
 - [x] core synthesized (`make syn TARGET=core SYN_EFFORT=low`)
-- [x] step1 synthesized (`make syn TARGET=step1`)
+- [x] step1 synthesized (in Step1/ folder: `cd Step1 && make syn`)
 - [x] All timing closed (see results below)
 
 ## Quick Start
@@ -77,7 +77,6 @@ All runs below used `SYN_EFFORT=low`; re-run with `SYN_EFFORT=high` for pre-PnR 
 make sim                          # simulate fullchip (default)
 make sim TARGET=core              # simulate a specific target
 make gls TARGET=core              # gate-level sim (gls/tb + syn/gate + PDK)
-make gls TARGET=step1             # gate-level sim for step1
 make syn                          # synthesize core (default, SYN_EFFORT=high)
 make syn TARGET=mac               # synthesize a specific target
 make syn TARGET=mac SYN_EFFORT=low  # fast mapping for quick sanity check
@@ -98,7 +97,6 @@ Default targets, project path, and Verilog defines can be set in `USER_DEFINE_TA
 | `fullchip`    | fullchip single-core    | `filelist`                    |
 | `core`        | single core             | `filelist_core`               |
 | `mac`         | mac_array               | `filelist_mac`                |
-| `step1`       | step1 (QK-only, no sfp)     | `filelist_step1`            |
 | `sfp_row`     | sfp_row single-core     | `filelist_sfp_row`            |
 | `sfp_row_dual`| sfp_row dual-core       | `filelist_sfp_row_dual`       |
 
@@ -109,7 +107,6 @@ Waveforms are written to `sim/waveform/*.vcd` after each run.
 | TARGET        | top_module  | filelist (in syn/filelists/) | SDC         | Outputs                  |
 | ------------- | ----------- | ---------------------------- | ----------- | ------------------------ |
 | `core`        | core        | `filelist_core`              | common.sdc  | `gate/core.out.v`        |
-| `step1`       | step1       | `filelist_step1`             | common.sdc  | `gate/step1.out.v`       |
 | `sfp_row`     | sfp_row     | `filelist_sfp_row`           | common.sdc  | `gate/sfp_row.out.v`     |
 | `mac`         | mac_array   | `filelist_mac`               | common.sdc  | `gate/mac_array.out.v`   |
 
@@ -121,7 +118,7 @@ If Python has symbol/version issues, the shell script works without Python.
 ## Project layout
 
 ```
-verilog/          RTL (core, step1, fullchip, sync, sfp_row, ofifo)
+verilog/          RTL (core, fullchip, sync, sfp_row, ofifo)
 verilog/submodules/  div, div_longdiv, sum8, sum8_2stage
 verilog/mac/      MAC column and array
 verilog/memory/   SRAM, FIFO, mux

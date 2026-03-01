@@ -12,7 +12,6 @@
 #   fullchip      fullchip single-core     filelist            (default)
 #   core          single core              filelist_core
 #   mac           mac_array                filelist_mac
-#   step1         step1 (QK-only, no sfp)   filelist_step1
 #   sfp_row       sfp_row single-core      filelist_sfp_row
 #   sfp_row_dual  sfp_row dual-core        filelist_sfp_row_dual
 #
@@ -24,7 +23,6 @@
 #   target   top_module   filelist (in syn/filelists/)  SDC         outputs
 #   -------- ------------ ---------------------------- ----------- --------------------------
 #   core     core         filelist_core                 common.sdc  gate/core.out.v     (default)
-#   step1    step1        filelist_step1                common.sdc  gate/step1.out.v
 #   sfp_row  sfp_row      filelist_sfp_row              common.sdc  gate/sfp_row.out.v
 #   mac      mac_array    filelist_mac                  common.sdc  gate/mac_array.out.v
 #
@@ -60,7 +58,6 @@ TARGET_FILELIST_table := \
 	fullchip:filelist \
 	core:filelist_core \
 	mac:filelist_mac \
-	step1:filelist_step1 \
 	sfp_row:filelist_sfp_row \
 	sfp_row_dual:filelist_sfp_row_dual
 
@@ -69,7 +66,6 @@ TARGET_WAVEFORM_table := \
 	fullchip:fullchip.vcd \
 	core:core.vcd \
 	mac:mac_array.vcd \
-	step1:step1.vcd \
 	sfp_row:sfp_row.vcd \
 	sfp_row_dual:sfp_row_dualcore.vcd
 
@@ -77,11 +73,10 @@ TARGET_WAVEFORM_table := \
 TARGET_TOP_MODULE_table := \
 	core:core \
 	mac:mac_array \
-	sfp_row:sfp_row \
-	step1:step1
+	sfp_row:sfp_row
 
-SIM_TARGETS := fullchip core mac step1 sfp_row sfp_row_dual
-SYN_TARGETS := sfp_row core mac step1
+SIM_TARGETS := fullchip core mac sfp_row sfp_row_dual
+SYN_TARGETS := sfp_row core mac
 
 $(foreach p,$(TARGET_FILELIST_table),$(eval $(firstword $(subst :, ,$(p))): FILELIST_NAME := $(word 2,$(subst :, ,$(p)))))
 $(foreach p,$(TARGET_WAVEFORM_table),$(eval $(firstword $(subst :, ,$(p))): WAVEFORM     := $(word 2,$(subst :, ,$(p)))))
@@ -156,8 +151,8 @@ help:
 	@echo "        make all [TARGET=<name>] [SYN_EFFORT=low|medium|high]"
 	@echo ""
 	@echo "TARGET controls both sim and syn:"
-	@echo "  sim valid: fullchip(default) | core | mac | step1 | sfp_row | sfp_row_dual"
-	@echo "  syn valid: core(default)     | step1 | sfp_row | mac"
+	@echo "  sim valid: fullchip(default) | core | mac | sfp_row | sfp_row_dual"
+	@echo "  syn valid: core(default)     | sfp_row | mac"
 	@echo "  gls valid: same as sim (uses syn/gate/*.out.v + PDK)"
 	@echo "  (if TARGET is sim-only, syn falls back to its default: core)"
 	@echo ""
