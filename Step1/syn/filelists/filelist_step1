@@ -1,10 +1,5 @@
 // --- top / core ---
 ./verilog/core.v
-./verilog/sync.v
-./verilog/submodules/sum8.v
-./verilog/submodules/div.v
-./verilog/sfp_row.v
-
 // --- MAC ---
 ./verilog/mac/mac_col.v
 ./verilog/mac/mac_8in.v
