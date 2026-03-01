@@ -36,6 +36,7 @@
 
 # ----- User-defined defaults (overridden by command line) -----
 -include USER_DEFINE_TASK_VARS
+USER_DEFINES ?= SFP_LONGDIV
 
 # ----- Tool and path configuration -----
 SIM_FILELISTS_DIR := sim/filelists
