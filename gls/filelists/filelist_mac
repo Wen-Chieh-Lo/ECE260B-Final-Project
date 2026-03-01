@@ -1,0 +1,9 @@
+// --- Gate-level simulation: mac_array ---
+// TB
+./gls/tb/mac_array_tb.v
+
+// DUT: gate netlist
+./syn/gate/mac_array.out.v
+
+// Standard cell library
+./gls/tcbn65gplus.v

@@ -113,16 +113,17 @@ current_design $top_module
 
 
 # Compile
+# -gate_clock: map clock network GTECH to target library
 echo "========================================================"
 echo " Synthesis effort: $syn_effort"
 echo "========================================================"
 
 if { $syn_effort == "low" } {
-    compile -map_effort low
+    compile -map_effort low 
 } elseif { $syn_effort == "medium" } {
     compile -map_effort medium
 } else {
-    compile_ultra -retime
+    compile_ultra -retime -gate_clock -exact_map
 }
 
 # Write Out Design - Hierarchical

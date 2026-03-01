@@ -1,0 +1,28 @@
+{
+  "extensionVersion": "1.5.0",
+  "fileName": "/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/gls/waveform/sfp_row.vcd",
+  "markerTime": 215000,
+  "altMarkerTime": null,
+  "selectedSignal": {
+    "name": "sfp_row_tb.u_sfp.div0.in",
+    "msb": 18,
+    "lsb": 0
+  },
+  "zoomRatio": 1,
+  "scrollLeft": 0,
+  "displayedSignals": [
+    {
+      "dataType": "netlist-variable",
+      "netlistId": 7215,
+      "name": "sfp_row_tb.u_sfp.div0.in",
+      "numberFormat": "hexadecimal",
+      "colorIndex": 0,
+      "rowHeight": 1,
+      "verticalScale": 1,
+      "nameType": "fullPath",
+      "customName": "in",
+      "renderType": "multiBit",
+      "valueLinkCommand": ""
+    }
+  ]
+}

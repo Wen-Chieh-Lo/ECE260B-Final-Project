@@ -1,0 +1,182 @@
+ 
+****************************************
+Report : area
+Design : step1
+Version: K-2015.06-SP2
+Date   : Sat Feb 28 19:17:41 2026
+****************************************
+
+Information: Updating design information... (UID-85)
+Warning: Design 'step1' contains 1 high-fanout nets. A fanout number of 1000 will be used for delay calculations involving these nets. (TIM-134)
+Library(s) Used:
+
+    tcbn65gpluswc (File: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db)
+
+Number of ports:                         1941
+Number of nets:                         37377
+Number of cells:                        34171
+Number of combinational cells:          23298
+Number of sequential cells:             10658
+Number of macros/black boxes:               0
+Number of buf/inv:                       2753
+Number of references:                      64
+
+Combinational area:              63703.800294
+Buf/Inv area:                     3152.880123
+Noncombinational area:           74876.041368
+Macro/Black Box area:                0.000000
+Net Interconnect area:      undefined  (Wire load has zero net area)
+
+Total cell area:                138579.841662
+Total area:                 undefined
+1
+ 
+****************************************
+Report : reference
+Design : step1
+Version: K-2015.06-SP2
+Date   : Sat Feb 28 19:17:43 2026
+****************************************
+
+Attributes:
+    b - black box (unknown)
+   bo - allows boundary optimization
+    d - dont_touch
+   mo - map_only
+    h - hierarchical
+    n - noncombinational
+    r - removable
+    s - synthetic operator
+    u - contains unmapped logic
+
+Reference          Library       Unit Area   Count    Total Area   Attributes
+-----------------------------------------------------------------------------
+AN4D0              tcbn65gpluswc
+                                  2.880000     256    737.280029  
+AOI22D0            tcbn65gpluswc
+                                  2.520000    1024   2580.479980  
+AOI221D0           tcbn65gpluswc
+                                  2.880000       1      2.880000  
+BUFFD2             tcbn65gpluswc
+                                  2.160000       1      2.160000  
+CKAN2D0            tcbn65gpluswc
+                                  2.160000       2      4.320000  
+CKMUX2D1           tcbn65gpluswc
+                                  3.600000       3     10.800000  
+CKND2D0            tcbn65gpluswc
+                                  1.440000     130    187.200007  
+CKND2D1            tcbn65gpluswc
+                                  1.440000       6      8.640000  
+DFQD1              tcbn65gpluswc
+                                  6.840000    2307  15779.880352  n
+IND2D0             tcbn65gpluswc
+                                  2.160000       1      2.160000  
+INR2D1             tcbn65gpluswc
+                                  2.160000       1      2.160000  
+INVD0              tcbn65gpluswc
+                                  1.080000       7      7.560000  
+INVD1              tcbn65gpluswc
+                                  1.080000      11     11.880000  
+INVD2              tcbn65gpluswc
+                                  1.440000       9     12.960001  
+INVD3              tcbn65gpluswc
+                                  2.160000       5     10.800000  
+MUX2D0             tcbn65gpluswc
+                                  3.240000      64    207.360001  
+ND2D1              tcbn65gpluswc
+                                  1.440000       1      1.440000  
+NR2D0              tcbn65gpluswc
+                                  1.440000      35     50.400002  
+NR2D1              tcbn65gpluswc
+                                  1.440000       2      2.880000  
+NR2D2              tcbn65gpluswc
+                                  2.520000       1      2.520000  
+NR2XD0             tcbn65gpluswc
+                                  1.440000       3      4.320000  
+NR4D1              tcbn65gpluswc
+                                  3.600000       1      3.600000  
+OA211D0            tcbn65gpluswc
+                                  2.880000       1      2.880000  
+OR2D0              tcbn65gpluswc
+                                  2.160000       8     17.280001  
+OR3D0              tcbn65gpluswc
+                                  2.520000       1      2.520000  
+OR4D1              tcbn65gpluswc
+                                  2.880000       1      2.880000  
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_0
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_1
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_2
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_3
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_4
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_5
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_6
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_7
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_8
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_9
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_10
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_11
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_12
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_13
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_14
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_15
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_16
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_17
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_18
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_19
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_20
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_21
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_22
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_23
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_24
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_25
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_26
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_27
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_28
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_29
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_30
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_31
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_32
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_sram_w16_sram_bit64_0_33
+                                  6.480000       1      6.480000  b, h
+TIEL               tcbn65gpluswc
+                                  1.080000       1      1.080000  
+mac_array_col8_bw8_bw_psum19_pr8
+                              73132.200510       1  73132.200510  b, h, n
+ofifo_col8_bw19               23451.480355       1  23451.480355  b, h, n
+sram_w16_sram_bit152          22115.520422       1  22115.520422  b, h, n
+-----------------------------------------------------------------------------
+Total 64 references                                 138579.841662
+1

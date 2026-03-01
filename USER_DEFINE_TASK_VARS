@@ -6,11 +6,11 @@
 # Leave a value blank to fall back to the Makefile's built-in default.
 # =============================================================================
 
-# Default target for simulation and synthesis (make sim / make syn / make all)
-# sim options: fullchip | core | mac | step1 | sfp_row | sfp_row_dual  (built-in default: fullchip)
-# syn options: core | sfp_row | mac                                   (built-in default: core)
+# Default target for simulation, GLS, and synthesis (make sim / make gls / make syn / make all)
+# sim / gls options: fullchip | core | mac | step1 | sfp_row | sfp_row_dual  (built-in default: fullchip)
+# syn options: core | step1 | sfp_row | mac                           (built-in default: core)
 # If TARGET is a sim-only value (e.g. fullchip, step1), syn falls back to its built-in default.
-TARGET = step1
+TARGET = core
 
 # Synthesis effort level (make syn / make all)
 # Options: low | medium | high
@@ -26,6 +26,6 @@ SYN_EFFORT = high
 PROJECT_REPO_PATH = 
 
 # Verilog preprocessor defines for simulation (iverilog -D) and synthesis (DC -define).
-# Space-separated macro names, e.g.: SFP_LONGDIV SFP_LUTDIV
+# Space-separated macro names, e.g.: SFP_LONGDIV SFP_LUTDIV SFP_VANILLA
 # Leave blank for no extra defines.
 USER_DEFINES = SFP_LONGDIV

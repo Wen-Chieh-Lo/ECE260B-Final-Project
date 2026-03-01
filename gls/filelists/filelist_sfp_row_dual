@@ -1,0 +1,9 @@
+// --- Gate-level simulation: sfp_row_dual ---
+// TB
+./gls/tb/sfp_row_dualcore_tb.v
+
+// DUT: gate netlist
+./syn/gate/sfp_row.out.v
+
+// Standard cell library
+./gls/tcbn65gplus.v
