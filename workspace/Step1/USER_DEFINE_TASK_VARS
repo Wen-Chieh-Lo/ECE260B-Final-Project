@@ -1,0 +1,31 @@
+# =============================================================================
+# USER_DEFINE_TASK_VARS
+# =============================================================================
+# Set personal defaults here so you don't need to type TARGET=... every time.
+# Command-line arguments (e.g. make sim TARGET=core) always override this file.
+# Leave a value blank to fall back to the Makefile's built-in default.
+# =============================================================================
+
+# Default target for simulation, GLS, and synthesis (make sim / make gls / make syn / make all)
+# sim / gls options: fullchip | core | mac | sfp_row | sfp_row_dual  (built-in default: fullchip)
+# syn options: core | sfp_row | mac                           (built-in default: core)
+# If TARGET is a sim-only value (e.g. fullchip), syn falls back to its built-in default.
+TARGET = core
+
+# Synthesis effort level (make syn / make all)
+# Options: low | medium | high
+#   low    - basic mapping only (compile -map_effort low);  fastest, for RTL sanity check
+#   medium - standard optimization (compile -map_effort medium); balanced speed/quality
+#   high   - full compile_ultra with timing high-effort script; slowest, for pre-PnR
+# Built-in default: high
+SYN_EFFORT = high
+
+# Absolute path to project root (directory that contains verilog/, syn/, sim/).
+# Leave blank to use the directory where "make" is invoked.
+# Example: PROJECT_REPO_PATH = /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project
+PROJECT_REPO_PATH = 
+
+# Verilog preprocessor defines for simulation (iverilog -D) and synthesis (DC -define).
+# Space-separated macro names, e.g.: SFP_LONGDIV SFP_LUTDIV VANILLA
+# Leave blank for no extra defines.
+USER_DEFINES = SFP_LONGDIV

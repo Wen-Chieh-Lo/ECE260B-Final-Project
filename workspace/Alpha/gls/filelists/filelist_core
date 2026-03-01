@@ -1,0 +1,9 @@
+// --- Gate-level simulation: core ---
+// TB
+./gls/tb/core_tb.v
+
+// DUT: gate netlist
+./syn/gate/core.out.v
+
+// Standard cell library
+/home/linux/ieng6/ECE260B_WI26_A00/public/course_contents/w5/full_flow/gate_sim/netlist/tcbn65gplus.v
