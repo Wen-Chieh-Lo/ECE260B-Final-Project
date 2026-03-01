@@ -7,9 +7,9 @@
 # =============================================================================
 
 # Default target for simulation, GLS, and synthesis (make sim / make gls / make syn / make all)
-# sim / gls options: fullchip | core | mac | step1 | sfp_row | sfp_row_dual  (built-in default: fullchip)
-# syn options: core | step1 | sfp_row | mac                           (built-in default: core)
-# If TARGET is a sim-only value (e.g. fullchip, step1), syn falls back to its built-in default.
+# sim / gls options: fullchip | core | mac | sfp_row | sfp_row_dual  (built-in default: fullchip)
+# syn options: core | sfp_row | mac                           (built-in default: core)
+# If TARGET is a sim-only value (e.g. fullchip), syn falls back to its built-in default.
 TARGET = core
 
 # Synthesis effort level (make syn / make all)

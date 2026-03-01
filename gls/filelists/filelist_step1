@@ -1,9 +1,0 @@
-// --- Gate-level simulation: step1 (QK-only, no sfp_row) ---
-// TB
-./gls/tb/step1_tb.v
-
-// DUT: gate netlist
-./syn/gate/step1.out.v
-
-// Standard cell library
-./gls/tcbn65gplus.v
