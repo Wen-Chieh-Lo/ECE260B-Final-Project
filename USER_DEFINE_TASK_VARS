@@ -26,6 +26,6 @@ SYN_EFFORT = high
 PROJECT_REPO_PATH = 
 
 # Verilog preprocessor defines for simulation (iverilog -D) and synthesis (DC -define).
-# Space-separated macro names, e.g.: SFP_LONGDIV SFP_LUTDIV SFP_VANILLA
+# Space-separated macro names, e.g.: SFP_LONGDIV SFP_LUTDIV VANILLA
 # Leave blank for no extra defines.
 USER_DEFINES = SFP_LONGDIV

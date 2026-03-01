@@ -98,7 +98,7 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
      .reset(reset)
   );
 
-  `ifdef SFP_VANILLA
+  `ifdef VANILLA
   sum8 #(.bw_psum(bw_psum)) sum8_inst (
     .in(abs),
     .sum(sum8_out)
@@ -112,7 +112,7 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   );
   `endif
 
-  `ifdef SFP_VANILLA
+  `ifdef VANILLA
     div #(.bw_psum(bw_psum), .out_shift(out_shift)) div0 (
       .in(abs[bw_psum*1-1 : bw_psum*0]),
       .divisor(sum_2core), .out(div_out0)
