@@ -1,0 +1,37 @@
+catch { setDesignMode -process 65 }
+catch { setAnalysisMode -analysisType bcwc }
+catch { setAnalysisMode -checkType setup }
+catch { setAnalysisMode -clkSrcPath false }
+catch { setAnalysisMode -clockPropagation forcedIdeal }
+catch { setAnalysisMode -usefulSkew true }
+catch { setOptMode -drcMargin 0 }
+catch { setOptMode -effort high }
+catch { setOptMode -fixFanoutLoad true }
+catch { setOptMode -leakageToDynamicRatio 0.5 }
+catch { setOptMode -powerEffort high }
+catch { setOptMode -restruct true }
+catch { setOptMode -setupTargetSlack 0 }
+catch { setOptMode -verbose true }
+setExtractRCMode  -engine preRoute -total_c_th 0 -relative_c_th 1 -coupling_c_th 0.1
+catch { setCTSMode -moveGateLimit 25 }
+catch { setPlaceMode -autoEnableFGCUnder10nm false }
+catch { setPlaceMode -congEffort high }
+catch { setPlaceMode -exp_gigaplace_padding_adjustments_for_adv_nodes true }
+catch { setPlaceMode -expAdvPinAccess false }
+catch { setPlaceMode -maxTweakMoveInRows 5 }
+catch { setPlaceMode -modulePlan false }
+catch { setPlaceMode -NMPenableNoFlopCongRepair true }
+catch { setPlaceMode -NMPenableNoFlopIncrNP true }
+catch { setPlaceMode -reorderScan false }
+catch { setPlaceMode -rplaceIncrNPCPRWNSThresh -28 }
+catch { setPlaceMode -RTCSpread false }
+catch { setPlaceMode -timingDriven true }
+catch { setIlmMode -keepHighFanoutPorts true -keepLoopBack false -keepFlatten true }
+catch { setUsefulSkewMode -maxAllowedDelay 0.2 }
+catch { setDelayCalMode -enable_high_fanout true }
+catch { setDelayCalMode -engine aae }
+catch { setDelayCalMode -ignoreNetLoad false }
+catch { setPinAssignMode -pinEditInBatch false }
+catch { setTrialRouteMode -handlePreroute true }
+catch { setTrialRouteMode -keepMarkedOptRoutes true }
+catch { setAddStripeMode -break_at block_ring }
