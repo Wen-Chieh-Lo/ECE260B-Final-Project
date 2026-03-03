@@ -46,11 +46,9 @@ OUT               := sim/compiled
 GLS_OUT      := gls/compiled
 SYNDIR            := syn
 
-ifneq ($(strip $(PROJECT_REPO_PATH)),)
-  PROJ_ROOT := $(PROJECT_REPO_PATH)
-else
+
   PROJ_ROOT := $(CURDIR)
-endif
+
 
 # ----- Lookup tables -----
 # target -> filelist filename (shared between sim and syn for filelist name lookup)

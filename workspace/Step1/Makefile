@@ -43,14 +43,13 @@ SYN_FILELISTS_DIR := syn/filelists
 IVERILOG          := iverilog
 VVP               := vvp
 OUT               := sim/compiled
-GLS_OUT      := gls/compiled
+GLS_OUT           := gls/compiled
 SYNDIR            := syn
+PNRDIR            := pnr/scripts
 
-ifneq ($(strip $(PROJECT_REPO_PATH)),)
-  PROJ_ROOT := $(PROJECT_REPO_PATH)
-else
+
   PROJ_ROOT := $(CURDIR)
-endif
+
 
 # ----- Lookup tables -----
 # target -> filelist filename (shared between sim and syn for filelist name lookup)
@@ -86,7 +85,7 @@ $(foreach p,$(TARGET_FILELIST_table),$(eval gls_$(firstword $(subst :, ,$(p))): 
 $(foreach p,$(TARGET_WAVEFORM_table),$(eval gls_$(firstword $(subst :, ,$(p))): WAVEFORM     := $(word 2,$(subst :, ,$(p)))))
 
 # ----- Phony declarations -----
-.PHONY: all clean help default sim syn gls parse $(SIM_TARGETS) $(addprefix gls_,$(SIM_TARGETS))
+.PHONY: all clean help default sim syn gls pnr parse $(SIM_TARGETS) $(addprefix gls_,$(SIM_TARGETS))
 
 default: sim
 
@@ -136,6 +135,10 @@ SYN_EFFORT ?= high
 syn:
 	@cd $(SYNDIR) && dc_shell -f run_dc.tcl -x "set top_module $(TOP_MODULE); set rtlPath $(PROJ_ROOT); set filelist_path {$(SYN_FILELIST)}; set syn_effort $(SYN_EFFORT); set syn_defines {$(USER_DEFINES)}"
 
+# ----- Place-and-route (Innovus) -----
+pnr:
+	@cd $(PNRDIR) && innovus -init ./innovus.tcl
+
 # ----- Utilities -----
 parse:  ## Parse syn/log/*.rep and print summary (uses shell script; no Python needed)
 	@bash $(SYNDIR)/parse_reports.sh $(SYNDIR)/log
@@ -149,6 +152,7 @@ help:
 	@echo "        make gls [TARGET=<name>]  # gate-level sim (gls/tb + syn/gate + PDK)"
 	@echo "        make syn [TARGET=<name>] [SYN_EFFORT=low|medium|high]"
 	@echo "        make all [TARGET=<name>] [SYN_EFFORT=low|medium|high]"
+	@echo "        make pnr                  # launch Innovus and source pnr/scripts/innovus.tcl"
 	@echo ""
 	@echo "TARGET controls both sim and syn:"
 	@echo "  sim valid: fullchip(default) | core | mac | sfp_row | sfp_row_dual"
