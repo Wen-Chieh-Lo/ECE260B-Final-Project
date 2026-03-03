@@ -1,0 +1,200 @@
+[03/02 22:39:24      0] 
+[03/02 22:39:24      0] Cadence Innovus(TM) Implementation System.
+[03/02 22:39:24      0] Copyright 2015 Cadence Design Systems, Inc. All rights reserved worldwide.
+[03/02 22:39:24      0] 
+[03/02 22:39:24      0] Version:	v15.23-s045_1, built Fri Apr 22 12:32:52 PDT 2016
+[03/02 22:39:24      0] Options:	-init ./innovus.tcl 
+[03/02 22:39:25      0] Date:		Mon Mar  2 22:39:24 2026
+[03/02 22:39:25      0] Host:		ieng6-ece-02.ucsd.edu (x86_64 w/Linux 3.10.0-1160.119.1.el7.x86_64) (4cores*8cpus*Intel(R) Xeon(R) Gold 5220 CPU @ 2.20GHz 25344KB)
+[03/02 22:39:25      0] OS:		CentOS Linux release 7.9.2009 (Core)
+[03/02 22:39:25      0] 
+[03/02 22:39:25      0] License:
+[03/02 22:39:25      0] 		invs	Innovus Implementation System	15.2	checkout succeeded
+[03/02 22:39:25      0] 		8 CPU jobs allowed with the current license(s). Use setMultiCpuUsage to set your required CPU count.
+[03/02 22:39:25      0] **WARN: (IMPSYT-1507):	The display is invalid and will start in no window mode
+[03/02 22:39:25      0] **ERROR: (IMPOAX-142):	Could not open shared library libinnovusoax22.so : /acsnfs3/software/cadence-innovus152/tools/lib/64bit/libcdsSkillPcell.so: undefined symbol: _ZTIN12OpenAccess_413oaFSComponentE
+[03/02 22:39:25      0] 
+[03/02 22:39:25      0] **ERROR: (IMPOAX-142):	Could not open shared library libcdsSkillPcell.so : (null)
+[03/02 22:39:25      0] 
+[03/02 22:39:25      0] **ERROR: (IMPOAX-142):	OA features will be disabled in this session.
+[03/02 22:39:25      0] 
+[03/02 22:39:31      6] @(#)CDS: Innovus v15.23-s045_1 (64bit) 04/22/2016 12:32 (Linux 2.6.18-194.el5)
+[03/02 22:39:31      6] @(#)CDS: NanoRoute 15.23-s045_1 NR160414-1105/15_23-UB (database version 2.30, 317.6.1) {superthreading v1.26}
+[03/02 22:39:31      6] @(#)CDS: AAE 15.23-s014 (64bit) 04/22/2016 (Linux 2.6.18-194.el5)
+[03/02 22:39:31      6] @(#)CDS: CTE 15.23-s022_1 () Apr 22 2016 09:38:45 ( )
+[03/02 22:39:31      6] @(#)CDS: SYNTECH 15.23-s008_1 () Apr 12 2016 21:52:59 ( )
+[03/02 22:39:31      6] @(#)CDS: CPE v15.23-s045
+[03/02 22:39:31      6] @(#)CDS: IQRC/TQRC 15.1.4-s213 (64bit) Tue Feb  9 17:31:28 PST 2016 (Linux 2.6.18-194.el5)
+[03/02 22:39:31      6] @(#)CDS: OA 22.50-p036 Tue Nov  3 09:29:52 2015
+[03/02 22:39:31      6] @(#)CDS: SGN 10.10-p124 (19-Aug-2014) (64 bit executable)
+[03/02 22:39:31      6] @(#)CDS: RCDB 11.7
+[03/02 22:39:31      6] --- Running on ieng6-ece-02.ucsd.edu (x86_64 w/Linux 3.10.0-1160.119.1.el7.x86_64) (4cores*8cpus*Intel(R) Xeon(R) Gold 5220 CPU @ 2.20GHz 25344KB) ---
+[03/02 22:39:31      6] Create and set the environment variable TMPDIR to /tmp/innovus_temp_13473_ieng6-ece-02.ucsd.edu_c8chiu_Ca15if.
+
+[03/02 22:39:31      6] 
+[03/02 22:39:31      6] **INFO:  MMMC transition support version v31-84 
+[03/02 22:39:31      6] 
+[03/02 22:39:31      6] <CMD> set_global _enable_mmmc_by_default_flow      $CTE::mmmc_default
+[03/02 22:39:31      6] <CMD> suppressMessage ENCEXT-2799
+[03/02 22:39:31      7] Sourcing file "./innovus.tcl" ...
+[03/02 22:39:31      7] <CMD> set init_pwr_net VDD
+[03/02 22:39:31      7] <CMD> set init_gnd_net VSS
+[03/02 22:39:31      7] <CMD> set init_verilog ../../syn/gate/core.out.v
+[03/02 22:39:31      7] <CMD> set init_design_netlisttype Verilog
+[03/02 22:39:31      7] <CMD> set init_design_settop 1
+[03/02 22:39:31      7] <CMD> set init_top_cell core
+[03/02 22:39:31      7] <CMD> set init_lef_file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef
+[03/02 22:39:31      7] <CMD> create_library_set -name WC_LIB -timing $worst_timing_lib
+[03/02 22:39:31      7] <CMD> create_library_set -name BC_LIB -timing $best_timing_lib
+[03/02 22:39:31      7] <CMD> create_rc_corner -name Cmax -cap_table $worst_captbl -T 125
+[03/02 22:39:31      7] <CMD> create_rc_corner -name Cmin -cap_table $best_captbl -T -40
+[03/02 22:39:31      7] <CMD> create_delay_corner -name WC -library_set WC_LIB -rc_corner Cmax
+[03/02 22:39:31      7] <CMD> create_delay_corner -name BC -library_set BC_LIB -rc_corner Cmin
+[03/02 22:39:31      7] <CMD> create_constraint_mode -name CON -sdc_file [list $sdc]
+[03/02 22:39:31      7] <CMD> create_analysis_view -name WC_VIEW -delay_corner WC -constraint_mode CON
+[03/02 22:39:31      7] <CMD> create_analysis_view -name BC_VIEW -delay_corner BC -constraint_mode CON
+[03/02 22:39:31      7] <CMD> init_design -setup WC_VIEW -hold BC_VIEW
+[03/02 22:39:31      7] **ERROR: (IMPOAX-820):	The OA features are disabled in the current session of Innovus because the oax shared library could not be loaded properly. This could be because your installation was not properly configured. To enable OA features, exit the current session and re-launch Innovus either after fixing your installation by running the Configure Installation phase, or after setting the OA_HOME variable to point to a proper OA installation. Check the "OpenAccess Installation and Configuration Guide" manual for more information.
+[03/02 22:39:31      7] 
+[03/02 22:39:31      7] **ERROR: (IMPOAX-850):	oaxCreateCdsLibArray command cannot be run as OA features are disabled in this session.
+[03/02 22:39:31      7] 
+[03/02 22:39:31      7] Loading LEF file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef ...
+[03/02 22:39:31      7] WARNING (LEFPARS-2007): NAMESCASESENSITIVE statement is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later. See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 28.
+[03/02 22:39:31      7] WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 867.
+[03/02 22:39:31      7] WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 877.
+[03/02 22:39:31      7] WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1014.
+[03/02 22:39:31      7] WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1024.
+[03/02 22:39:31      7] WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1161.
+[03/02 22:39:31      7] WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1171.
+[03/02 22:39:31      7] WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1308.
+[03/02 22:39:31      7] WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1318.
+[03/02 22:39:31      7] WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1372.
+[03/02 22:39:31      7] WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1383.
+[03/02 22:39:31      7] WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1604.
+[03/02 22:39:31      7] WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1614.
+[03/02 22:39:31      7] WARNING (LEFPARS-2022): DIRECTION statement in VIARULE is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later. See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1769.
+[03/02 22:39:31      7] WARNING (LEFPARS-2022): DIRECTION statement in VIARULE is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later. See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1771.
+[03/02 22:39:31      7] WARNING (LEFPARS-2021): turn-via is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later. See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1772.
+[03/02 22:39:31      7] WARNING (LEFPARS-2022): DIRECTION statement in VIARULE is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later. See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1776.
+[03/02 22:39:31      7] WARNING (LEFPARS-2022): DIRECTION statement in VIARULE is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later. See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1778.
+[03/02 22:39:31      7] WARNING (LEFPARS-2021): turn-via is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later. See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1779.
+[03/02 22:39:31      7] WARNING (LEFPARS-2022): DIRECTION statement in VIARULE is obsolete in version 5.6 and later.
+[03/02 22:39:31      7] The LEF parser will ignore this statement.
+[03/02 22:39:31      7] To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later. See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1783.
+[03/02 22:39:31      7] Set DBUPerIGU to M2 pitch 400.
+[03/02 22:39:32      7] **WARN: (IMPLF-200):	Pin 'I' in macro 'ANTENNA' has no ANTENNAGATEAREA value defined. The library data is incomplete and some process antenna rules will not be checked correctly.
+[03/02 22:39:32      7] Type 'man IMPLF-200' for more detail.
+[03/02 22:39:32      7] 
+[03/02 22:39:32      7] viaInitial starts at Mon Mar  2 22:39:32 2026
+viaInitial ends at Mon Mar  2 22:39:32 2026
+Reading WC_LIB timing library '/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lib/tcbn65gpluswc.lib' ...
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN2D0' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN2D1' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN2D2' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN2D4' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN2D8' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN2XD1' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN3D0' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN3D1' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN3D2' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN3D4' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN3D8' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN3XD1' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN4D0' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN4D1' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN4D2' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN4D4' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN4D8' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN4XD1' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AO211D0' is not defined in the library.
+[03/02 22:39:32      7] **WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AO211D1' is not defined in the library.
+[03/02 22:39:32      7] Message <TECHLIB-436> has exceeded the message display limit of '20'. setMessageLimit/set_message_limit sets the limit. unsetMessageLimit/unset_message_limit can be used to reset this.
+[03/02 22:39:33      8] Read 811 cells in library 'tcbn65gpluswc' 
+[03/02 22:39:33      8] Reading BC_LIB timing library '/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lib/tcbn65gplusbc.lib' ...
+[03/02 22:39:34      9] Read 811 cells in library 'tcbn65gplusbc' 
+[03/02 22:39:34      9] *** End library_loading (cpu=0.00min, mem=0.0M, fe_cpu=0.16min, fe_real=0.17min, fe_mem=417.4M) ***
+[03/02 22:39:34      9] *** Begin netlist parsing (mem=417.4M) ***
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR4D4' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR4D4' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR4D2' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR4D2' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR4D1' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR4D1' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR4D0' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR4D0' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR3D4' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR3D4' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR3D2' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR3D2' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR3D1' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR3D1' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR3D0' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR3D0' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR2D4' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR2D4' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR2D2' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR2D2' is defined in LEF but not in the timing library.
+[03/02 22:39:34      9] **WARN: (EMS-27):	Message (IMPVL-159) has exceeded the current message display limit of 20.
+[03/02 22:39:34      9] To increase the message display limit, refer to the product command reference manual.
+[03/02 22:39:34      9] Created 811 new cells from 2 timing libraries.
+[03/02 22:39:34      9] Reading netlist ...
+[03/02 22:39:34      9] Backslashed names will retain backslash and a trailing blank character.
+[03/02 22:39:34      9] Reading verilog netlist '../../syn/gate/core.out.v'
+[03/02 22:39:34      9] 
+[03/02 22:39:34      9] *** Memory Usage v#1 (Current mem = 434.383M, initial mem = 149.258M) ***
+[03/02 22:39:34      9] *** End netlist parsing (cpu=0:00:00.2, real=0:00:00.0, mem=434.4M) ***
+[03/02 22:39:34      9] Set top cell to core.
+[03/02 22:39:34      9] Hooked 1622 DB cells to tlib cells.
+[03/02 22:39:34      9] Starting recursive module instantiation check.
+[03/02 22:39:34      9] No recursion found.
+[03/02 22:39:34      9] Building hierarchical netlist for Cell core ...
+[03/02 22:39:34      9] *** Netlist is unique.
+[03/02 22:39:34      9] ** info: there are 1830 modules.
+[03/02 22:39:34      9] ** info: there are 26372 stdCell insts.
+[03/02 22:39:34      9] 
+[03/02 22:39:34      9] *** Memory Usage v#1 (Current mem = 506.090M, initial mem = 149.258M) ***
+[03/02 22:39:34      9] **WARN: (IMPFP-3961):	The techSite 'dcore' has no related cells in LEF/OA library. Cannot make calculations for this site type unless cell models of this type exist in the LEF/OA library. If the SITE is not used by the library you can ignore this warning or remove the SITE definition from the LEF/OA to avoid this message.
+[03/02 22:39:34      9] Type 'man IMPFP-3961' for more detail.
+[03/02 22:39:34      9] **WARN: (IMPFP-3961):	The techSite 'ccore' has no related cells in LEF/OA library. Cannot make calculations for this site type unless cell models of this type exist in the LEF/OA library. If the SITE is not used by the library you can ignore this warning or remove the SITE definition from the LEF/OA to avoid this message.
+[03/02 22:39:34      9] Type 'man IMPFP-3961' for more detail.
+[03/02 22:39:34     10] Set Default Net Delay as 1000 ps.
+[03/02 22:39:34     10] Set Default Net Load as 0.5 pF. 
+[03/02 22:39:34     10] Set Default Input Pin Transition as 0.1 ps.
