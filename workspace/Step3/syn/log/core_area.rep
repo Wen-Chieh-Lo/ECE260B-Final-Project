@@ -1,0 +1,70 @@
+Warning: Design 'core' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+ 
+****************************************
+Report : area
+Design : core
+Version: K-2015.06-SP2
+Date   : Mon Mar  2 23:56:27 2026
+****************************************
+
+Information: Updating design information... (UID-85)
+Warning: Design 'core' contains 1 high-fanout nets. A fanout number of 1000 will be used for delay calculations involving these nets. (TIM-134)
+Library(s) Used:
+
+    tcbn65gpluswc (File: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db)
+
+Number of ports:                        15910
+Number of nets:                         39462
+Number of cells:                        21628
+Number of combinational cells:          17856
+Number of sequential cells:              3602
+Number of macros/black boxes:               0
+Number of buf/inv:                       2546
+Number of references:                       6
+
+Combinational area:              64729.440027
+Buf/Inv area:                     3747.240110
+Noncombinational area:           29161.800159
+Macro/Black Box area:                0.000000
+Net Interconnect area:      undefined  (Wire load has zero net area)
+
+Total cell area:                 93891.240186
+Total area:                 undefined
+
+Information: This design contains black box (unknown) components. (RPT-8)
+1
+Warning: Design 'core' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+ 
+****************************************
+Report : reference
+Design : core
+Version: K-2015.06-SP2
+Date   : Mon Mar  2 23:56:28 2026
+****************************************
+
+Attributes:
+    b - black box (unknown)
+   bo - allows boundary optimization
+    d - dont_touch
+   mo - map_only
+    h - hierarchical
+    n - noncombinational
+    r - removable
+    s - synthetic operator
+    u - contains unmapped logic
+
+Reference          Library       Unit Area   Count    Total Area   Attributes
+-----------------------------------------------------------------------------
+INVD0              tcbn65gpluswc
+                                  1.080000       4      4.320000  
+MUX2D0             tcbn65gpluswc
+                                  3.240000      64    207.360001  
+OR2D0              tcbn65gpluswc
+                                  2.160000       2      4.320000  
+mac_array_col8_bw8_bw_psum19_pr8
+                              57702.960033       1  57702.960033  h, n
+ofifo_col8_bw19               35972.280152       1  35972.280152  h, n
+sram_w16                          0.000000       2      0.000000  b
+-----------------------------------------------------------------------------
+Total 6 references                                  93891.240186
+1
