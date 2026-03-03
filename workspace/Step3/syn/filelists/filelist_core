@@ -1,0 +1,13 @@
+// --- top / core ---
+./verilog/core.v
+// --- MAC ---
+./verilog/mac/mac_col.v
+./verilog/mac/mac_8in.v
+./verilog/mac/mac_array.v
+
+// --- memory / FIFO (SRAM is treated as a black box; do not synthesize here) ---
+./verilog/ofifo.v
+./verilog/memory/fifo_depth16.v
+./verilog/memory/fifo_mux_16_1.v
+./verilog/memory/fifo_mux_8_1.v
+./verilog/memory/fifo_mux_2_1.v
