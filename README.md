@@ -17,14 +17,14 @@ Verilog RTL and testbenches for single/dual-core MAC + SFP normalization.
 
 ### Main steps (planned)
 
-| Step       | Scope                 | GLS     | PnR       | Notes                              |
-|------------|-----------------------|---------|-----------|------------------------------------|
-| **Step 1** | step1 (in Step1/)     | ✓       | planned   | GLS done                           |
-| **Step 2** | core (step1+sfp_row)  | ✓       | —         | GLS done                           |
-| **Step 3** | —                     | planned | planned   | + post-PnR GLS                     |
-| **Step 4** | —                     | planned | planned   | synthesis + GLS + PnR              |
-| **Step 5** | —                     | —       | planned   | post-alphas                        |
-| **Step 6** | minor RTL             | —       | tentative | minor RTL change + full flow       |
+| Step       | Scope                 | GLS     | PnR       | 
+|------------|-----------------------|---------|-----------|
+| **Step 1** | step1 (in Step1/)     | ✓       | ✓        | 
+| **Step 2** | core (step1+sfp_row)  | ✓       | —         |
+| **Step 3** | —                     | ✓       | planned   | 
+| **Step 4** | —                     | planned | planned   | 
+| **Step 5** | —                     | —       | planned   |
+| **Step 6** | minor RTL             | —       | tentative |
 
 ### GLS by authors
 
@@ -52,6 +52,7 @@ Verilog RTL and testbenches for single/dual-core MAC + SFP normalization.
 | 2 | Long Division replace by LUT                                   | Wen-Chieh Lo                                    |
 | 5 | Randomise input, increase input coverage                       | b1chiang@ucsd.edu                               |
 | 6 | Control Signal                                                 | b1chiang@ucsd.edu                               |
+| 7 | Optimized SRAM entry                                           |                                                 |
 
 ### Other
 
