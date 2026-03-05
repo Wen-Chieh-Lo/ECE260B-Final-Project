@@ -446,3 +446,8 @@ Time Elapsed: 0:00:00.0
 **WARN: (IMPPTN-1235):	Cannot find pin reset on partition sram_w16
 **ERROR: (IMPPTN-963):	Either specified pin name for the selected partition does not exist or has status 'cover'. Specify the pin or the list of pins correctly and run the command again.
 
+
+*** Memory Usage v#1 (Current mem = 1047.805M, initial mem = 152.258M) ***
+*** Message Summary: 1641 warning(s), 6 error(s)
+
+--- Ending "Innovus" (totcpu=0:04:19, real=0:19:19, mem=1047.8M) ---
