@@ -62,3 +62,38 @@ create_ccopt_clock_tree_spec -file /home/linux/ieng6/ECE260B_WI26_A00/miw090/ECE
 set_ccopt_property -update_io_latency false
 set_ccopt_property target_skew 0.1
 create_ccopt_clock_tree_spec -file /home/linux/ieng6/ECE260B_WI26_A00/miw090/ECE260B-Final-Project/workspace/Step3/pnr/sram_pnr/constraints/sram_w16.ccopt
+set_ccopt_property -update_io_latency false
+set_ccopt_property target_skew 0.1
+create_ccopt_clock_tree_spec -file home/linux/ieng6/ECE260B_WI26_A00/sabhonsle/ECE260BProject/ECE260B-Final-Project/workspace/Step3/pnr/sram_pnr/constraints/constraints/sram_w16.ccopt
+ccopt_design
+set_propagated_clock [all_clocks]
+optDesign -postCTS -hold
+saveDesign cts.enc
+setNanoRouteMode -routeTopRoutingLayer 4
+setNanoRouteMode -routeBottomRoutingLayer 1
+setNanoRouteMode -quiet -drouteAllowMergedWireAtPin false
+setNanoRouteMode -quiet -drouteFixAntenna true
+setNanoRouteMode -quiet -routeWithTimingDriven false
+setNanoRouteMode -quiet -routeWithSiDriven false
+setNanoRouteMode -quiet -drouteAutoStop true
+routeDesign
+optDesign -postRoute -drv
+verifyConnectivity
+verify_drc
+verifyGeometry
+verifyConnectivity
+report_timing -max_paths 5 > ${design}.post_route.timing.rpt
+report_power -outfile sram_w16.post_route.power.rpt
+summaryReport -nohtml -outfile sram_w16.post_route.summary.rpt
+streamOut sram_w16.gds2
+write_lef_abstract -stripePin -PGPinLayers 4 -extractBlockPGPinLayers 4 sram_w16.lef -specifyTopLayer 4
+defOut -netlist -routing sram_w16.def
+saveNetlist sram_w16.pnr.v
+setAnalysisMode -setup
+set_analysis_view -setup WC_VIEW -hold WC_VIEW
+do_extract_model -view WC_VIEW -format dotlib ${design}_WC.lib
+write_sdf -view WC_VIEW ${design}_WC.sdf
+setAnalysisMode -hold
+set_analysis_view -setup BC_VIEW -hold BC_VIEW
+do_extract_model -view BC_VIEW -format dotlib ${design}_BC.lib
+write_sdf -view BC_VIEW ${design}_BC.sdf
