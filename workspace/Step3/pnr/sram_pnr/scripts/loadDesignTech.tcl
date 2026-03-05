@@ -1,5 +1,5 @@
 # Load design (SRAM-only PnR)
-set desdir 		"../../syn/gate"
+set desdir 		"../../../syn/gate"
 set libdir 		"/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata"
 set design 		"sram_w16"
 set netlist 		"$desdir/$design.out.v"

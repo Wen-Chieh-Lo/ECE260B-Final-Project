@@ -1,12 +1,12 @@
 # Floorplan
-floorPlan -site core -r 1 0.70 20 20 20 20
+floorPlan -site core -r 1 0.70 70 70 70 70
 
 timeDesign -preplace -prefix preplace
 
 globalNetConnect VDD -type pgpin -pin VDD -inst * -verbose
 globalNetConnect VSS -type pgpin -pin VSS -inst * -verbose
 
-addRing -type core_rings -nets {VDD VSS} -layer {top M3 bottom M3 left M4 right M4} -width 4 -spacing 2 -center 1
+#addRing -type core_rings -nets {VDD VSS} -layer {top M3 bottom M3 left M4 right M4} -width 4 -spacing 2 -center 1
 
 setAddStripeMode -break_at {block_ring}
 
