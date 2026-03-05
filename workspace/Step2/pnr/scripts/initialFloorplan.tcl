@@ -14,6 +14,7 @@ setAddStripeMode -break_at {block_ring}
 addStripe -number_of_sets 2  -spacing 6 -layer M4 -width 2 -nets { VSS VDD }
 #################################################
 
+
 #addStripe -nets {VDD VSS} -layer M4 -direction vertical -width 1.8 -spacing 1.8 -number_of_sets 5 -start_from left -start 80 -stop 180 
 
 sroute

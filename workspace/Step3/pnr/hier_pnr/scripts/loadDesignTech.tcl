@@ -1,5 +1,5 @@
 # Load design
-set desdir 		"../../syn/gate"
+set desdir 		"../../../syn/gate"
 set libdir 		"/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata"
 set design 		"core"
 set netlist 		"$desdir/$design.out.v"
@@ -19,11 +19,11 @@ set init_verilog "$netlist"
 set init_design_netlisttype "Verilog"
 set init_design_settop 1
 set init_top_cell "$design"
-set init_lef_file "$lef"
+set init_lef_file "$lef ./subckt/sram_w16.lef"
 
 # MCMM setup
-create_library_set -name WC_LIB -timing $worst_timing_lib
-create_library_set -name BC_LIB -timing $best_timing_lib
+create_library_set -name WC_LIB -timing "$worst_timing_lib ./subckt/sram_w16_WC.lib"
+create_library_set -name BC_LIB -timing "$best_timing_lib ./subckt/sram_w16_BC.lib"
 create_rc_corner -name Cmax -cap_table $worst_captbl -T 125
 create_rc_corner -name Cmin -cap_table $best_captbl -T -40
 create_delay_corner -name WC -library_set WC_LIB -rc_corner Cmax
