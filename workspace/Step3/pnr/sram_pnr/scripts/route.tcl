@@ -1,36 +1,33 @@
 ############################################
-# Routing - Timing & SI Driven
+# Routing (SRAM Step-3)
 ############################################
 
-# NanoRoute Settings
+# Limit routing layers (project requirement)
+setNanoRouteMode -routeTopRoutingLayer 4
+setNanoRouteMode -routeBottomRoutingLayer 1
+
+# Basic NanoRoute configuration
 setNanoRouteMode -quiet -drouteAllowMergedWireAtPin false
 setNanoRouteMode -quiet -drouteFixAntenna true
-setNanoRouteMode -quiet -routeWithTimingDriven true
-setNanoRouteMode -quiet -routeWithSiDriven true
-setNanoRouteMode -quiet -routeSiEffort high
-setNanoRouteMode -quiet -routeWithSiPostRouteFix true
-setNanoRouteMode -quiet -drouteAutoStop false
-setNanoRouteMode -quiet -routeSelectedNetOnly false
-setNanoRouteMode -quiet -drouteStartIteration default
+setNanoRouteMode -quiet -routeWithTimingDriven false
+setNanoRouteMode -quiet -routeWithSiDriven false
+setNanoRouteMode -quiet -drouteAutoStop true
 
-# Run Routing
-routeDesign -globalDetail
+# Run routing
+routeDesign
 
-# Early DRC repair
+# Fix any remaining DRC
 optDesign -postRoute -drv
 
 # RC extraction
 setExtractRCMode -engine postRoute
 extractRC
 
-# Accurate timing mode
+# Basic timing analysis
 setAnalysisMode -analysisType onChipVariation -cppr both
 
-# Setup and Hold Optimization
-optDesign -postRoute -setup
-optDesign -postRoute -hold
-
-# Final incremental cleanup
+# Incremental cleanup
 optDesign -postRoute -inc
 
+# Save database
 saveDesign route.enc
