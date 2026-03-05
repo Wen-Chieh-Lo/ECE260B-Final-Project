@@ -3145,3 +3145,13 @@ Routing Overflow: 0.00% H and 0.03% V
 [03/05 10:29:02    113] **ERROR: (IMPSYUTIL-96):	Cannot open (for write) Ccopt Clock Tree Specification Script file: '/home/linux/ieng6/ECE260B_WI26_A00/miw090/ECE260B-Final-Project/workspace/Step3/pnr/sram_pnr/constraints/sram_w16.ccopt'. The reason is: Permission denied
 [03/05 10:29:02    113] Type 'man IMPSYUTIL-96' for more detail.
 [03/05 10:29:02    113] 
+[03/05 10:32:12    151] <CMD> set_ccopt_property -update_io_latency false
+[03/05 10:32:12    151] <CMD> set_ccopt_property target_skew 0.1
+[03/05 10:32:12    151] <CMD> create_ccopt_clock_tree_spec -file /home/linux/ieng6/ECE260B_WI26_A00/miw090/ECE260B-Final-Project/workspace/Step3/pnr/sram_pnr/constraints/sram_w16.ccopt
+[03/05 10:32:12    151] Creating clock tree spec for modes (timing configs): CON
+[03/05 10:32:12    151] extract_clock_generator_skew_groups=true: create_ccopt_clock_tree_spec will generate skew groups with a name prefix of "_clock_gen" to balance clock generator connected flops with the clock generator they drive.
+[03/05 10:32:12    151] Analyzing clock structure... 
+[03/05 10:32:12    151] Analyzing clock structure done.
+[03/05 10:32:12    151] **ERROR: (IMPSYUTIL-96):	Cannot open (for write) Ccopt Clock Tree Specification Script file: '/home/linux/ieng6/ECE260B_WI26_A00/miw090/ECE260B-Final-Project/workspace/Step3/pnr/sram_pnr/constraints/sram_w16.ccopt'. The reason is: Permission denied
+[03/05 10:32:12    151] Type 'man IMPSYUTIL-96' for more detail.
+[03/05 10:32:12    151] 
