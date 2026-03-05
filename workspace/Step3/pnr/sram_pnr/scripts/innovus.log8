@@ -1,0 +1,2469 @@
+
+Cadence Innovus(TM) Implementation System.
+Copyright 2015 Cadence Design Systems, Inc. All rights reserved worldwide.
+
+Version:	v15.23-s045_1, built Fri Apr 22 12:32:52 PDT 2016
+Options:	
+Date:		Thu Mar  5 10:02:36 2026
+Host:		ieng6-ece-06.ucsd.edu (x86_64 w/Linux 3.10.0-1160.119.1.el7.x86_64) (4cores*8cpus*Intel(R) Xeon(R) Gold 5220 CPU @ 2.20GHz 25344KB)
+OS:		CentOS Linux release 7.9.2009 (Core)
+
+License:
+		invs	Innovus Implementation System	15.2	checkout succeeded
+		8 CPU jobs allowed with the current license(s). Use setMultiCpuUsage to set your required CPU count.
+**ERROR: (IMPOAX-142):	Could not open shared library libinnovusoax22.so : /acsnfs3/software/cadence-innovus152/tools/lib/64bit/libcdsSkillPcell.so: undefined symbol: _ZTIN12OpenAccess_413oaFSComponentE
+
+**ERROR: (IMPOAX-142):	Could not open shared library libcdsSkillPcell.so : (null)
+
+**ERROR: (IMPOAX-142):	OA features will be disabled in this session.
+
+
+**INFO:  MMMC transition support version v31-84 
+
+<CMD> set_global _enable_mmmc_by_default_flow      $CTE::mmmc_default
+<CMD> suppressMessage ENCEXT-2799
+<CMD> getDrawView
+<CMD> loadWorkspace -name Physical
+<CMD> win
+<CMD> set init_pwr_net VDD
+<CMD> set init_gnd_net VSS
+<CMD> set init_verilog ../../../syn/gate/sram_w16.out.v
+<CMD> set init_design_netlisttype Verilog
+<CMD> set init_design_settop 1
+<CMD> set init_top_cell sram_w16
+<CMD> set init_lef_file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef
+<CMD> create_library_set -name WC_LIB -timing $worst_timing_lib
+<CMD> create_library_set -name BC_LIB -timing $best_timing_lib
+<CMD> create_rc_corner -name Cmax -cap_table $worst_captbl -T 125
+<CMD> create_rc_corner -name Cmin -cap_table $best_captbl -T -40
+<CMD> create_delay_corner -name WC -library_set WC_LIB -rc_corner Cmax
+<CMD> create_delay_corner -name BC -library_set BC_LIB -rc_corner Cmin
+<CMD> create_constraint_mode -name CON -sdc_file [list $sdc]
+<CMD> create_analysis_view -name WC_VIEW -delay_corner WC -constraint_mode CON
+<CMD> create_analysis_view -name BC_VIEW -delay_corner BC -constraint_mode CON
+<CMD> init_design -setup WC_VIEW -hold BC_VIEW
+**ERROR: (IMPOAX-820):	The OA features are disabled in the current session of Innovus because the oax shared library could not be loaded properly. This could be because your installation was not properly configured. To enable OA features, exit the current session and re-launch Innovus either after fixing your installation by running the Configure Installation phase, or after setting the OA_HOME variable to point to a proper OA installation. Check the "OpenAccess Installation and Configuration Guide" manual for more information.
+
+**ERROR: (IMPOAX-850):	oaxCreateCdsLibArray command cannot be run as OA features are disabled in this session.
+
+Loading LEF file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef ...
+WARNING (LEFPARS-2007): NAMESCASESENSITIVE statement is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later. See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 28.
+WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 867.
+WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 877.
+WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1014.
+WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1024.
+WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1161.
+WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1171.
+WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1308.
+WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1318.
+WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1372.
+WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1383.
+WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1604.
+WARNING (LEFPARS-2019): TOPOFSTACKONLY statement is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1614.
+WARNING (LEFPARS-2022): DIRECTION statement in VIARULE is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later. See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1769.
+WARNING (LEFPARS-2022): DIRECTION statement in VIARULE is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later. See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1771.
+WARNING (LEFPARS-2021): turn-via is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later. See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1772.
+WARNING (LEFPARS-2022): DIRECTION statement in VIARULE is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later. See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1776.
+WARNING (LEFPARS-2022): DIRECTION statement in VIARULE is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later. See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1778.
+WARNING (LEFPARS-2021): turn-via is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later. See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1779.
+WARNING (LEFPARS-2022): DIRECTION statement in VIARULE is obsolete in version 5.6 and later.
+The LEF parser will ignore this statement.
+To avoid this warning in the future, remove this statement from the LEF file with version 5.6 or later. See file /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef at line 1783.
+Set DBUPerIGU to M2 pitch 400.
+**WARN: (IMPLF-200):	Pin 'I' in macro 'ANTENNA' has no ANTENNAGATEAREA value defined. The library data is incomplete and some process antenna rules will not be checked correctly.
+Type 'man IMPLF-200' for more detail.
+
+viaInitial starts at Thu Mar  5 10:03:01 2026
+viaInitial ends at Thu Mar  5 10:03:01 2026
+Reading WC_LIB timing library '/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lib/tcbn65gpluswc.lib' ...
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN2D0' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN2D1' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN2D2' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN2D4' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN2D8' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN2XD1' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN3D0' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN3D1' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN3D2' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN3D4' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN3D8' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN3XD1' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN4D0' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN4D1' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN4D2' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN4D4' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN4D8' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AN4XD1' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AO211D0' is not defined in the library.
+**WARN: (TECHLIB-436):	Attribute 'max_fanout' on 'output/inout' pin 'Z' of cell 'AO211D1' is not defined in the library.
+Message <TECHLIB-436> has exceeded the message display limit of '20'. setMessageLimit/set_message_limit sets the limit. unsetMessageLimit/unset_message_limit can be used to reset this.
+Read 811 cells in library 'tcbn65gpluswc' 
+Reading BC_LIB timing library '/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lib/tcbn65gplusbc.lib' ...
+Read 811 cells in library 'tcbn65gplusbc' 
+*** End library_loading (cpu=0.00min, mem=0.0M, fe_cpu=0.21min, fe_real=0.45min, fe_mem=466.2M) ***
+*** Begin netlist parsing (mem=466.2M) ***
+**WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR4D4' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR4D4' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR4D2' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR4D2' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR4D1' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR4D1' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR4D0' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR4D0' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR3D4' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR3D4' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR3D2' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR3D2' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR3D1' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR3D1' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR3D0' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR3D0' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR2D4' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR2D4' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VSS' of cell 'XOR2D2' is defined in LEF but not in the timing library.
+**WARN: (IMPVL-159):	Pin 'VDD' of cell 'XOR2D2' is defined in LEF but not in the timing library.
+**WARN: (EMS-27):	Message (IMPVL-159) has exceeded the current message display limit of 20.
+To increase the message display limit, refer to the product command reference manual.
+Created 811 new cells from 2 timing libraries.
+Reading netlist ...
+Backslashed names will retain backslash and a trailing blank character.
+Reading verilog netlist '../../../syn/gate/sram_w16.out.v'
+
+*** Memory Usage v#1 (Current mem = 466.215M, initial mem = 149.258M) ***
+*** End netlist parsing (cpu=0:00:00.0, real=0:00:00.0, mem=466.2M) ***
+Set top cell to sram_w16.
+Hooked 1622 DB cells to tlib cells.
+Starting recursive module instantiation check.
+No recursion found.
+Building hierarchical netlist for Cell sram_w16 ...
+*** Netlist is unique.
+** info: there are 1658 modules.
+** info: there are 1909 stdCell insts.
+
+*** Memory Usage v#1 (Current mem = 522.547M, initial mem = 149.258M) ***
+**WARN: (IMPFP-3961):	The techSite 'dcore' has no related cells in LEF/OA library. Cannot make calculations for this site type unless cell models of this type exist in the LEF/OA library. If the SITE is not used by the library you can ignore this warning or remove the SITE definition from the LEF/OA to avoid this message.
+Type 'man IMPFP-3961' for more detail.
+**WARN: (IMPFP-3961):	The techSite 'ccore' has no related cells in LEF/OA library. Cannot make calculations for this site type unless cell models of this type exist in the LEF/OA library. If the SITE is not used by the library you can ignore this warning or remove the SITE definition from the LEF/OA to avoid this message.
+Type 'man IMPFP-3961' for more detail.
+Set Default Net Delay as 1000 ps.
+Set Default Net Load as 0.5 pF. 
+Set Default Input Pin Transition as 0.1 ps.
+WC_VIEW BC_VIEW
+Initializing multi-corner RC extraction with 2 active RC Corners ...
+Reading Capacitance Table File /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/captbl/cln65g+_1p08m+alrdl_top2_cworst.captable ...
+**WARN: (IMPEXT-2760):	Layer M9 specified in the cap table is ignored because it is greater than the maximum number of layers, 8, specified in the technology LEF file. Check the cap table for the invalid layer specification.
+**WARN: (IMPEXT-2771):	Via VIA_8 specified in the cap table is ignored because its top layer, M9, is greater than the maximum number of layers, 8, specified in the technology LEF file. Check the cap table for the invalid layer specification.
+**WARN: (IMPEXT-2801):	Resistance values are not provided in the Cap Table. Sheet resistance defined in the LEF file will be used.
+**WARN: (IMPEXT-2710):	Basic Cap table for layer M9 is ignored because the layer is not specified in the technology LEF file.
+Reading Capacitance Table File /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/captbl/cln65g+_1p08m+alrdl_top2_cbest.captable ...
+**WARN: (IMPEXT-2760):	Layer M9 specified in the cap table is ignored because it is greater than the maximum number of layers, 8, specified in the technology LEF file. Check the cap table for the invalid layer specification.
+**WARN: (IMPEXT-2771):	Via VIA_8 specified in the cap table is ignored because its top layer, M9, is greater than the maximum number of layers, 8, specified in the technology LEF file. Check the cap table for the invalid layer specification.
+**WARN: (IMPEXT-2801):	Resistance values are not provided in the Cap Table. Sheet resistance defined in the LEF file will be used.
+**WARN: (IMPEXT-2710):	Basic Cap table for layer M9 is ignored because the layer is not specified in the technology LEF file.
+Importing multi-corner RC tables ... 
+Summary of Active RC-Corners : 
+ 
+ Analysis View: WC_VIEW
+    RC-Corner Name        : Cmax
+    RC-Corner Index       : 0
+    RC-Corner Temperature : 125 Celsius
+    RC-Corner Cap Table   : '/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/captbl/cln65g+_1p08m+alrdl_top2_cworst.captable'
+    RC-Corner PreRoute Res Factor         : 1
+    RC-Corner PreRoute Cap Factor         : 1
+    RC-Corner PostRoute Res Factor        : 1 {1 1 1}
+    RC-Corner PostRoute Cap Factor        : 1 {1 1 1}
+    RC-Corner PostRoute XCap Factor       : 1 {1 1 1}
+    RC-Corner PreRoute Clock Res Factor   : 1	[Derived from postRoute_res (effortLevel low)]
+    RC-Corner PreRoute Clock Cap Factor   : 1	[Derived from postRoute_cap (effortLevel low)]
+    RC-Corner PostRoute Clock Cap Factor  : 1 {1 1 1} 	[Derived from postRoute_cap (effortLevel low)]
+    RC-Corner PostRoute Clock Res Factor  : 1 {1 1 1} 	[Derived from postRoute_res (effortLevel low)]
+ 
+ Analysis View: BC_VIEW
+    RC-Corner Name        : Cmin
+    RC-Corner Index       : 1
+    RC-Corner Temperature : -40 Celsius
+    RC-Corner Cap Table   : '/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/captbl/cln65g+_1p08m+alrdl_top2_cbest.captable'
+    RC-Corner PreRoute Res Factor         : 1
+    RC-Corner PreRoute Cap Factor         : 1
+    RC-Corner PostRoute Res Factor        : 1 {1 1 1}
+    RC-Corner PostRoute Cap Factor        : 1 {1 1 1}
+    RC-Corner PostRoute XCap Factor       : 1 {1 1 1}
+    RC-Corner PreRoute Clock Res Factor   : 1	[Derived from postRoute_res (effortLevel low)]
+    RC-Corner PreRoute Clock Cap Factor   : 1	[Derived from postRoute_cap (effortLevel low)]
+    RC-Corner PostRoute Clock Cap Factor  : 1 {1 1 1} 	[Derived from postRoute_cap (effortLevel low)]
+    RC-Corner PostRoute Clock Res Factor  : 1 {1 1 1} 	[Derived from postRoute_res (effortLevel low)]
+*Info: initialize multi-corner CTS.
+Reading timing constraints file '../constraints/sram_w16.sdc' ...
+Current (total cpu=0:00:13.3, real=0:00:28.0, peak res=274.9M, current mem=644.3M)
+**WARN: (TCLNL-330):	set_input_delay on clock root 'CLK' is not supported. You should use the -source option to set_clock_latency to provide this offset. You can also use the global timing_allow_input_delay_on_clock_source to allow set_input_delay assertion to have an effect on clock source paths beginning at this clock root. (File ../constraints/sram_w16.sdc, Line 9).
+
+INFO (CTE): Reading of timing constraints file ../constraints/sram_w16.sdc completed, with 1 WARNING
+Ending "Constraint file reading stats" (total cpu=0:00:00.1, real=0:00:00.0, peak res=290.0M, current mem=659.1M)
+Current (total cpu=0:00:13.3, real=0:00:28.0, peak res=290.0M, current mem=659.1M)
+Total number of combinational cells: 492
+Total number of sequential cells: 303
+Total number of tristate cells: 11
+Total number of level shifter cells: 0
+Total number of power gating cells: 0
+Total number of isolation cells: 0
+Total number of power switch cells: 0
+Total number of pulse generator cells: 0
+Total number of always on buffers: 0
+Total number of retention cells: 0
+List of usable buffers: BUFFD1 BUFFD0 BUFFD2 BUFFD3 BUFFD4 BUFFD6 BUFFD8 BUFFD12 BUFFD16 CKBD1 CKBD0 CKBD2 CKBD3 CKBD4 CKBD6 CKBD8 CKBD12 CKBD16
+Total number of usable buffers: 18
+List of unusable buffers: BUFFD20 BUFFD24 CKBD20 CKBD24 GBUFFD1 GBUFFD3 GBUFFD2 GBUFFD4 GBUFFD8
+Total number of unusable buffers: 9
+List of usable inverters: CKND1 CKND0 CKND2 CKND3 CKND4 CKND6 CKND8 CKND12 CKND16 INVD1 INVD0 INVD2 INVD3 INVD4 INVD6 INVD8 INVD12 INVD16
+Total number of usable inverters: 18
+List of unusable inverters: CKND20 CKND24 GINVD2 GINVD1 GINVD4 GINVD3 GINVD8 INVD20 INVD24
+Total number of unusable inverters: 9
+List of identified usable delay cells:
+Total number of identified usable delay cells: 0
+List of identified unusable delay cells: DEL0 DEL005 DEL01 DEL015 DEL02 DEL1 DEL2 DEL3 DEL4
+Total number of identified unusable delay cells: 9
+All delay cells are dont_use. Buffers will be used to fix hold violations.
+
+*** Summary of all messages that are not suppressed in this session:
+Severity  ID               Count  Summary                                  
+WARNING   IMPLF-200            1  Pin '%s' in macro '%s' has no ANTENNAGAT...
+WARNING   IMPFP-3961           2  The techSite '%s' has no related cells i...
+WARNING   IMPEXT-2710          2  Basic Cap table for layer M%d is ignored...
+WARNING   IMPEXT-2760          2  Layer M%d specified in the cap table is ...
+WARNING   IMPEXT-2771          2  Via %s specified in the cap table is ign...
+WARNING   IMPEXT-2801          2  Resistance values are not provided in th...
+WARNING   IMPVL-159         1622  Pin '%s' of cell '%s' is defined in LEF ...
+ERROR     IMPOAX-820           1  The OA features are disabled in the curr...
+ERROR     IMPOAX-850           1  %s command cannot be run as OA features ...
+*** Message Summary: 1633 warning(s), 2 error(s)
+
+<CMD> set_interactive_constraint_modes {CON}
+<CMD> setDesignMode -process 65
+Applying the recommended capacitance filtering threshold values for 65nm process node: total_c_th=0, relative_c_th=1 and coupling_c_th=0.1.
+	These values will be used by all post-route extraction engines, including tQuantus, IQRC and Quantus QRC extraction.
+	Capacitance filtering mode(-capFilterMode option of the setExtractRCMode) is 'relAndCoup' for all engines.
+	The accuracy mode for postRoute effortLevel low extraction will be set to 'high'.
+	Default value for EffortLevel(-effortLevel option of the setExtractRCMode) in postRoute extraction mode will be 'medium' if Quantus QRC technology file is specified else 'low'.
+Updating process node dependent CCOpt properties for the 65nm process node.
+<CMD> floorPlan -site core -r 1 0.70 70 70 70 70
+<CMD> timeDesign -preplace -prefix preplace
+**WARN: (IMPOPT-7136):	timing_socv_statistical_min_max_mode 'statistical' is not supported by Innovus. Setting it to 'mean_and_three_sigma_bounded'.
+Set Using Default Delay Limit as 101.
+**WARN: (IMPDC-1629):	The default delay limit was set to 101. This is less than the default of 1000 and may result in inaccurate delay calculation for nets with a fanout higher than the setting.  If needed, the default delay limit may be adjusted by running the command 'set delaycal_use_default_delay_limit'.
+Setting High Fanout Nets ( > 100 ) as ideal temporarily for -prePlace option
+Set Default Net Delay as 0 ps.
+Set Default Net Load as 0 pF. 
+#################################################################################
+# Design Stage: PreRoute
+# Design Name: sram_w16
+# Design Mode: 65nm
+# Analysis Mode: MMMC Non-OCV 
+# Parasitics Mode: No SPEF/RCDB
+# Signoff Settings: SI Off 
+#################################################################################
+AAE_INFO: 1 threads acquired from CTE.
+Calculate delays in BcWc mode...
+End delay calculation. (MEM=982.246 CPU=0:00:00.2 REAL=0:00:01.0)
+*** CDM Built up (cpu=0:00:01.0  real=0:00:01.0  mem= 982.2M) ***
+*** Done Building Timing Graph (cpu=0:00:01.1 real=0:00:01.0 totSessionCpu=0:00:29.0 mem=985.2M)
+
+------------------------------------------------------------
+          timeDesign Summary                             
+------------------------------------------------------------
+
+Setup views included:
+ WC_VIEW 
+
++--------------------+---------+---------+---------+
+|     Setup mode     |   all   | reg2reg | default |
++--------------------+---------+---------+---------+
+|           WNS (ns):| -1.684  |  0.531  | -1.684  |
+|           TNS (ns):| -1256.4 |  0.000  | -1256.4 |
+|    Violating Paths:|  1131   |    0    |  1131   |
+|          All Paths:|  2240   |   64    |  2240   |
++--------------------+---------+---------+---------+
+
+Density: 0.000%
+------------------------------------------------------------
+Set Using Default Delay Limit as 1000.
+Resetting back High Fanout Nets as non-ideal
+Set Default Net Delay as 1000 ps.
+Set Default Net Load as 0.5 pF. 
+Reported timing to dir ./timingReports
+Total CPU time: 1.35 sec
+Total Real time: 1.0 sec
+Total Memory Usage: 960.285156 Mbytes
+<CMD> globalNetConnect VDD -type pgpin -pin VDD -inst * -verbose
+1909 new pwr-pin connections were made to global net 'VDD'.
+<CMD> globalNetConnect VSS -type pgpin -pin VSS -inst * -verbose
+1909 new gnd-pin connections were made to global net 'VSS'.
+<CMD> setAddStripeMode -break_at block_ring
+Stripe will break at block ring.
+<CMD> addStripe -nets {VDD VSS} -layer M4 -direction vertical -width 3 -spacing 10 -number_of_sets 6
+
+Starting stripe generation ...
+Non-Default setAddStripeOption Settings :
+  NONE
+The core ring for VDD is incomplete. The core ring will not be used as a boundary for stripes. In this situation, the power planner will generate stripes only within the core area.
+The core ring for VSS is incomplete. The core ring will not be used as a boundary for stripes. In this situation, the power planner will generate stripes only within the core area.
+Stripe generation is complete; vias are now being generated.
+The power planner created 12 wires.
+*** Ending Stripe Generation (totcpu: 0:00:00.0,real: 0:00:00.0, mem: 960.3M) ***
+<CMD> sroute
+*** Begin SPECIAL ROUTE on Thu Mar  5 10:04:18 2026 ***
+SPECIAL ROUTE ran on directory: /home/linux/ieng6/ECE260B_WI26_A00/sabhonsle/ECE260BProject/ECE260B-Final-Project/workspace/Step3/pnr/sram_pnr/scripts
+SPECIAL ROUTE ran on machine: ieng6-ece-06.ucsd.edu (Linux 3.10.0-1160.119.1.el7.x86_64 Xeon 2.19Ghz)
+
+Begin option processing ...
+srouteConnectPowerBump set to false
+routeSpecial set to true
+srouteConnectConverterPin set to false
+srouteFollowCorePinEnd set to 3
+srouteJogControl set to "preferWithChanges differentLayer"
+sroutePadPinAllPorts set to true
+sroutePreserveExistingRoutes set to true
+srouteRoutePowerBarPortOnBothDir set to true
+End option processing: cpu: 0:00:00, real: 0:00:00, peak: 1845.00 megs.
+
+Reading DB technology information...
+Finished reading DB technology information.
+Reading floorplan and netlist information...
+Finished reading floorplan and netlist information.
+Read in 17 layers, 8 routing layers, 1 overlap layer
+Read in 846 macros, 21 used
+Read in 21 components
+  21 core components: 21 unplaced, 0 placed, 0 fixed
+Read in 135 logical pins
+Read in 135 nets
+Read in 2 special nets, 2 routed
+Read in 42 terminals
+Begin power routing ...
+**WARN: (IMPSR-1254):	Cannot find any block pin of net VDD. Check netlist, or change option to include the pin.
+**WARN: (IMPSR-1256):	Cannot find any CORE class pad pin of net VDD. Change routing area or layer to include the expected pin, or check netlist, or change port class in the technology file.
+Type 'man IMPSR-1256' for more detail.
+Cannot find any AREAIO class pad pin of net VDD. Check net list, or change port class in the technology file, or change option to include pin in given range.
+**WARN: (IMPSR-1254):	Cannot find any block pin of net VSS. Check netlist, or change option to include the pin.
+**WARN: (IMPSR-1256):	Cannot find any CORE class pad pin of net VSS. Change routing area or layer to include the expected pin, or check netlist, or change port class in the technology file.
+Type 'man IMPSR-1256' for more detail.
+Cannot find any AREAIO class pad pin of net VSS. Check net list, or change port class in the technology file, or change option to include pin in given range.
+CPU time for FollowPin 0 seconds
+CPU time for FollowPin 0 seconds
+  Number of IO ports routed: 0
+  Number of Block ports routed: 0
+  Number of Stripe ports routed: 0  open: 24
+  Number of Core ports routed: 0  open: 148
+  Number of Pad ports routed: 0
+  Number of Power Bump ports routed: 0
+  Number of Followpin connections: 74
+End power routing: cpu: 0:00:00, real: 0:00:00, peak: 1861.00 megs.
+
+
+
+ Begin updating DB with routing results ...
+ Updating DB with 101 via definition ...Extracting standard cell pins and blockage ...... 
+Pin and blockage extraction finished
+
+
+sroute post-processing starts at Thu Mar  5 10:04:18 2026
+The viaGen is rebuilding shadow vias for net VSS.
+sroute post-processing ends at Thu Mar  5 10:04:18 2026
+
+sroute post-processing starts at Thu Mar  5 10:04:18 2026
+The viaGen is rebuilding shadow vias for net VDD.
+sroute post-processing ends at Thu Mar  5 10:04:18 2026
+sroute: Total CPU time used = 0:0:0
+sroute: Total Real time used = 0:0:0
+sroute: Total Memory used = -2.64 megs
+sroute: Total Peak Memory used = 957.65 megs
+<CMD> verifyConnectivity
+VERIFY_CONNECTIVITY use new engine.
+
+******** Start: VERIFY CONNECTIVITY ********
+Start Time: Thu Mar  5 10:04:19 2026
+
+Design Name: sram_w16
+Database Units: 2000
+Design Boundary: (0.0000, 0.0000) (271.8000, 271.4000)
+Error Limit = 1000; Warning Limit = 50
+Check all nets
+Net VDD: dangling Wire.
+Net VSS: dangling Wire.
+
+Begin Summary 
+    86 Problem(s) (IMPVFC-94): The net has dangling wire(s).
+    86 total info(s) created.
+End Summary
+
+End Time: Thu Mar  5 10:04:19 2026
+Time Elapsed: 0:00:00.0
+
+******** End: VERIFY CONNECTIVITY ********
+  Verification Complete : 86 Viols.  0 Wrngs.
+  (CPU Time: 0:00:00.0  MEM: 0.000M)
+
+<CMD> setPinAssignMode -pinEditInBatch true
+<CMD> editPin -fixOverlap 1 -unit MICRON -side Bottom -layer 4 -spreadType center -spreadDirection clockwise -spacing 4 -pin {D[*]}
+Successfully spread [64] pins.
+editPin : finished (cpu = 0:00:00.0 real = 0:00:00.0, mem = 957.6M).
+<CMD> editPin -fixOverlap 1 -unit MICRON -side Top -layer 4 -spreadType center -spreadDirection clockwise -spacing 4 -pin {Q[*]}
+Successfully spread [64] pins.
+editPin : finished (cpu = 0:00:00.0 real = 0:00:00.0, mem = 957.6M).
+<CMD> editPin -fixOverlap 1 -unit MICRON -side Left -layer 3 -spreadType center -spreadDirection clockwise -spacing 4 -pin {CLK WE RE CE ADDR[*]}
+**WARN: (IMPPTN-1235):	Cannot find pin WE on partition sram_w16
+**WARN: (IMPPTN-1235):	Cannot find pin RE on partition sram_w16
+**WARN: (IMPPTN-1235):	Cannot find pin CE on partition sram_w16
+Successfully spread [1] pins.
+editPin : finished (cpu = 0:00:00.0 real = 0:00:00.0, mem = 957.6M).
+<CMD> setPinAssignMode -pinEditInBatch false
+<CMD> saveDesign floorplan.enc
+Writing Netlist "floorplan.enc.dat.tmp/sram_w16.v.gz" ...
+Saving AAE Data ...
+Saving preference file floorplan.enc.dat.tmp/gui.pref.tcl ...
+Saving mode setting ...
+Saving global file ...
+Saving floorplan file ...
+Saving Drc markers ...
+... 86 markers are saved ...
+... 0 geometry drc markers are saved ...
+... 0 antenna drc markers are saved ...
+Saving placement file ...
+Saving route file ...
+*** Completed saveRoute (cpu=0:00:00.0 real=0:00:00.0 mem=957.7M) ***
+Saving DEF file ...
+**ERROR: (IMPOAX-142):	Could not open shared library libinnovusoax22.so : /acsnfs3/software/cadence-innovus152/tools/lib/64bit/libcdsSkillPcell.so: undefined symbol: _ZTIN12OpenAccess_413oaFSComponentE
+
+**ERROR: (IMPOAX-142):	Could not open shared library libcdsSkillPcell.so : (null)
+
+**ERROR: (IMPSYT-6245):	Error , while saving MS constraint file.
+Cmin Cmax
+Generated self-contained design floorplan.enc.dat.tmp
+
+*** Summary of all messages that are not suppressed in this session:
+Severity  ID               Count  Summary                                  
+ERROR     IMPSYT-6245          1  Error %s, while saving MS constraint fil...
+ERROR     IMPOAX-142           2  %s                                       
+*** Message Summary: 0 warning(s), 3 error(s)
+
+<CMD> setPlaceMode -timingDriven true -reorderScan false -congEffort high -modulePlan false
+<CMD> setOptMode -effort high -powerEffort high -leakageToDynamicRatio 0.5 -fixFanoutLoad true -restruct true -verbose true
+<CMD> place_opt_design
+*** Starting GigaPlace ***
+**INFO: user set placement options
+setPlaceMode -congEffort high -modulePlan false -reorderScan false -timingDriven true
+**INFO: user set opt options
+setOptMode -effort high -fixFanoutLoad true -leakageToDynamicRatio 0.5 -powerEffort high -restruct true -verbose true
+**INFO: Enable pre-place timing setting for timing analysis
+Set Using Default Delay Limit as 101.
+**WARN: (IMPDC-1629):	The default delay limit was set to 101. This is less than the default of 1000 and may result in inaccurate delay calculation for nets with a fanout higher than the setting.  If needed, the default delay limit may be adjusted by running the command 'set delaycal_use_default_delay_limit'.
+Set Default Net Delay as 0 ps.
+Set Default Net Load as 0 pF. 
+**INFO: Analyzing IO path groups for slack adjustment
+Effort level <high> specified for reg2reg_tmp.14620 path_group
+#################################################################################
+# Design Stage: PreRoute
+# Design Name: sram_w16
+# Design Mode: 65nm
+# Analysis Mode: MMMC Non-OCV 
+# Parasitics Mode: No SPEF/RCDB
+# Signoff Settings: SI Off 
+#################################################################################
+Calculate delays in BcWc mode...
+End delay calculation. (MEM=1073.97 CPU=0:00:00.2 REAL=0:00:01.0)
+*** CDM Built up (cpu=0:00:00.2  real=0:00:01.0  mem= 1074.0M) ***
+**INFO : CPU of IO adjustment for placeDesign : (CPU : 0:00:00.4) (Real : 0:00:01.0) (mem : 1074.0M)
+*** Start deleteBufferTree ***
+*info: Marking 0 level shifter instances dont touch
+*info: Marking 0 always on instances dont touch
+Info: Detect buffers to remove automatically.
+Analyzing netlist ...
+All-RC-Corners-Per-Net-In-Memory is turned ON...
+Updating netlist
+
+Cleanup ECO timing graph ...
+Cleanup RC data ...
+Cleanup routing data ...
+*summary: 38 instances (buffers/inverters) removed
+*       :      1 instance  of type 'CKBD1' removed
+*       :     23 instances of type 'BUFFD1' removed
+*       :     14 instances of type 'BUFFD0' removed
+*** Finish deleteBufferTree (0:00:00.0) ***
+**INFO: Disable pre-place timing setting for timing analysis
+Set Using Default Delay Limit as 1000.
+Set Default Net Delay as 1000 ps.
+Set Default Net Load as 0.5 pF. 
+Deleted 0 physical inst  (cell - / prefix -).
+Options: timingDriven clkGateAware ignoreScan pinGuide congEffort=high gpeffort=medium 
+**WARN: (IMPSP-9042):	Scan chains were not defined, -ignoreScan option will be ignored.
+Define the scan chains before using this option.
+Type 'man IMPSP-9042' for more detail.
+#std cell=1871 (0 fixed + 1871 movable) #block=0 (0 floating + 0 preplaced)
+#ioInst=0 #net=1942 #term=8119 #term/net=4.18, #fixedIo=0, #floatIo=0, #fixedPin=0, #floatPin=135
+stdCell: 1871 single + 0 double + 0 multi
+Total standard cell length = 6.7022 (mm), area = 0.0121 (mm^2)
+Estimated cell power/ground rail width = 0.365 um
+Average module density = 0.715.
+Density for the design = 0.715.
+       = stdcell_area 33511 sites (12064 um^2) / alloc_area 46852 sites (16867 um^2).
+Pin Density = 0.1688.
+            = total # of pins 8119 / total area 48107.
+*Internal placement parameters: 0.101 | 10 | 0x000015
+End delay calculation. (MEM=1073.97 CPU=0:00:00.1 REAL=0:00:00.0)
+Clock gating cells determined by native netlist tracing.
+Iteration  1: Total net bbox = 2.066e+04 (3.29e+03 1.74e+04)
+              Est.  stn bbox = 3.029e+04 (7.31e+03 2.30e+04)
+              cpu = 0:00:00.0 real = 0:00:00.0 mem = 1074.0M
+Iteration  2: Total net bbox = 2.319e+04 (3.29e+03 1.99e+04)
+              Est.  stn bbox = 3.632e+04 (7.31e+03 2.90e+04)
+              cpu = 0:00:00.0 real = 0:00:00.0 mem = 1074.0M
+Iteration  3: Total net bbox = 2.468e+04 (4.79e+03 1.99e+04)
+              Est.  stn bbox = 3.954e+04 (1.05e+04 2.90e+04)
+              cpu = 0:00:00.0 real = 0:00:00.0 mem = 1074.0M
+Iteration  4: Total net bbox = 2.643e+04 (4.79e+03 2.16e+04)
+              Est.  stn bbox = 4.312e+04 (1.05e+04 3.26e+04)
+              cpu = 0:00:00.1 real = 0:00:00.0 mem = 1074.0M
+End delay calculation. (MEM=1093.05 CPU=0:00:00.2 REAL=0:00:00.0)
+Iteration  5: Total net bbox = 4.234e+04 (1.70e+04 2.53e+04)
+              Est.  stn bbox = 6.254e+04 (2.49e+04 3.77e+04)
+              cpu = 0:00:00.8 real = 0:00:01.0 mem = 1093.1M
+Iteration  6: Total net bbox = 3.155e+04 (7.17e+03 2.44e+04)
+              Est.  stn bbox = 5.059e+04 (1.41e+04 3.65e+04)
+              cpu = 0:00:00.2 real = 0:00:00.0 mem = 1093.1M
+End delay calculation. (MEM=1093.05 CPU=0:00:00.2 REAL=0:00:00.0)
+Iteration  7: Total net bbox = 3.259e+04 (6.88e+03 2.57e+04)
+              Est.  stn bbox = 5.190e+04 (1.38e+04 3.81e+04)
+              cpu = 0:00:00.6 real = 0:00:01.0 mem = 1093.1M
+Iteration  8: Total net bbox = 3.283e+04 (6.88e+03 2.59e+04)
+              Est.  stn bbox = 5.228e+04 (1.37e+04 3.85e+04)
+              cpu = 0:00:00.2 real = 0:00:00.0 mem = 1093.1M
+End delay calculation. (MEM=1093.05 CPU=0:00:00.2 REAL=0:00:01.0)
+Iteration  9: Total net bbox = 3.319e+04 (6.96e+03 2.62e+04)
+              Est.  stn bbox = 5.271e+04 (1.38e+04 3.89e+04)
+              cpu = 0:00:00.7 real = 0:00:01.0 mem = 1093.1M
+Iteration 10: Total net bbox = 3.303e+04 (6.96e+03 2.61e+04)
+              Est.  stn bbox = 5.251e+04 (1.38e+04 3.87e+04)
+              cpu = 0:00:00.2 real = 0:00:00.0 mem = 1093.1M
+Iteration 11: Total net bbox = 3.794e+04 (1.15e+04 2.64e+04)
+              Est.  stn bbox = 5.746e+04 (1.84e+04 3.90e+04)
+              cpu = 0:00:00.0 real = 0:00:00.0 mem = 1093.1M
+*** cost = 3.794e+04 (1.15e+04 2.64e+04) (cpu for global=0:00:02.8) real=0:00:03.0***
+Info: 5 clock gating cells identified, 0 (on average) moved
+*** Starting refinePlace (0:00:55.5 mem=987.1M) ***
+Total net bbox length = 3.826e+04 (1.187e+04 2.639e+04) (ext = 1.417e+04)
+Move report: Detail placement moves 1862 insts, mean move: 4.43 um, max move: 21.20 um
+	Max move on inst (Q_reg_57_): (176.80, 181.60) --> (171.80, 197.80)
+	Runtime: CPU: 0:00:00.3 REAL: 0:00:01.0 MEM: 979.1MB
+Summary Report:
+Instances move: 1862 (out of 1871 movable)
+Mean displacement: 4.43 um
+Max displacement: 21.20 um (Instance: Q_reg_57_) (176.8, 181.6) -> (171.8, 197.8)
+	Length: 26 sites, height: 1 rows, site name: core, cell type: EDFQD1
+Total net bbox length = 3.786e+04 (1.049e+04 2.738e+04) (ext = 1.404e+04)
+Runtime: CPU: 0:00:00.3 REAL: 0:00:01.0 MEM: 979.1MB
+*** Finished refinePlace (0:00:55.8 mem=979.1M) ***
+*** Finished Initial Placement (cpu=0:00:03.9, real=0:00:04.0, mem=979.1M) ***
+Starting IO pin assignment...
+The design is not routed. Using flight-line based method for pin assignment.
+Completed IO pin assignment.
+Starting congestion repair ...
+[NR-eagl] honorMsvRouteConstraint: false
+[NR-eagl] honorClockSpecNDR      : 0
+[NR-eagl] minRouteLayer          : 2
+[NR-eagl] maxRouteLayer          : 2147483647
+[NR-eagl] numTracksPerClockWire  : 0
+[NR-eagl] Layer1 has no routable track
+[NR-eagl] Layer2 has single uniform track structure
+[NR-eagl] Layer3 has single uniform track structure
+[NR-eagl] Layer4 has single uniform track structure
+[NR-eagl] Layer5 has single uniform track structure
+[NR-eagl] Layer6 has single uniform track structure
+[NR-eagl] Layer7 has single uniform track structure
+[NR-eagl] Layer8 has single uniform track structure
+[NR-eagl] numRoutingBlks=0 numInstBlks=0 numPGBlocks=1344 numBumpBlks=0 numBoundaryFakeBlks=0
+[NR-eagl] numPreroutedNet = 0  numPreroutedWires = 0
+[NR-eagl] Read numTotalNets=1942  numIgnoredNets=0
+[NR-eagl] There are 6 clock nets ( 0 with NDR ).
+[NR-eagl] ============ Routing rule table ============
+[NR-eagl] Rule id 0. Nets 1942 
+[NR-eagl] id=0  routeTrackId=0  extraSpace=0  numShields=0  maxHorDemand=1  maxVerDemand=1
+[NR-eagl] Pitch:  L1=360  L2=400  L3=400  L4=400  L5=400  L6=400  L7=1600  L8=1600
+[NR-eagl] ========================================
+[NR-eagl] 
+[NR-eagl] Layer group 1: route 1942 net(s) in layer range [2, 8]
+[NR-eagl] earlyGlobalRoute overflow of layer group 1: 0.00% H + 0.00% V. EstWL: 5.950440e+04um
+[NR-eagl] 
+[NR-eagl] Overflow after earlyGlobalRoute (GR compatible) 0.00% H + 0.00% V
+[NR-eagl] Overflow after earlyGlobalRoute 0.00% H + 0.00% V
+Local HotSpot Analysis: normalized max congestion hotspot area = 0.00, normalized total congestion hotspot area = 0.00 (area is in unit of 4 std-cell row bins)
+describeCongestion: hCong = 0.00 vCong = 0.00
+Skipped repairing congestion.
+[NR-eagl] Layer1(M1)(F) length: 0.000000e+00um, number of vias: 7984
+[NR-eagl] Layer2(M2)(V) length: 2.190557e+04um, number of vias: 11400
+[NR-eagl] Layer3(M3)(H) length: 2.352670e+04um, number of vias: 1552
+[NR-eagl] Layer4(M4)(V) length: 7.865399e+03um, number of vias: 697
+[NR-eagl] Layer5(M5)(H) length: 3.029181e+03um, number of vias: 556
+[NR-eagl] Layer6(M6)(V) length: 4.832399e+03um, number of vias: 7
+[NR-eagl] Layer7(M7)(H) length: 5.000000e-01um, number of vias: 2
+[NR-eagl] Layer8(M8)(V) length: 0.000000e+00um, number of vias: 0
+[NR-eagl] Total length: 6.115975e+04um, number of vias: 22198
+End of congRepair (cpu=0:00:00.1, real=0:00:00.0)
+**placeDesign ... cpu = 0: 0: 5, real = 0: 0: 5, mem = 982.1M **
+-clockNDRAwarePlaceOpt false               # bool, default=false, private
+**INFO: setDesignMode -flowEffort standard -> setting 'setOptMode -allEndPoints true' for the duration of this command.
+-powerEffort high                          # enums={none low high}, default=none, user setting
+-leakageToDynamicRatio 0.5                 # float, default=1, user setting
+-setupDynamicPowerViewAsDefaultView false
+                                           # bool, default=false, private
+No user sequential activity specified, applying default sequential activity of "0.2" for Dynamic Power reporting.
+'set_default_switching_activity' finished successfully.
+WC_VIEW BC_VIEW
+GigaOpt running with 1 threads.
+**WARN: (IMPOPT-3564):	The following cells are set dont_use temporarily by the tool because there are no rows defined for their technology site, or they are not placeable in any power domain. To avoid this message, review the floorplan, msv setting, the library setting or set manualy those cells as dont_use.
+	Cell FILL1_LL, site bcore.
+	Cell FILL_NW_HH, site bcore.
+	Cell FILL_NW_LL, site bcore.
+	Cell GFILL, site gacore.
+	Cell GFILL10, site gacore.
+	Cell GFILL2, site gacore.
+	Cell GFILL3, site gacore.
+	Cell GFILL4, site gacore.
+	Cell LVLLHCD1, site bcore.
+	Cell LVLLHCD2, site bcore.
+	Cell LVLLHCD4, site bcore.
+	Cell LVLLHCD8, site bcore.
+	Cell LVLLHD1, site bcore.
+	Cell LVLLHD2, site bcore.
+	Cell LVLLHD4, site bcore.
+	Cell LVLLHD8, site bcore.
+.
+Updating RC grid for preRoute extraction ...
+Initializing multi-corner capacitance tables ... 
+Initializing multi-corner resistance tables ...
+**WARN: (IMPTS-403):	Delay calculation was forced to extrapolate table data outside of the characterized range. In some cases, extrapolation can reduce the accuracy of the delay calculation. You can enable more detailed reporting of these cases by enabling the command 'setDelayCalMode -reportOutBound true'.
+Type 'man IMPTS-403' for more detail.
+**optDesign ... cpu = 0:00:00, real = 0:00:00, mem = 1013.2M, totSessionCpu=0:00:57 **
+Added -handlePreroute to trialRouteMode
+*** optDesign -preCTS ***
+DRC Margin: user margin 0.0; extra margin 0.2
+Setup Target Slack: user slack 0; extra slack 0.1
+Hold Target Slack: user slack 0
+**INFO: setOptMode -powerEffort high -> Total Power Opt will be called for all Setup Timing optDesign commands, with leakageToDynamicRatio 0.5.
+WC_VIEW BC_VIEW
+-powerEffort high                          # enums={none low high}, default=none, user setting
+-leakageToDynamicRatio 0.5                 # float, default=1, user setting
+-setupDynamicPowerViewAsDefaultView false
+                                           # bool, default=false, private
+Start to check current routing status for nets...
+All nets are already routed correctly.
+End to check current routing status for nets (mem=1015.2M)
+Extraction called for design 'sram_w16' of instances=1871 and nets=1944 using extraction engine 'preRoute' .
+PreRoute RC Extraction called for design sram_w16.
+RC Extraction called in multi-corner(2) mode.
+**WARN: (IMPEXT-3442):	The version of the capacitance table file being used is obsolete and is no longer recommended. For improved accuracy, generate the capacitance table file using the generateCapTbl command.
+RCMode: PreRoute
+      RC Corner Indexes            0       1   
+Capacitance Scaling Factor   : 1.00000 1.00000 
+Resistance Scaling Factor    : 1.00000 1.00000 
+Clock Cap. Scaling Factor    : 1.00000 1.00000 
+Clock Res. Scaling Factor    : 1.00000 1.00000 
+Shrink Factor                : 1.00000
+PreRoute extraction is honoring NDR/Shielding/ExtraSpace for clock nets.
+Using capacitance table file ...
+Updating RC grid for preRoute extraction ...
+Initializing multi-corner capacitance tables ... 
+Initializing multi-corner resistance tables ...
+PreRoute RC Extraction DONE (CPU Time: 0:00:00.1  Real Time: 0:00:00.0  MEM: 1011.918M)
+** Profile ** Start :  cpu=0:00:00.0, mem=1011.9M
+** Profile ** Other data :  cpu=0:00:00.0, mem=1012.9M
+#################################################################################
+# Design Stage: PreRoute
+# Design Name: sram_w16
+# Design Mode: 65nm
+# Analysis Mode: MMMC Non-OCV 
+# Parasitics Mode: No SPEF/RCDB
+# Signoff Settings: SI Off 
+#################################################################################
+AAE_INFO: 1 threads acquired from CTE.
+Calculate delays in BcWc mode...
+End delay calculation. (MEM=1105.11 CPU=0:00:00.2 REAL=0:00:00.0)
+*** CDM Built up (cpu=0:00:00.3  real=0:00:01.0  mem= 1105.1M) ***
+*** Done Building Timing Graph (cpu=0:00:00.4 real=0:00:01.0 totSessionCpu=0:00:58.0 mem=1105.1M)
+** Profile ** Overall slacks :  cpu=0:00:00.4, mem=1105.1M
+** Profile ** DRVs :  cpu=0:00:00.0, mem=1105.1M
+
+------------------------------------------------------------
+             Initial Summary                             
+------------------------------------------------------------
+
+Setup views included:
+ WC_VIEW 
+
++--------------------+---------+
+|     Setup mode     |   all   |
++--------------------+---------+
+|           WNS (ns):| -7.754  |
+|           TNS (ns):| -6405.0 |
+|    Violating Paths:|  1152   |
+|          All Paths:|  2240   |
++--------------------+---------+
+
++----------------+-------------------------------+------------------+
+|                |              Real             |       Total      |
+|    DRVs        +------------------+------------+------------------|
+|                |  Nr nets(terms)  | Worst Vio  |  Nr nets(terms)  |
++----------------+------------------+------------+------------------+
+|   max_cap      |     33 (33)      |   -0.238   |     38 (38)      |
+|   max_tran     |    33 (2165)     |   -8.236   |    33 (2165)     |
+|   max_fanout   |      0 (0)       |     0      |      0 (0)       |
+|   max_length   |      0 (0)       |     0      |      0 (0)       |
++----------------+------------------+------------+------------------+
+
+Density: 69.659%
+------------------------------------------------------------
+** Profile ** Report data :  cpu=0:00:00.0, mem=1105.1M
+**optDesign ... cpu = 0:00:01, real = 0:00:01, mem = 1049.9M, totSessionCpu=0:00:58 **
+** INFO : this run is activating medium effort placeOptDesign flow
+*** Starting optimizing excluded clock nets MEM= 1041.9M) ***
+*info: No excluded clock nets to be optimized.
+*** Finished optimizing excluded clock nets (CPU Time= 0:00:00.0  MEM= 1041.9M) ***
+
+**WARN: (IMPOPT-3663):	Power view is not set. First setup analysis view (WC_VIEW) will be treated as power view and VT partitioning will be done on basis of leakage specified in this view. If this is incorrect, specify correct power view via command "set_power_analysis_mode -analysis_view <view_name>".
+
+Type 'man IMPOPT-3663' for more detail.
+
+Power view               = WC_VIEW
+Number of VT partitions  = 2
+Standard cells in design = 811
+Instances in design      = 1871
+
+Instance distribution across the VT partitions:
+
+ LVT : inst = 6 (0.3%), cells = 335 (41%)
+   Lib tcbn65gpluswc        : inst = 6 (0.3%)
+
+ HVT : inst = 1865 (99.7%), cells = 457 (56%)
+   Lib tcbn65gpluswc        : inst = 1865 (99.7%)
+
+Reporting took 0 sec
+**INFO: Num dontuse cells 97, Num usable cells 750
+optDesignOneStep: Leakage Power Flow
+**INFO: Num dontuse cells 97, Num usable cells 750
+Info: 6 clock nets excluded from IPO operation.
+Design State:
+    #signal nets       :  1942
+    #routed signal nets:  0
+    #clock nets        :  0
+    #routed clock nets :  0
+OptMgr: Begin leakage power optimization
+OptMgr: Number of active setup views: 1
+
+Power Net Detected:
+    Voltage	    Name
+    0.00V	    VSS
+    0.90V	    VDD
+
+Begin Power Analysis
+
+    0.00V	    VSS
+    0.90V	    VDD
+
+Begin Processing Timing Library for Power Calculation
+
+Begin Processing Timing Library for Power Calculation
+
+
+
+Begin Processing Power Net/Grid for Power Calculation
+
+Ended Processing Power Net/Grid for Power Calculation: (cpu=0:00:00, real=0:00:00, mem(process/total)=802.20MB/802.20MB)
+
+Begin Processing Timing Window Data for Power Calculation
+
+CLK(1000MHz) Ended Processing Timing Window Data for Power Calculation: (cpu=0:00:00, real=0:00:00, mem(process/total)=802.31MB/802.31MB)
+
+Begin Processing User Attributes
+
+Ended Processing User Attributes: (cpu=0:00:00, real=0:00:00, mem(process/total)=802.35MB/802.35MB)
+
+Begin Processing Signal Activity
+
+
+Starting Levelizing
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT)
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT): 10%
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT): 20%
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT): 30%
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT): 40%
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT): 50%
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT): 60%
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT): 70%
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT): 80%
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT): 90%
+
+Finished Levelizing
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT)
+
+Starting Activity Propagation
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT)
+** INFO:  (VOLTUS_POWR-1356): No default input activity has been set. Defaulting to 0.2.
+Use 'set_default_switching_activity -input_activity' command to change the default activity value.
+
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT): 10%
+
+Finished Activity Propagation
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT)
+Ended Processing Signal Activity: (cpu=0:00:00, real=0:00:00, mem(process/total)=802.66MB/802.66MB)
+
+Begin Power Computation
+
+      ----------------------------------------------------------
+      # of cell(s) missing both power/leakage table: 0
+      # of cell(s) missing power table: 0
+      # of cell(s) missing leakage table: 0
+      # of MSMV cell(s) missing power_level: 0
+      ----------------------------------------------------------
+
+
+
+Starting Calculating power
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT)
+ ... Calculating leakage power
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT): 10%
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT): 20%
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT): 30%
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT): 40%
+
+Finished Calculating power
+2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT)
+Ended Power Computation: (cpu=0:00:00, real=0:00:00, mem(process/total)=802.82MB/802.82MB)
+
+Begin Processing User Attributes
+
+Ended Processing User Attributes: (cpu=0:00:00, real=0:00:00, mem(process/total)=802.82MB/802.82MB)
+
+Ended Power Analysis: (cpu=0:00:00, real=0:00:00, mem(process/total)=802.85MB/802.85MB)
+
+Begin Static Power Report Generation
+*----------------------------------------------------------------------------------------
+*	Innovus 15.23-s045_1 (64bit) 04/22/2016 12:32 (Linux 2.6.18-194.el5)
+*	
+*
+* 	Date & Time:	2026-Mar-05 10:06:10 (2026-Mar-05 18:06:10 GMT)
+*
+*----------------------------------------------------------------------------------------
+*
+*	Design: sram_w16
+*
+*	Liberty Libraries used:
+*	        WC_VIEW: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lib/tcbn65gpluswc.lib
+*
+*	Power Domain used:
+*		Rail:        VDD 	Voltage:        0.9
+*
+*	Power Units = 1mW
+*
+*	Time Units = 1e-09 secs
+*
+*       report_power -leakage
+*
+-----------------------------------------------------------------------------------------
+
+
+Total Power
+-----------------------------------------------------------------------------------------
+Total Leakage Power:         0.06929385
+-----------------------------------------------------------------------------------------
+
+
+Group                           Leakage       Percentage 
+                                Power         (%)        
+-----------------------------------------------------------------------------------------
+Sequential                       0.06241       89.94
+Macro                                  0           0
+IO                                     0           0
+Combinational                   0.006786       9.779
+Clock (Combinational)          9.859e-05      0.1421
+Clock (Sequential)                     0           0
+-----------------------------------------------------------------------------------------
+Total                            0.06929         100
+-----------------------------------------------------------------------------------------
+
+
+Rail                  Voltage   Leakage       Percentage 
+                                Power         (%)        
+-----------------------------------------------------------------------------------------
+VDD                       0.9    0.06929         100
+
+
+Clock                           Leakage       Percentage 
+                                Power         (%)        
+-----------------------------------------------------------------------------------------
+CLK                            9.859e-05      0.1423
+-----------------------------------------------------------------------------------------
+Total                          9.859e-05      0.1423
+-----------------------------------------------------------------------------------------
+ 
+ 
+-----------------------------------------------------------------------------------------
+*	Power Distribution Summary: 
+* 		Highest Average Power:           memory10_reg_0_ (EDFQD1): 	 5.748e-05
+* 		Highest Leakage Power:           memory10_reg_0_ (EDFQD1): 	 5.748e-05
+* 		Total Cap: 	1.15935e-11 F
+* 		Total instances in design:  1871
+* 		Total instances in design with no power:     0
+*                Total instances in design with no activty:     0
+
+* 		Total Fillers and Decap:     0
+-----------------------------------------------------------------------------------------
+ 
+Total leakage power = 0.0692938 mW
+Cell usage statistics:  
+Library tcbn65gpluswc , 1871 cells ( 100.000000%) , 0.0692938 mW ( 100.000000% ) 
+Ended Static Power Report Generation: (cpu=0:00:00, real=0:00:00,
+mem(process/total)=802.87MB/802.87MB)
+
+OptMgr: Optimization mode is pre-route
+OptMgr: current WNS: -7.854 ns
+OptMgr: Using aggressive mode for Force Mode
+
+Design leakage power (state independent) = 0.067 mW
+Resizable instances =   1866 (99.7%), leakage = 0.067 mW (99.9%)
+Leakage power distribution among resizable instances:
+ Total LVT =      1 ( 0.1%), lkg = 0.000 mW ( 0.0%)
+   -ve slk =      1 ( 0.1%), lkg = 0.000 mW ( 0.0%)
+ Total MVT =      0 ( 0.0%), lkg = 0.000 mW ( 0.0%)
+   -ve slk =      0 ( 0.0%), lkg = 0.000 mW ( 0.0%)
+ Total HVT =   1865 (99.7%), lkg = 0.067 mW (99.8%)
+   -ve slk =   1865 (99.7%), lkg = 0.067 mW (99.8%)
+
+OptMgr: Begin forced downsizing
+OptMgr: 17 instances resized in force mode
+OptMgr: Updating timing
+OptMgr: Design WNS: -7.855 ns
+OptMgr: 5 (29%) instances reverted to original cell
+OptMgr: Updating timing
+OptMgr: Design WNS: -7.855 ns
+
+Design leakage power (state independent) = 0.067 mW
+Resizable instances =   1866 (99.7%), leakage = 0.067 mW (99.9%)
+Leakage power distribution among resizable instances:
+ Total LVT =      0 ( 0.0%), lkg = 0.000 mW ( 0.0%)
+   -ve slk =      0 ( 0.0%), lkg = 0.000 mW ( 0.0%)
+ Total MVT =      0 ( 0.0%), lkg = 0.000 mW ( 0.0%)
+   -ve slk =      0 ( 0.0%), lkg = 0.000 mW ( 0.0%)
+ Total HVT =   1866 (99.7%), lkg = 0.067 mW (99.9%)
+   -ve slk =   1866 (99.7%), lkg = 0.067 mW (99.9%)
+
+
+Summary: cell sizing
+
+ 12 instances changed cell type
+
+                       UpSize    DownSize   SameSize   Total
+                       ------    --------   --------   -----
+    Sequential            0          0          0          0
+ Combinational            0          0         12         12
+
+    1 instances changed cell type from        AN3D1   to      AN3D0
+    1 instances changed cell type from      CKAN2D1   to      AN2D0
+    2 instances changed cell type from      INR2XD0   to     INR2D0
+    3 instances changed cell type from        INVD1   to      INVD0
+    5 instances changed cell type from       NR2XD0   to      NR2D0
+  checkSum: 12
+
+
+
+Begin Power Analysis
+
+    0.00V	    VSS
+    0.90V	    VDD
+
+Begin Processing Timing Library for Power Calculation
+
+Begin Processing Timing Library for Power Calculation
+
+
+
+Begin Processing Power Net/Grid for Power Calculation
+
+Ended Processing Power Net/Grid for Power Calculation: (cpu=0:00:00, real=0:00:00, mem(process/total)=811.65MB/811.65MB)
+
+Begin Processing Timing Window Data for Power Calculation
+
+Ended Processing Timing Window Data for Power Calculation: (cpu=0:00:00, real=0:00:00, mem(process/total)=811.65MB/811.65MB)
+
+Begin Processing User Attributes
+
+Ended Processing User Attributes: (cpu=0:00:00, real=0:00:00, mem(process/total)=811.65MB/811.65MB)
+
+Begin Processing Signal Activity
+
+
+Starting Levelizing
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT)
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT): 10%
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT): 20%
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT): 30%
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT): 40%
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT): 50%
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT): 60%
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT): 70%
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT): 80%
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT): 90%
+
+Finished Levelizing
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT)
+
+Starting Activity Propagation
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT)
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT): 10%
+
+Finished Activity Propagation
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT)
+Ended Processing Signal Activity: (cpu=0:00:00, real=0:00:00, mem(process/total)=811.65MB/811.65MB)
+
+Begin Power Computation
+
+      ----------------------------------------------------------
+      # of cell(s) missing both power/leakage table: 0
+      # of cell(s) missing power table: 0
+      # of cell(s) missing leakage table: 0
+      # of MSMV cell(s) missing power_level: 0
+      ----------------------------------------------------------
+
+
+
+Starting Calculating power
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT)
+ ... Calculating leakage power
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT): 10%
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT): 20%
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT): 30%
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT): 40%
+
+Finished Calculating power
+2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT)
+Ended Power Computation: (cpu=0:00:00, real=0:00:00, mem(process/total)=811.65MB/811.65MB)
+
+Begin Processing User Attributes
+
+Ended Processing User Attributes: (cpu=0:00:00, real=0:00:00, mem(process/total)=811.65MB/811.65MB)
+
+Ended Power Analysis: (cpu=0:00:00, real=0:00:00, mem(process/total)=811.65MB/811.65MB)
+
+Begin Static Power Report Generation
+*----------------------------------------------------------------------------------------
+*	Innovus 15.23-s045_1 (64bit) 04/22/2016 12:32 (Linux 2.6.18-194.el5)
+*	
+*
+* 	Date & Time:	2026-Mar-05 10:06:11 (2026-Mar-05 18:06:11 GMT)
+*
+*----------------------------------------------------------------------------------------
+*
+*	Design: sram_w16
+*
+*	Liberty Libraries used:
+*	        WC_VIEW: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lib/tcbn65gpluswc.lib
+*
+*	Power Domain used:
+*		Rail:        VDD 	Voltage:        0.9
+*
+*	Power Units = 1mW
+*
+*	Time Units = 1e-09 secs
+*
+*       report_power -leakage
+*
+-----------------------------------------------------------------------------------------
+
+
+Total Power
+-----------------------------------------------------------------------------------------
+Total Leakage Power:         0.06923200
+-----------------------------------------------------------------------------------------
+
+
+Group                           Leakage       Percentage 
+                                Power         (%)        
+-----------------------------------------------------------------------------------------
+Sequential                       0.06241       90.02
+Macro                                  0           0
+IO                                     0           0
+Combinational                   0.006724       9.699
+Clock (Combinational)          9.859e-05      0.1422
+Clock (Sequential)                     0           0
+-----------------------------------------------------------------------------------------
+Total                            0.06923         100
+-----------------------------------------------------------------------------------------
+
+
+Rail                  Voltage   Leakage       Percentage 
+                                Power         (%)        
+-----------------------------------------------------------------------------------------
+VDD                       0.9    0.06923         100
+
+
+Clock                           Leakage       Percentage 
+                                Power         (%)        
+-----------------------------------------------------------------------------------------
+CLK                            9.859e-05      0.1424
+-----------------------------------------------------------------------------------------
+Total                          9.859e-05      0.1424
+-----------------------------------------------------------------------------------------
+ 
+ 
+-----------------------------------------------------------------------------------------
+*	Power Distribution Summary: 
+* 		Highest Average Power:           memory10_reg_0_ (EDFQD1): 	 5.748e-05
+* 		Highest Leakage Power:           memory10_reg_0_ (EDFQD1): 	 5.748e-05
+* 		Total Cap: 	1.15899e-11 F
+* 		Total instances in design:  1871
+* 		Total instances in design with no power:     0
+*                Total instances in design with no activty:     0
+
+* 		Total Fillers and Decap:     0
+-----------------------------------------------------------------------------------------
+ 
+Total leakage power = 0.069232 mW
+Cell usage statistics:  
+Library tcbn65gpluswc , 1871 cells ( 100.000000%) , 0.069232 mW ( 100.000000% ) 
+Ended Static Power Report Generation: (cpu=0:00:00, real=0:00:00,
+mem(process/total)=811.65MB/811.65MB)
+
+OptMgr: Leakage power optimization took: 1 seconds
+OptMgr: End leakage power optimization
+The useful skew maximum allowed delay is: 0.2
+**INFO: Num dontuse cells 97, Num usable cells 750
+optDesignOneStep: Leakage Power Flow
+**INFO: Num dontuse cells 97, Num usable cells 750
+Info: 6 clock nets excluded from IPO operation.
+*info: There are 18 candidate Buffer cells
+*info: There are 18 candidate Inverter cells
+
+Netlist preparation processing... 
+
+Constant propagation run...
+CPU of constant propagation run : 0:00:00.0 (mem :1194.0M)
+
+Dangling output instance removal run...
+CPU of dangling output instance removal run : 0:00:00.0 (mem :1194.0M)
+
+Dont care observability instance removal run...
+CPU of dont care observability instance removal run : 0:00:00.0 (mem :1194.0M)
+
+Removed instances... 
+
+Replaced instances... 
+
+Removed 0 instance
+	CPU for removing db instances : 0:00:00.0 (mem :1194.0M)
+	CPU for removing timing graph nodes : 0:00:00.0 (mem :1194.0M)
+CPU of: netlist preparation :0:00:00.0 (mem :1194.0M)
+
+Mark undriven nets with IPOIgnored run...
+CPU of marking undriven nets with IPOIgnored run : 0:00:00.0 (mem :1194.0M)
+*info: Marking 0 isolation instances dont touch
+*info: Marking 0 level shifter instances dont touch
+
+Completed downsize cell map
+Forced downsizing resized 0 out of 1871 instances
+     #inst not ok to resize: 5
+     #inst with no smaller cells: 1859
+**INFO: Num dontuse cells 97, Num usable cells 750
+optDesignOneStep: Leakage Power Flow
+**INFO: Num dontuse cells 97, Num usable cells 750
+Info: 6 clock nets excluded from IPO operation.
+Begin: Area Reclaim Optimization
+Reclaim Optimization WNS Slack -7.755  TNS Slack -6608.706 Density 69.66
++----------+---------+--------+---------+------------+--------+
+| Density  | Commits |  WNS   |   TNS   |    Real    |  Mem   |
++----------+---------+--------+---------+------------+--------+
+|    69.66%|        -|  -7.755|-6608.706|   0:00:00.0| 1283.0M|
+|    69.66%|        0|  -7.754|-6608.706|   0:00:00.0| 1283.0M|
+|    69.66%|        0|  -7.754|-6608.706|   0:00:00.0| 1283.0M|
+|    69.66%|        0|  -7.754|-6608.706|   0:00:00.0| 1283.0M|
++----------+---------+--------+---------+------------+--------+
+Reclaim Optimization End WNS Slack -7.755  TNS Slack -6608.706 Density 69.66
+**** Begin NDR-Layer Usage Statistics ****
+0 Ndr or Layer constraints added by optimization 
+**** End NDR-Layer Usage Statistics ****
+** Finished Core Area Reclaim Optimization (cpu = 0:00:01.2) (real = 0:00:01.0) **
+Executing incremental physical updates
+Executing incremental physical updates
+*** Finished Area Reclaim Optimization (cpu=0:00:01, real=0:00:01, mem=1117.48M, totSessionCpu=0:01:03).
+Leakage Power Opt: re-selecting buf/inv list 
+**INFO: Num dontuse cells 97, Num usable cells 750
+optDesignOneStep: Leakage Power Flow
+**INFO: Num dontuse cells 97, Num usable cells 750
+Begin: GigaOpt high fanout net optimization
+Info: 6 clock nets excluded from IPO operation.
++----------+---------+--------+---------+------------+--------+
+| Density  | Commits |  WNS   |   TNS   |    Real    |  Mem   |
++----------+---------+--------+---------+------------+--------+
+|    69.66%|        -|  -7.755|-6608.706|   0:00:00.0| 1252.0M|
+|    69.66%|        -|  -7.755|-6608.706|   0:00:00.0| 1252.0M|
++----------+---------+--------+---------+------------+--------+
+
+*** Finish pre-CTS High Fanout Net Fixing (cpu=0:00:00.0 real=0:00:00.0 mem=1252.0M) ***
+**** Begin NDR-Layer Usage Statistics ****
+0 Ndr or Layer constraints added by optimization 
+**** End NDR-Layer Usage Statistics ****
+End: GigaOpt high fanout net optimization
+Begin: GigaOpt DRV Optimization
+Info: 6 clock nets excluded from IPO operation.
++--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|      max-tran     |      max-cap      |     max-fanout    |     max-length    |       |           |           |           |         |            |           |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|  nets   |  terms  |  nets   |  terms  |  nets   |  terms  |  nets   |  terms  |  WNS  |  #Buffer  | #Inverter |  #Resize  | Density |    Real    |    Mem    |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|    33   |  2165   |    33   |     33  |     0   |     0   |     0   |     0   | -7.75 |          0|          0|          0|  69.66  |            |           |
+|    10   |   645   |     0   |      0  |     0   |     0   |     0   |     0   | -1.28 |         29|          0|         22|  70.17  |   0:00:01.0|    1263.0M|
+|     0   |     0   |     0   |      0  |     0   |     0   |     0   |     0   | -1.26 |          0|          0|         10|  70.24  |   0:00:01.0|    1263.0M|
++--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+**** Begin NDR-Layer Usage Statistics ****
+0 Ndr or Layer constraints added by optimization 
+**** End NDR-Layer Usage Statistics ****
+
+*** Finish DRV Fixing (cpu=0:00:01.5 real=0:00:02.0 mem=1263.0M) ***
+
+End: GigaOpt DRV Optimization
+Leakage Power Opt: resetting the buf/inv selection
+**optDesign ... cpu = 0:00:10, real = 0:00:11, mem = 1129.5M, totSessionCpu=0:01:08 **
+Leakage Power Opt: re-selecting buf/inv list 
+**INFO: Num dontuse cells 97, Num usable cells 750
+optDesignOneStep: Leakage Power Flow
+**INFO: Num dontuse cells 97, Num usable cells 750
+Begin: GigaOpt Global Optimization
+*info: use new DP (enabled)
+Info: 6 clock nets excluded from IPO operation.
+*info: 6 clock nets excluded
+*info: 2 special nets excluded.
+*info: 2 no-driver nets excluded.
+** GigaOpt Global Opt WNS Slack -1.264  TNS Slack -976.248 
++--------+--------+----------+------------+--------+----------+---------+---------------------+
+|  WNS   |  TNS   | Density  |    Real    |  Mem   |Worst View|Pathgroup|      End Point      |
++--------+--------+----------+------------+--------+----------+---------+---------------------+
+|  -1.264|-976.248|    70.24%|   0:00:00.0| 1277.2M|   WC_VIEW|  default| memory8_reg_14_/E   |
+|  -1.115|-900.735|    70.64%|   0:00:02.0| 1289.7M|   WC_VIEW|  default| memory15_reg_12_/E  |
+|  -0.848|-501.034|    70.94%|   0:00:02.0| 1290.7M|   WC_VIEW|  default| memory15_reg_12_/E  |
+|  -0.848|-501.034|    70.94%|   0:00:00.0| 1290.7M|   WC_VIEW|  default| memory15_reg_12_/E  |
+|  -0.305|-141.625|    71.05%|   0:00:01.0| 1290.7M|   WC_VIEW|  default| memory15_reg_12_/E  |
+|  -0.244|-133.769|    71.15%|   0:00:01.0| 1291.7M|   WC_VIEW|  default| memory15_reg_12_/E  |
+|  -0.214|-113.561|    71.27%|   0:00:02.0| 1292.7M|   WC_VIEW|  default| memory15_reg_12_/E  |
+|  -0.214|-113.561|    71.27%|   0:00:00.0| 1292.7M|   WC_VIEW|  default| memory15_reg_12_/E  |
+|  -0.103| -31.985|    71.71%|   0:00:00.0| 1292.7M|   WC_VIEW|  default| memory2_reg_40_/E   |
+|  -0.095| -45.661|    71.73%|   0:00:01.0| 1292.7M|   WC_VIEW|  default| memory10_reg_36_/E  |
+|  -0.102| -48.134|    71.76%|   0:00:00.0| 1292.7M|   WC_VIEW|  default| memory10_reg_36_/E  |
+|  -0.102| -48.134|    71.76%|   0:00:00.0| 1292.7M|   WC_VIEW|  default| memory10_reg_36_/E  |
+|  -0.016|  -0.788|    71.78%|   0:00:00.0| 1292.7M|   WC_VIEW|  default| Q_reg_35_/D         |
+|  -0.016|  -0.788|    71.78%|   0:00:00.0| 1292.7M|   WC_VIEW|  default| Q_reg_35_/D         |
+|  -0.016|  -0.788|    71.78%|   0:00:00.0| 1292.7M|   WC_VIEW|  default| Q_reg_35_/D         |
+|  -0.016|  -0.788|    71.78%|   0:00:00.0| 1292.7M|   WC_VIEW|  default| Q_reg_35_/D         |
+|  -0.003|  -0.023|    71.79%|   0:00:00.0| 1292.7M|   WC_VIEW|  default| memory10_reg_36_/E  |
+|  -0.003|  -0.023|    71.79%|   0:00:00.0| 1292.7M|   WC_VIEW|  default| memory10_reg_36_/E  |
++--------+--------+----------+------------+--------+----------+---------+---------------------+
+
+*** Finish pre-CTS Global Setup Fixing (cpu=0:00:09.2 real=0:00:09.0 mem=1292.7M) ***
+
+*** Finish pre-CTS Setup Fixing (cpu=0:00:09.2 real=0:00:09.0 mem=1292.7M) ***
+**** Begin NDR-Layer Usage Statistics ****
+0 Ndr or Layer constraints added by optimization 
+**** End NDR-Layer Usage Statistics ****
+** GigaOpt Global Opt End WNS Slack -0.003  TNS Slack -0.023 
+End: GigaOpt Global Optimization
+Leakage Power Opt: resetting the buf/inv selection
+
+Active setup views:
+ WC_VIEW
+  Dominating endpoints: 0
+  Dominating TNS: -0.000
+
+*** Timing NOT met, worst failing slack is -0.003
+*** Check timing (0:00:00.0)
+**INFO: Num dontuse cells 97, Num usable cells 750
+optDesignOneStep: Leakage Power Flow
+**INFO: Num dontuse cells 97, Num usable cells 750
+Info: 6 clock nets excluded from IPO operation.
+Begin: Area Reclaim Optimization
+Reclaim Optimization WNS Slack -0.003  TNS Slack -0.023 Density 71.79
++----------+---------+--------+--------+------------+--------+
+| Density  | Commits |  WNS   |  TNS   |    Real    |  Mem   |
++----------+---------+--------+--------+------------+--------+
+|    71.79%|        -|  -0.003|  -0.023|   0:00:00.0| 1308.6M|
+|    71.78%|        1|  -0.003|  -0.023|   0:00:00.0| 1308.6M|
+|    71.78%|        0|  -0.003|  -0.023|   0:00:00.0| 1308.6M|
+|    71.76%|        1|  -0.003|  -0.023|   0:00:01.0| 1308.6M|
+|    71.21%|       77|   0.000|   0.000|   0:00:00.0| 1308.6M|
+|    71.17%|        7|   0.000|   0.000|   0:00:00.0| 1308.6M|
+|    71.17%|        0|   0.000|   0.000|   0:00:00.0| 1308.6M|
++----------+---------+--------+--------+------------+--------+
+Reclaim Optimization End WNS Slack 0.000  TNS Slack 0.000 Density 71.17
+**** Begin NDR-Layer Usage Statistics ****
+0 Ndr or Layer constraints added by optimization 
+**** End NDR-Layer Usage Statistics ****
+** Finished Core Area Reclaim Optimization (cpu = 0:00:01.9) (real = 0:00:02.0) **
+Executing incremental physical updates
+Executing incremental physical updates
+*** Finished Area Reclaim Optimization (cpu=0:00:02, real=0:00:02, mem=1151.09M, totSessionCpu=0:01:23).
+setup target slack: 0.1
+extra slack: 0.1
+std delay: 0.0142
+real setup target slack: 0.0142
+[NR-eagl] Started earlyGlobalRoute kernel
+[NR-eagl] Initial Peak syMemory usage = 1151.1 MB
+[NR-eagl] honorMsvRouteConstraint: false
+[NR-eagl] honorClockSpecNDR      : 0
+[NR-eagl] minRouteLayer          : 2
+[NR-eagl] maxRouteLayer          : 2147483647
+[NR-eagl] numTracksPerClockWire  : 0
+[NR-eagl] Layer1 has no routable track
+[NR-eagl] Layer2 has single uniform track structure
+[NR-eagl] Layer3 has single uniform track structure
+[NR-eagl] Layer4 has single uniform track structure
+[NR-eagl] Layer5 has single uniform track structure
+[NR-eagl] Layer6 has single uniform track structure
+[NR-eagl] Layer7 has single uniform track structure
+[NR-eagl] Layer8 has single uniform track structure
+[NR-eagl] numRoutingBlks=0 numInstBlks=0 numPGBlocks=1344 numBumpBlks=0 numBoundaryFakeBlks=0
+[NR-eagl] numPreroutedNet = 0  numPreroutedWires = 0
+[NR-eagl] Read numTotalNets=1997  numIgnoredNets=0
+[NR-eagl] There are 6 clock nets ( 0 with NDR ).
+[NR-eagl] ============ Routing rule table ============
+[NR-eagl] Rule id 0. Nets 1997 
+[NR-eagl] id=0  routeTrackId=0  extraSpace=0  numShields=0  maxHorDemand=1  maxVerDemand=1
+[NR-eagl] Pitch:  L1=360  L2=400  L3=400  L4=400  L5=400  L6=400  L7=1600  L8=1600
+[NR-eagl] ========================================
+[NR-eagl] 
+[NR-eagl] Layer group 1: route 1997 net(s) in layer range [2, 8]
+[NR-eagl] earlyGlobalRoute overflow of layer group 1: 0.00% H + 0.00% V. EstWL: 5.960340e+04um
+[NR-eagl] 
+[NR-eagl] Overflow after earlyGlobalRoute (GR compatible) 0.00% H + 0.00% V
+[NR-eagl] Overflow after earlyGlobalRoute 0.00% H + 0.00% V
+[NR-eagl] End Peak syMemory usage = 1151.1 MB
+[NR-eagl] Early Global Router Kernel+IO runtime : 0.05 seconds
+Local HotSpot Analysis: normalized max congestion hotspot area = 0.00, normalized total congestion hotspot area = 0.00 (area is in unit of 4 std-cell row bins)
+*** Starting refinePlace (0:01:24 mem=1151.1M) ***
+Move report: Timing Driven Placement moves 1921 insts, mean move: 8.98 um, max move: 40.20 um
+	Max move on inst (memory7_reg_56_): (182.20, 149.20) --> (179.80, 187.00)
+	Runtime: CPU: 0:00:02.2 REAL: 0:00:03.0 MEM: 1167.1MB
+Move report: Detail placement moves 755 insts, mean move: 1.53 um, max move: 31.40 um
+	Max move on inst (U1653): (91.80, 84.40) --> (123.20, 84.40)
+	Runtime: CPU: 0:00:00.2 REAL: 0:00:01.0 MEM: 1167.1MB
+Summary Report:
+Instances move: 1919 (out of 1926 movable)
+Mean displacement: 9.05 um
+Max displacement: 41.60 um (Instance: memory7_reg_56_) (182.2, 149.2) -> (178.4, 187)
+	Length: 26 sites, height: 1 rows, site name: core, cell type: EDFQD1
+Runtime: CPU: 0:00:02.4 REAL: 0:00:04.0 MEM: 1167.1MB
+*** Finished refinePlace (0:01:26 mem=1167.1M) ***
+Trial Route Overflow 0(H) 0(V)
+Starting congestion repair ...
+[NR-eagl] honorMsvRouteConstraint: false
+[NR-eagl] honorClockSpecNDR      : 0
+[NR-eagl] minRouteLayer          : 2
+[NR-eagl] maxRouteLayer          : 2147483647
+[NR-eagl] numTracksPerClockWire  : 0
+[NR-eagl] Layer1 has no routable track
+[NR-eagl] Layer2 has single uniform track structure
+[NR-eagl] Layer3 has single uniform track structure
+[NR-eagl] Layer4 has single uniform track structure
+[NR-eagl] Layer5 has single uniform track structure
+[NR-eagl] Layer6 has single uniform track structure
+[NR-eagl] Layer7 has single uniform track structure
+[NR-eagl] Layer8 has single uniform track structure
+[NR-eagl] numRoutingBlks=0 numInstBlks=0 numPGBlocks=1344 numBumpBlks=0 numBoundaryFakeBlks=0
+[NR-eagl] numPreroutedNet = 0  numPreroutedWires = 0
+[NR-eagl] Read numTotalNets=1997  numIgnoredNets=0
+[NR-eagl] There are 6 clock nets ( 0 with NDR ).
+[NR-eagl] ============ Routing rule table ============
+[NR-eagl] Rule id 0. Nets 1997 
+[NR-eagl] id=0  routeTrackId=0  extraSpace=0  numShields=0  maxHorDemand=1  maxVerDemand=1
+[NR-eagl] Pitch:  L1=360  L2=400  L3=400  L4=400  L5=400  L6=400  L7=1600  L8=1600
+[NR-eagl] ========================================
+[NR-eagl] 
+[NR-eagl] Layer group 1: route 1997 net(s) in layer range [2, 8]
+[NR-eagl] earlyGlobalRoute overflow of layer group 1: 0.00% H + 0.00% V. EstWL: 5.685840e+04um
+[NR-eagl] 
+[NR-eagl] Overflow after earlyGlobalRoute (GR compatible) 0.00% H + 0.00% V
+[NR-eagl] Overflow after earlyGlobalRoute 0.00% H + 0.00% V
+Local HotSpot Analysis: normalized max congestion hotspot area = 0.00, normalized total congestion hotspot area = 0.00 (area is in unit of 4 std-cell row bins)
+describeCongestion: hCong = 0.00 vCong = 0.00
+Skipped repairing congestion.
+[NR-eagl] Layer1(M1)(F) length: 0.000000e+00um, number of vias: 8094
+[NR-eagl] Layer2(M2)(V) length: 2.542754e+04um, number of vias: 12503
+[NR-eagl] Layer3(M3)(H) length: 2.463730e+04um, number of vias: 826
+[NR-eagl] Layer4(M4)(V) length: 4.654599e+03um, number of vias: 350
+[NR-eagl] Layer5(M5)(H) length: 1.461285e+03um, number of vias: 280
+[NR-eagl] Layer6(M6)(V) length: 2.270400e+03um, number of vias: 5
+[NR-eagl] Layer7(M7)(H) length: 3.000000e-01um, number of vias: 2
+[NR-eagl] Layer8(M8)(V) length: 0.000000e+00um, number of vias: 0
+[NR-eagl] Total length: 5.845142e+04um, number of vias: 22060
+End of congRepair (cpu=0:00:00.1, real=0:00:00.0)
+Start to check current routing status for nets...
+All nets are already routed correctly.
+End to check current routing status for nets (mem=1140.6M)
+Extraction called for design 'sram_w16' of instances=1926 and nets=1999 using extraction engine 'preRoute' .
+PreRoute RC Extraction called for design sram_w16.
+RC Extraction called in multi-corner(2) mode.
+**WARN: (IMPEXT-3442):	The version of the capacitance table file being used is obsolete and is no longer recommended. For improved accuracy, generate the capacitance table file using the generateCapTbl command.
+RCMode: PreRoute
+      RC Corner Indexes            0       1   
+Capacitance Scaling Factor   : 1.00000 1.00000 
+Resistance Scaling Factor    : 1.00000 1.00000 
+Clock Cap. Scaling Factor    : 1.00000 1.00000 
+Clock Res. Scaling Factor    : 1.00000 1.00000 
+Shrink Factor                : 1.00000
+PreRoute extraction is honoring NDR/Shielding/ExtraSpace for clock nets.
+Using capacitance table file ...
+Updating RC grid for preRoute extraction ...
+Initializing multi-corner capacitance tables ... 
+Initializing multi-corner resistance tables ...
+PreRoute RC Extraction DONE (CPU Time: 0:00:00.1  Real Time: 0:00:00.0  MEM: 1140.641M)
+Compute RC Scale Done ...
+**optDesign ... cpu = 0:00:29, real = 0:00:30, mem = 1140.6M, totSessionCpu=0:01:26 **
+#################################################################################
+# Design Stage: PreRoute
+# Design Name: sram_w16
+# Design Mode: 65nm
+# Analysis Mode: MMMC Non-OCV 
+# Parasitics Mode: No SPEF/RCDB
+# Signoff Settings: SI Off 
+#################################################################################
+AAE_INFO: 1 threads acquired from CTE.
+Calculate delays in BcWc mode...
+End delay calculation. (MEM=1221.79 CPU=0:00:00.2 REAL=0:00:00.0)
+*** CDM Built up (cpu=0:00:00.3  real=0:00:00.0  mem= 1221.8M) ***
+*** Timing NOT met, worst failing slack is -0.049
+*** Check timing (0:00:00.4)
+**INFO: Num dontuse cells 97, Num usable cells 750
+optDesignOneStep: Leakage Power Flow
+**INFO: Num dontuse cells 97, Num usable cells 750
+Begin: GigaOpt Optimization in TNS mode
+Info: 6 clock nets excluded from IPO operation.
+*info: 6 clock nets excluded
+*info: 2 special nets excluded.
+*info: 2 no-driver nets excluded.
+** GigaOpt Optimizer WNS Slack -0.049 TNS Slack -3.057 Density 71.17
+Optimizer TNS Opt
+
+*** Finished Optimize Step Cumulative (cpu=0:00:00.0 real=0:00:00.0 mem=1317.2M) ***
+**** Begin NDR-Layer Usage Statistics ****
+0 Ndr or Layer constraints added by optimization 
+**** End NDR-Layer Usage Statistics ****
+
+*** Finish pre-CTS Setup Fixing (cpu=0:00:00.1 real=0:00:00.0 mem=1317.2M) ***
+
+End: GigaOpt Optimization in TNS mode
+setup target slack: 0.1
+extra slack: 0.1
+std delay: 0.0142
+real setup target slack: 0.0142
+[NR-eagl] Started earlyGlobalRoute kernel
+[NR-eagl] Initial Peak syMemory usage = 1148.6 MB
+[NR-eagl] honorMsvRouteConstraint: false
+[NR-eagl] honorClockSpecNDR      : 0
+[NR-eagl] minRouteLayer          : 2
+[NR-eagl] maxRouteLayer          : 2147483647
+[NR-eagl] numTracksPerClockWire  : 0
+[NR-eagl] Layer1 has no routable track
+[NR-eagl] Layer2 has single uniform track structure
+[NR-eagl] Layer3 has single uniform track structure
+[NR-eagl] Layer4 has single uniform track structure
+[NR-eagl] Layer5 has single uniform track structure
+[NR-eagl] Layer6 has single uniform track structure
+[NR-eagl] Layer7 has single uniform track structure
+[NR-eagl] Layer8 has single uniform track structure
+[NR-eagl] numRoutingBlks=0 numInstBlks=0 numPGBlocks=1344 numBumpBlks=0 numBoundaryFakeBlks=0
+[NR-eagl] numPreroutedNet = 0  numPreroutedWires = 0
+[NR-eagl] Read numTotalNets=1997  numIgnoredNets=0
+[NR-eagl] There are 6 clock nets ( 0 with NDR ).
+[NR-eagl] ============ Routing rule table ============
+[NR-eagl] Rule id 0. Nets 1997 
+[NR-eagl] id=0  routeTrackId=0  extraSpace=0  numShields=0  maxHorDemand=1  maxVerDemand=1
+[NR-eagl] Pitch:  L1=360  L2=400  L3=400  L4=400  L5=400  L6=400  L7=1600  L8=1600
+[NR-eagl] ========================================
+[NR-eagl] 
+[NR-eagl] Layer group 1: route 1997 net(s) in layer range [2, 8]
+[NR-eagl] earlyGlobalRoute overflow of layer group 1: 0.00% H + 0.00% V. EstWL: 5.685840e+04um
+[NR-eagl] 
+[NR-eagl] Overflow after earlyGlobalRoute (GR compatible) 0.00% H + 0.00% V
+[NR-eagl] Overflow after earlyGlobalRoute 0.00% H + 0.00% V
+[NR-eagl] End Peak syMemory usage = 1148.6 MB
+[NR-eagl] Early Global Router Kernel+IO runtime : 0.05 seconds
+Local HotSpot Analysis: normalized max congestion hotspot area = 0.00, normalized total congestion hotspot area = 0.00 (area is in unit of 4 std-cell row bins)
+*** Starting refinePlace (0:01:30 mem=1148.6M) ***
+incr SKP is on..., with optDC mode
+tdgpInitIgnoreNetLoadFix on 
+(cpu=0:00:01.0 mem=1166.6M) ***
+*** Build Virtual Sizing Timing Model
+(cpu=0:00:01.3 mem=1185.7M) ***
+Move report: Timing Driven Placement moves 1909 insts, mean move: 4.49 um, max move: 21.00 um
+	Max move on inst (U1346): (102.40, 124.00) --> (97.60, 107.80)
+	Runtime: CPU: 0:00:04.5 REAL: 0:00:05.0 MEM: 1209.7MB
+Move report: Detail placement moves 714 insts, mean move: 1.66 um, max move: 12.20 um
+	Max move on inst (U1651): (78.20, 84.40) --> (90.40, 84.40)
+	Runtime: CPU: 0:00:00.2 REAL: 0:00:00.0 MEM: 1209.7MB
+Summary Report:
+Instances move: 1908 (out of 1926 movable)
+Mean displacement: 4.59 um
+Max displacement: 21.00 um (Instance: U1346) (102.4, 124) -> (97.6, 107.8)
+	Length: 7 sites, height: 1 rows, site name: core, cell type: AOI22D1
+Runtime: CPU: 0:00:04.7 REAL: 0:00:05.0 MEM: 1209.7MB
+*** Finished refinePlace (0:01:35 mem=1209.7M) ***
+Trial Route Overflow 0(H) 0(V)
+Starting congestion repair ...
+[NR-eagl] honorMsvRouteConstraint: false
+[NR-eagl] honorClockSpecNDR      : 0
+[NR-eagl] minRouteLayer          : 2
+[NR-eagl] maxRouteLayer          : 2147483647
+[NR-eagl] numTracksPerClockWire  : 0
+[NR-eagl] Layer1 has no routable track
+[NR-eagl] Layer2 has single uniform track structure
+[NR-eagl] Layer3 has single uniform track structure
+[NR-eagl] Layer4 has single uniform track structure
+[NR-eagl] Layer5 has single uniform track structure
+[NR-eagl] Layer6 has single uniform track structure
+[NR-eagl] Layer7 has single uniform track structure
+[NR-eagl] Layer8 has single uniform track structure
+[NR-eagl] numRoutingBlks=0 numInstBlks=0 numPGBlocks=1344 numBumpBlks=0 numBoundaryFakeBlks=0
+[NR-eagl] numPreroutedNet = 0  numPreroutedWires = 0
+[NR-eagl] Read numTotalNets=1997  numIgnoredNets=0
+[NR-eagl] There are 6 clock nets ( 0 with NDR ).
+[NR-eagl] ============ Routing rule table ============
+[NR-eagl] Rule id 0. Nets 1997 
+[NR-eagl] id=0  routeTrackId=0  extraSpace=0  numShields=0  maxHorDemand=1  maxVerDemand=1
+[NR-eagl] Pitch:  L1=360  L2=400  L3=400  L4=400  L5=400  L6=400  L7=1600  L8=1600
+[NR-eagl] ========================================
+[NR-eagl] 
+[NR-eagl] Layer group 1: route 1997 net(s) in layer range [2, 8]
+[NR-eagl] earlyGlobalRoute overflow of layer group 1: 0.00% H + 0.00% V. EstWL: 5.576940e+04um
+[NR-eagl] 
+[NR-eagl] Overflow after earlyGlobalRoute (GR compatible) 0.00% H + 0.00% V
+[NR-eagl] Overflow after earlyGlobalRoute 0.00% H + 0.01% V
+Local HotSpot Analysis: normalized max congestion hotspot area = 0.00, normalized total congestion hotspot area = 0.00 (area is in unit of 4 std-cell row bins)
+describeCongestion: hCong = 0.00 vCong = 0.00
+Skipped repairing congestion.
+[NR-eagl] Layer1(M1)(F) length: 0.000000e+00um, number of vias: 8094
+[NR-eagl] Layer2(M2)(V) length: 2.495692e+04um, number of vias: 12417
+[NR-eagl] Layer3(M3)(H) length: 2.426780e+04um, number of vias: 714
+[NR-eagl] Layer4(M4)(V) length: 4.809398e+03um, number of vias: 334
+[NR-eagl] Layer5(M5)(H) length: 1.229587e+03um, number of vias: 274
+[NR-eagl] Layer6(M6)(V) length: 2.089504e+03um, number of vias: 5
+[NR-eagl] Layer7(M7)(H) length: 8.000000e-01um, number of vias: 2
+[NR-eagl] Layer8(M8)(V) length: 2.000000e-01um, number of vias: 0
+[NR-eagl] Total length: 5.735421e+04um, number of vias: 21840
+End of congRepair (cpu=0:00:00.1, real=0:00:00.0)
+Start to check current routing status for nets...
+All nets are already routed correctly.
+End to check current routing status for nets (mem=1191.5M)
+Extraction called for design 'sram_w16' of instances=1926 and nets=1999 using extraction engine 'preRoute' .
+PreRoute RC Extraction called for design sram_w16.
+RC Extraction called in multi-corner(2) mode.
+**WARN: (IMPEXT-3442):	The version of the capacitance table file being used is obsolete and is no longer recommended. For improved accuracy, generate the capacitance table file using the generateCapTbl command.
+RCMode: PreRoute
+      RC Corner Indexes            0       1   
+Capacitance Scaling Factor   : 1.00000 1.00000 
+Resistance Scaling Factor    : 1.00000 1.00000 
+Clock Cap. Scaling Factor    : 1.00000 1.00000 
+Clock Res. Scaling Factor    : 1.00000 1.00000 
+Shrink Factor                : 1.00000
+PreRoute extraction is honoring NDR/Shielding/ExtraSpace for clock nets.
+Using capacitance table file ...
+Updating RC grid for preRoute extraction ...
+Initializing multi-corner capacitance tables ... 
+Initializing multi-corner resistance tables ...
+PreRoute RC Extraction DONE (CPU Time: 0:00:00.1  Real Time: 0:00:00.0  MEM: 1191.523M)
+Compute RC Scale Done ...
+**optDesign ... cpu = 0:00:38, real = 0:00:39, mem = 1191.5M, totSessionCpu=0:01:36 **
+Include MVT Delays for Hold Opt
+#################################################################################
+# Design Stage: PreRoute
+# Design Name: sram_w16
+# Design Mode: 65nm
+# Analysis Mode: MMMC Non-OCV 
+# Parasitics Mode: No SPEF/RCDB
+# Signoff Settings: SI Off 
+#################################################################################
+AAE_INFO: 1 threads acquired from CTE.
+Calculate delays in BcWc mode...
+End delay calculation. (MEM=1270.88 CPU=0:00:00.2 REAL=0:00:00.0)
+*** CDM Built up (cpu=0:00:00.3  real=0:00:01.0  mem= 1270.9M) ***
+*** Timing NOT met, worst failing slack is -0.051
+*** Check timing (0:00:00.0)
+**INFO: Num dontuse cells 97, Num usable cells 750
+optDesignOneStep: Leakage Power Flow
+**INFO: Num dontuse cells 97, Num usable cells 750
+Begin: GigaOpt Optimization in WNS mode
+Info: 6 clock nets excluded from IPO operation.
+*info: 6 clock nets excluded
+*info: 2 special nets excluded.
+*info: 2 no-driver nets excluded.
+** GigaOpt Optimizer WNS Slack -0.051 TNS Slack -5.469 Density 71.17
+Optimizer WNS Pass 0
+Active Path Group: default 
++--------+---------+--------+---------+----------+------------+--------+----------+---------+---------------------+
+|  WNS   | All WNS |  TNS   | All TNS | Density  |    Real    |  Mem   |Worst View|Pathgroup|      End Point      |
++--------+---------+--------+---------+----------+------------+--------+----------+---------+---------------------+
+|  -0.051|   -0.051|  -5.469|   -5.469|    71.17%|   0:00:00.0| 1369.3M|   WC_VIEW|  default| memory10_reg_15_/E  |
+|  -0.041|   -0.041|  -4.492|   -4.492|    71.19%|   0:00:00.0| 1369.3M|   WC_VIEW|  default| memory2_reg_34_/E   |
+|  -0.030|   -0.030|  -2.204|   -2.204|    71.20%|   0:00:00.0| 1369.3M|   WC_VIEW|  default| memory10_reg_15_/E  |
+|  -0.019|   -0.019|  -0.761|   -0.761|    71.23%|   0:00:00.0| 1369.3M|   WC_VIEW|  default| Q_reg_12_/D         |
+|  -0.010|   -0.010|  -0.270|   -0.270|    71.23%|   0:00:00.0| 1369.3M|   WC_VIEW|  default| memory10_reg_15_/E  |
+|   0.002|    0.002|   0.000|    0.000|    71.24%|   0:00:00.0| 1369.3M|   WC_VIEW|  default| memory2_reg_34_/E   |
+|   0.007|    0.007|   0.000|    0.000|    71.24%|   0:00:00.0| 1369.3M|   WC_VIEW|  default| memory0_reg_12_/E   |
+|   0.015|    0.015|   0.000|    0.000|    71.25%|   0:00:00.0| 1369.3M|   WC_VIEW|  default| memory10_reg_15_/E  |
+|   0.015|    0.015|   0.000|    0.000|    71.25%|   0:00:00.0| 1369.3M|   WC_VIEW|  default| memory10_reg_15_/E  |
++--------+---------+--------+---------+----------+------------+--------+----------+---------+---------------------+
+
+*** Finish Core Optimize Step (cpu=0:00:00.5 real=0:00:00.0 mem=1369.3M) ***
+
+*** Finished Optimize Step Cumulative (cpu=0:00:00.5 real=0:00:00.0 mem=1369.3M) ***
+** GigaOpt Optimizer WNS Slack 0.015 TNS Slack 0.000 Density 71.25
+*** Starting refinePlace (0:01:41 mem=1401.3M) ***
+Total net bbox length = 3.464e+04 (1.443e+04 2.021e+04) (ext = 1.095e+04)
+Move report: Detail placement moves 14 insts, mean move: 1.53 um, max move: 5.40 um
+	Max move on inst (U1566): (192.80, 174.40) --> (194.60, 170.80)
+	Runtime: CPU: 0:00:00.0 REAL: 0:00:00.0 MEM: 1401.3MB
+Summary Report:
+Instances move: 14 (out of 1926 movable)
+Mean displacement: 1.53 um
+Max displacement: 5.40 um (Instance: U1566) (192.8, 174.4) -> (194.6, 170.8)
+	Length: 4 sites, height: 1 rows, site name: core, cell type: ND2D1
+Total net bbox length = 3.465e+04 (1.444e+04 2.021e+04) (ext = 1.095e+04)
+Runtime: CPU: 0:00:00.0 REAL: 0:00:00.0 MEM: 1401.3MB
+*** Finished refinePlace (0:01:41 mem=1401.3M) ***
+Finished re-routing un-routed nets (0:00:00.0 1401.3M)
+
+
+Density : 0.7125
+Max route overflow : 0.0001
+
+
+*** Finish Physical Update (cpu=0:00:00.1 real=0:00:00.0 mem=1401.3M) ***
+** GigaOpt Optimizer WNS Slack 0.015 TNS Slack 0.000 Density 71.25
+**** Begin NDR-Layer Usage Statistics ****
+0 Ndr or Layer constraints added by optimization 
+**** End NDR-Layer Usage Statistics ****
+
+*** Finish pre-CTS Setup Fixing (cpu=0:00:00.8 real=0:00:01.0 mem=1401.3M) ***
+
+End: GigaOpt Optimization in WNS mode
+*** Timing NOT met, worst failing slack is 0.015
+*** Check timing (0:00:00.0)
+**INFO: Num dontuse cells 97, Num usable cells 750
+optDesignOneStep: Leakage Power Flow
+**INFO: Num dontuse cells 97, Num usable cells 750
+Info: 6 clock nets excluded from IPO operation.
+[NR-eagl] honorMsvRouteConstraint: false
+[NR-eagl] honorClockSpecNDR      : 0
+[NR-eagl] minRouteLayer          : 2
+[NR-eagl] maxRouteLayer          : 2147483647
+[NR-eagl] numTracksPerClockWire  : 0
+[NR-eagl] Layer1 has no routable track
+[NR-eagl] Layer2 has single uniform track structure
+[NR-eagl] Layer3 has single uniform track structure
+[NR-eagl] Layer4 has single uniform track structure
+[NR-eagl] Layer5 has single uniform track structure
+[NR-eagl] Layer6 has single uniform track structure
+[NR-eagl] Layer7 has single uniform track structure
+[NR-eagl] Layer8 has single uniform track structure
+[NR-eagl] numRoutingBlks=0 numInstBlks=0 numPGBlocks=1344 numBumpBlks=0 numBoundaryFakeBlks=0
+[NR-eagl] numPreroutedNet = 0  numPreroutedWires = 0
+[NR-eagl] Read numTotalNets=1997  numIgnoredNets=0
+[NR-eagl] There are 6 clock nets ( 0 with NDR ).
+[NR-eagl] ============ Routing rule table ============
+[NR-eagl] Rule id 0. Nets 1997 
+[NR-eagl] id=0  routeTrackId=0  extraSpace=0  numShields=0  maxHorDemand=1  maxVerDemand=1
+[NR-eagl] Pitch:  L1=360  L2=400  L3=400  L4=400  L5=400  L6=400  L7=1600  L8=1600
+[NR-eagl] ========================================
+[NR-eagl] 
+[NR-eagl] Layer group 1: route 1997 net(s) in layer range [2, 8]
+[NR-eagl] earlyGlobalRoute overflow of layer group 1: 0.00% H + 0.00% V. EstWL: 5.579640e+04um
+[NR-eagl] 
+[NR-eagl] Overflow after earlyGlobalRoute (GR compatible) 0.00% H + 0.00% V
+[NR-eagl] Overflow after earlyGlobalRoute 0.00% H + 0.01% V
+[NR-eagl] Layer1(M1)(F) length: 0.000000e+00um, number of vias: 8094
+[NR-eagl] Layer2(M2)(V) length: 2.505418e+04um, number of vias: 12408
+[NR-eagl] Layer3(M3)(H) length: 2.421820e+04um, number of vias: 732
+[NR-eagl] Layer4(M4)(V) length: 4.729797e+03um, number of vias: 341
+[NR-eagl] Layer5(M5)(H) length: 1.268387e+03um, number of vias: 280
+[NR-eagl] Layer6(M6)(V) length: 2.087199e+03um, number of vias: 7
+[NR-eagl] Layer7(M7)(H) length: 1.200000e+00um, number of vias: 2
+[NR-eagl] Layer8(M8)(V) length: 8.000000e-01um, number of vias: 0
+[NR-eagl] Total length: 5.735976e+04um, number of vias: 21864
+[NR-eagl] End Peak syMemory usage = 1206.1 MB
+[NR-eagl] Early Global Router Kernel+IO runtime : 0.10 seconds
+Extraction called for design 'sram_w16' of instances=1926 and nets=1999 using extraction engine 'preRoute' .
+PreRoute RC Extraction called for design sram_w16.
+RC Extraction called in multi-corner(2) mode.
+**WARN: (IMPEXT-3442):	The version of the capacitance table file being used is obsolete and is no longer recommended. For improved accuracy, generate the capacitance table file using the generateCapTbl command.
+RCMode: PreRoute
+      RC Corner Indexes            0       1   
+Capacitance Scaling Factor   : 1.00000 1.00000 
+Resistance Scaling Factor    : 1.00000 1.00000 
+Clock Cap. Scaling Factor    : 1.00000 1.00000 
+Clock Res. Scaling Factor    : 1.00000 1.00000 
+Shrink Factor                : 1.00000
+PreRoute extraction is honoring NDR/Shielding/ExtraSpace for clock nets.
+Using capacitance table file ...
+Updating RC grid for preRoute extraction ...
+Initializing multi-corner capacitance tables ... 
+Initializing multi-corner resistance tables ...
+PreRoute RC Extraction DONE (CPU Time: 0:00:00.1  Real Time: 0:00:01.0  MEM: 1206.086M)
+Compute RC Scale Done ...
+Local HotSpot Analysis: normalized max congestion hotspot area = 0.00, normalized total congestion hotspot area = 0.00 (area is in unit of 4 std-cell row bins)
+#################################################################################
+# Design Stage: PreRoute
+# Design Name: sram_w16
+# Design Mode: 65nm
+# Analysis Mode: MMMC Non-OCV 
+# Parasitics Mode: No SPEF/RCDB
+# Signoff Settings: SI Off 
+#################################################################################
+AAE_INFO: 1 threads acquired from CTE.
+Calculate delays in BcWc mode...
+End delay calculation. (MEM=1296.52 CPU=0:00:00.2 REAL=0:00:00.0)
+*** CDM Built up (cpu=0:00:00.3  real=0:00:00.0  mem= 1296.5M) ***
+Begin: GigaOpt postEco DRV Optimization
+Info: 6 clock nets excluded from IPO operation.
++--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|      max-tran     |      max-cap      |     max-fanout    |     max-length    |       |           |           |           |         |            |           |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|  nets   |  terms  |  nets   |  terms  |  nets   |  terms  |  nets   |  terms  |  WNS  |  #Buffer  | #Inverter |  #Resize  | Density |    Real    |    Mem    |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|     0   |     0   |     0   |      0  |     0   |     0   |     0   |     0   | 0.02 |          0|          0|          0|  71.25  |            |           |
+|     0   |     0   |     0   |      0  |     0   |     0   |     0   |     0   | 0.02 |          0|          0|          0|  71.25  |   0:00:00.0|    1372.8M|
++--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+**** Begin NDR-Layer Usage Statistics ****
+0 Ndr or Layer constraints added by optimization 
+**** End NDR-Layer Usage Statistics ****
+
+*** Finish DRV Fixing (cpu=0:00:00.0 real=0:00:00.0 mem=1372.8M) ***
+
+End: GigaOpt postEco DRV Optimization
+*** Steiner Routed Nets: 0.000%; Threshold: 100; Threshold for Hold: 100
+Start to check current routing status for nets...
+All nets are already routed correctly.
+End to check current routing status for nets (mem=1337.8M)
+Compute RC Scale Done ...
+**optDesign ... cpu = 0:00:47, real = 0:00:48, mem = 1214.2M, totSessionCpu=0:01:44 **
+** Profile ** Start :  cpu=0:00:00.0, mem=1214.2M
+** Profile ** Other data :  cpu=0:00:00.0, mem=1214.2M
+** Profile ** Overall slacks :  cpu=0:00:00.0, mem=1222.3M
+** Profile ** DRVs :  cpu=0:00:00.0, mem=1222.3M
+
+------------------------------------------------------------
+        Before Power Reclaim                             
+------------------------------------------------------------
+
+Setup views included:
+ WC_VIEW 
+
++--------------------+---------+---------+---------+
+|     Setup mode     |   all   | reg2reg | default |
++--------------------+---------+---------+---------+
+|           WNS (ns):|  0.017  |  0.384  |  0.017  |
+|           TNS (ns):|  0.000  |  0.000  |  0.000  |
+|    Violating Paths:|    0    |    0    |    0    |
+|          All Paths:|  2240   |   64    |  2240   |
++--------------------+---------+---------+---------+
+
++----------------+-------------------------------+------------------+
+|                |              Real             |       Total      |
+|    DRVs        +------------------+------------+------------------|
+|                |  Nr nets(terms)  | Worst Vio  |  Nr nets(terms)  |
++----------------+------------------+------------+------------------+
+|   max_cap      |      0 (0)       |   0.000    |      5 (5)       |
+|   max_tran     |      0 (0)       |   0.000    |      0 (0)       |
+|   max_fanout   |      0 (0)       |     0      |      0 (0)       |
+|   max_length   |      0 (0)       |     0      |      0 (0)       |
++----------------+------------------+------------+------------------+
+
+Density: 71.247%
+------------------------------------------------------------
+** Profile ** Report data :  cpu=0:00:00.0, mem=1222.3M
+Info: 6 clock nets excluded from IPO operation.
+WC_VIEW BC_VIEW
+
+Begin Power Analysis
+
+    0.00V	    VSS
+    0.90V	    VDD
+
+Begin Processing Timing Library for Power Calculation
+
+Begin Processing Timing Library for Power Calculation
+
+
+
+Begin Processing Power Net/Grid for Power Calculation
+
+Ended Processing Power Net/Grid for Power Calculation: (cpu=0:00:00, real=0:00:00, mem(process/total)=959.04MB/959.04MB)
+
+Begin Processing Timing Window Data for Power Calculation
+
+Ended Processing Timing Window Data for Power Calculation: (cpu=0:00:00, real=0:00:00, mem(process/total)=959.04MB/959.04MB)
+
+Begin Processing User Attributes
+
+Ended Processing User Attributes: (cpu=0:00:00, real=0:00:00, mem(process/total)=959.04MB/959.04MB)
+
+Begin Processing Signal Activity
+
+
+Starting Levelizing
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT)
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 10%
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 20%
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 30%
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 40%
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 50%
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 60%
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 70%
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 80%
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 90%
+
+Finished Levelizing
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT)
+
+Starting Activity Propagation
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT)
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 10%
+
+Finished Activity Propagation
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT)
+Ended Processing Signal Activity: (cpu=0:00:00, real=0:00:00, mem(process/total)=959.04MB/959.04MB)
+
+Begin Power Computation
+
+      ----------------------------------------------------------
+      # of cell(s) missing both power/leakage table: 0
+      # of cell(s) missing power table: 0
+      # of cell(s) missing leakage table: 0
+      # of MSMV cell(s) missing power_level: 0
+      ----------------------------------------------------------
+
+
+
+Starting Calculating power
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT)
+ ... Calculating switching power
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 10%
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 20%
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 30%
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 40%
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 50%
+ ... Calculating internal and leakage power
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 60%
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 70%
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 80%
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT): 90%
+
+Finished Calculating power
+2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT)
+Ended Power Computation: (cpu=0:00:00, real=0:00:00, mem(process/total)=959.13MB/959.13MB)
+
+Begin Processing User Attributes
+
+Ended Processing User Attributes: (cpu=0:00:00, real=0:00:00, mem(process/total)=959.13MB/959.13MB)
+
+Ended Power Analysis: (cpu=0:00:00, real=0:00:00, mem(process/total)=959.13MB/959.13MB)
+
+Begin Static Power Report Generation
+*----------------------------------------------------------------------------------------
+*	Innovus 15.23-s045_1 (64bit) 04/22/2016 12:32 (Linux 2.6.18-194.el5)
+*	
+*
+* 	Date & Time:	2026-Mar-05 10:06:57 (2026-Mar-05 18:06:57 GMT)
+*
+*----------------------------------------------------------------------------------------
+*
+*	Design: sram_w16
+*
+*	Liberty Libraries used:
+*	        WC_VIEW: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lib/tcbn65gpluswc.lib
+*
+*	Power Domain used:
+*		Rail:        VDD 	Voltage:        0.9
+*
+*	Power Units = 1mW
+*
+*	Time Units = 1e-09 secs
+*
+*       report_power
+*
+-----------------------------------------------------------------------------------------
+
+
+Total Power
+-----------------------------------------------------------------------------------------
+Total Internal Power:        9.09067020 	   91.2502%
+Total Switching Power:       0.79241770 	    7.9541%
+Total Leakage Power:         0.07927035 	    0.7957%
+Total Power:                 9.96235842
+-----------------------------------------------------------------------------------------
+
+
+Group                           Internal   Switching     Leakage       Total  Percentage 
+                                Power      Power         Power         Power  (%)        
+-----------------------------------------------------------------------------------------
+Sequential                         8.908      0.1781     0.06241       9.149       91.83
+Macro                                  0           0           0           0           0
+IO                                     0           0           0           0           0
+Combinational                     0.1661      0.6143     0.01676      0.7972       8.003
+Clock (Combinational)             0.0165           0   9.859e-05      0.0166      0.1666
+Clock (Sequential)                     0           0           0           0           0
+-----------------------------------------------------------------------------------------
+Total                              9.091      0.7924     0.07927       9.962         100
+-----------------------------------------------------------------------------------------
+
+
+Rail                  Voltage   Internal   Switching     Leakage       Total  Percentage 
+                                Power      Power         Power         Power  (%)        
+-----------------------------------------------------------------------------------------
+VDD                       0.9      9.091      0.7924     0.07927       9.962         100
+
+
+Clock                           Internal   Switching     Leakage       Total  Percentage 
+                                Power      Power         Power         Power  (%)        
+-----------------------------------------------------------------------------------------
+CLK                               0.0165           0   9.859e-05      0.0166      0.1666
+-----------------------------------------------------------------------------------------
+Total                             0.0165           0   9.859e-05      0.0166      0.1666
+-----------------------------------------------------------------------------------------
+ 
+ 
+-----------------------------------------------------------------------------------------
+*	Power Distribution Summary: 
+* 		Highest Average Power:             FE_OFC87_n761 (CKND16): 	   0.02754
+* 		Highest Leakage Power:             FE_OFC49_n762 (CKND16): 	 0.0001971
+* 		Total Cap: 	1.17068e-11 F
+* 		Total instances in design:  1926
+* 		Total instances in design with no power:     0
+*                Total instances in design with no activty:     0
+
+* 		Total Fillers and Decap:     0
+-----------------------------------------------------------------------------------------
+ 
+Ended Static Power Report Generation: (cpu=0:00:00, real=0:00:00,
+mem(process/total)=959.13MB/959.13MB)
+
+Begin: Power Optimization
+Reclaim Optimization WNS Slack 0.000  TNS Slack 0.000 Density 71.25
++----------+---------+--------+--------+------------+--------+
+| Density  | Commits |  WNS   |  TNS   |    Real    |  Mem   |
++----------+---------+--------+--------+------------+--------+
+|    71.25%|        -|   0.000|   0.000|   0:00:00.0| 1371.1M|
+|    71.25%|        0|   0.000|   0.000|   0:00:03.0| 1371.1M|
+|    71.25%|        1|   0.000|   0.000|   0:00:00.0| 1371.1M|
+|    71.25%|        1|   0.000|   0.000|   0:00:00.0| 1371.1M|
+|    71.11%|      214|   0.000|   0.000|   0:00:01.0| 1371.1M|
+|    71.11%|        2|   0.000|   0.000|   0:00:00.0| 1371.1M|
++----------+---------+--------+--------+------------+--------+
+Reclaim Optimization End WNS Slack 0.000  TNS Slack 0.000 Density 71.11
+**** Begin NDR-Layer Usage Statistics ****
+0 Ndr or Layer constraints added by optimization 
+**** End NDR-Layer Usage Statistics ****
+** Finished Core Power Optimization (cpu = 0:00:04.9) (real = 0:00:05.0) **
+Executing incremental physical updates
+*** Starting refinePlace (0:01:50 mem=1352.0M) ***
+Total net bbox length = 3.464e+04 (1.445e+04 2.019e+04) (ext = 1.095e+04)
+Move report: Detail placement moves 1 insts, mean move: 1.20 um, max move: 1.20 um
+	Max move on inst (U899): (195.40, 188.80) --> (194.20, 188.80)
+	Runtime: CPU: 0:00:00.0 REAL: 0:00:00.0 MEM: 1352.0MB
+Summary Report:
+Instances move: 1 (out of 1925 movable)
+Mean displacement: 1.20 um
+Max displacement: 1.20 um (Instance: U899) (195.4, 188.8) -> (194.2, 188.8)
+	Length: 4 sites, height: 1 rows, site name: core, cell type: NR2D1
+Total net bbox length = 3.464e+04 (1.445e+04 2.019e+04) (ext = 1.095e+04)
+Runtime: CPU: 0:00:00.0 REAL: 0:00:00.0 MEM: 1352.0MB
+*** Finished refinePlace (0:01:50 mem=1352.0M) ***
+Checking setup slack degradation ...
+Info: 6 clock nets excluded from IPO operation.
+Info: 6 clock nets excluded from IPO operation.
++--------+---------+--------+---------+----------+------------+--------+----------+---------+---------------------+
+|  WNS   | All WNS |  TNS   | All TNS | Density  |    Real    |  Mem   |Worst View|Pathgroup|      End Point      |
++--------+---------+--------+---------+----------+------------+--------+----------+---------+---------------------+
+|   0.018|    0.018|   0.000|    0.000|    71.11%|   0:00:00.0| 1371.1M|   WC_VIEW|  default| Q_reg_34_/D         |
+|   0.018|    0.018|   0.000|    0.000|    71.11%|   0:00:00.0| 1371.1M|   WC_VIEW|  default| Q_reg_34_/D         |
++--------+---------+--------+---------+----------+------------+--------+----------+---------+---------------------+
+
+*** Finish pre-CTS Optimize Step (cpu=0:00:00.0 real=0:00:00.0 mem=1371.1M) ***
+
+*** Finish pre-CTS Setup Fixing (cpu=0:00:00.0 real=0:00:00.0 mem=1371.1M) ***
+**** Begin NDR-Layer Usage Statistics ****
+0 Ndr or Layer constraints added by optimization 
+**** End NDR-Layer Usage Statistics ****
+
+Begin Power Analysis
+
+    0.00V	    VSS
+    0.90V	    VDD
+Begin Processing Timing Library for Power Calculation
+
+Begin Processing Timing Library for Power Calculation
+
+
+
+Begin Processing Power Net/Grid for Power Calculation
+
+Ended Processing Power Net/Grid for Power Calculation: (cpu=0:00:00, real=0:00:00, mem(process/total)=990.34MB/990.34MB)
+
+Begin Processing Timing Window Data for Power Calculation
+
+Ended Processing Timing Window Data for Power Calculation: (cpu=0:00:00, real=0:00:00, mem(process/total)=990.34MB/990.34MB)
+
+Begin Processing User Attributes
+
+Ended Processing User Attributes: (cpu=0:00:00, real=0:00:00, mem(process/total)=990.34MB/990.34MB)
+
+Begin Processing Signal Activity
+
+
+Starting Levelizing
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT)
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 10%
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 20%
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 30%
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 40%
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 50%
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 60%
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 70%
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 80%
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 90%
+
+Finished Levelizing
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT)
+
+Starting Activity Propagation
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT)
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 10%
+
+Finished Activity Propagation
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT)
+Ended Processing Signal Activity: (cpu=0:00:00, real=0:00:00, mem(process/total)=990.34MB/990.34MB)
+
+Begin Power Computation
+
+      ----------------------------------------------------------
+      # of cell(s) missing both power/leakage table: 0
+      # of cell(s) missing power table: 0
+      # of cell(s) missing leakage table: 0
+      # of MSMV cell(s) missing power_level: 0
+      ----------------------------------------------------------
+
+
+
+Starting Calculating power
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT)
+ ... Calculating switching power
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 10%
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 20%
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 30%
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 40%
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 50%
+ ... Calculating internal and leakage power
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 60%
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 70%
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 80%
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT): 90%
+
+Finished Calculating power
+2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT)
+Ended Power Computation: (cpu=0:00:00, real=0:00:00, mem(process/total)=990.34MB/990.34MB)
+
+Begin Processing User Attributes
+
+Ended Processing User Attributes: (cpu=0:00:00, real=0:00:00, mem(process/total)=990.34MB/990.34MB)
+
+Ended Power Analysis: (cpu=0:00:00, real=0:00:00, mem(process/total)=990.34MB/990.34MB)
+
+Begin Static Power Report Generation
+*----------------------------------------------------------------------------------------
+*	Innovus 15.23-s045_1 (64bit) 04/22/2016 12:32 (Linux 2.6.18-194.el5)
+*	
+*
+* 	Date & Time:	2026-Mar-05 10:07:05 (2026-Mar-05 18:07:05 GMT)
+*
+*----------------------------------------------------------------------------------------
+*
+*	Design: sram_w16
+*
+*	Liberty Libraries used:
+*	        WC_VIEW: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lib/tcbn65gpluswc.lib
+*
+*	Power Domain used:
+*		Rail:        VDD 	Voltage:        0.9
+*
+*	Power Units = 1mW
+*
+*	Time Units = 1e-09 secs
+*
+*       report_power
+*
+-----------------------------------------------------------------------------------------
+
+
+Total Power
+-----------------------------------------------------------------------------------------
+Total Internal Power:        9.07752606 	   91.3881%
+Total Switching Power:       0.77956998 	    7.8483%
+Total Leakage Power:         0.07584099 	    0.7635%
+Total Power:                 9.93293720
+-----------------------------------------------------------------------------------------
+
+
+Group                           Internal   Switching     Leakage       Total  Percentage 
+                                Power      Power         Power         Power  (%)        
+-----------------------------------------------------------------------------------------
+Sequential                         8.911      0.1777     0.06241       9.151       92.13
+Macro                                  0           0           0           0           0
+IO                                     0           0           0           0           0
+Combinational                       0.15      0.6019     0.01333      0.7652       7.704
+Clock (Combinational)             0.0165           0   9.859e-05      0.0166      0.1671
+Clock (Sequential)                     0           0           0           0           0
+-----------------------------------------------------------------------------------------
+Total                              9.078      0.7796     0.07584       9.933         100
+-----------------------------------------------------------------------------------------
+
+
+Rail                  Voltage   Internal   Switching     Leakage       Total  Percentage 
+                                Power      Power         Power         Power  (%)        
+-----------------------------------------------------------------------------------------
+VDD                       0.9      9.078      0.7796     0.07584       9.933         100
+
+
+Clock                           Internal   Switching     Leakage       Total  Percentage 
+                                Power      Power         Power         Power  (%)        
+-----------------------------------------------------------------------------------------
+CLK                               0.0165           0   9.859e-05      0.0166      0.1671
+-----------------------------------------------------------------------------------------
+Total                             0.0165           0   9.859e-05      0.0166      0.1671
+-----------------------------------------------------------------------------------------
+ 
+ 
+-----------------------------------------------------------------------------------------
+*	Power Distribution Summary: 
+* 		Highest Average Power:             FE_OFC55_n757 (CKND12): 	   0.02726
+* 		Highest Leakage Power:             FE_OFC49_n762 (CKND16): 	 0.0001971
+* 		Total Cap: 	1.14803e-11 F
+* 		Total instances in design:  1925
+* 		Total instances in design with no power:     0
+*                Total instances in design with no activty:     0
+
+* 		Total Fillers and Decap:     0
+-----------------------------------------------------------------------------------------
+ 
+Ended Static Power Report Generation: (cpu=0:00:00, real=0:00:00,
+mem(process/total)=990.34MB/990.34MB)
+
+*** Finished Leakage Power Optimization (cpu=0:00:08, real=0:00:08, mem=1231.00M, totSessionCpu=0:01:53).
+Extraction called for design 'sram_w16' of instances=1925 and nets=1998 using extraction engine 'preRoute' .
+PreRoute RC Extraction called for design sram_w16.
+RC Extraction called in multi-corner(2) mode.
+**WARN: (IMPEXT-3442):	The version of the capacitance table file being used is obsolete and is no longer recommended. For improved accuracy, generate the capacitance table file using the generateCapTbl command.
+RCMode: PreRoute
+      RC Corner Indexes            0       1   
+Capacitance Scaling Factor   : 1.00000 1.00000 
+Resistance Scaling Factor    : 1.00000 1.00000 
+Clock Cap. Scaling Factor    : 1.00000 1.00000 
+Clock Res. Scaling Factor    : 1.00000 1.00000 
+Shrink Factor                : 1.00000
+PreRoute extraction is honoring NDR/Shielding/ExtraSpace for clock nets.
+Using capacitance table file ...
+Initializing multi-corner capacitance tables ... 
+Initializing multi-corner resistance tables ...
+PreRoute RC Extraction DONE (CPU Time: 0:00:00.2  Real Time: 0:00:00.0  MEM: 1214.863M)
+doiPBLastSyncSlave
+#################################################################################
+# Design Stage: PreRoute
+# Design Name: sram_w16
+# Design Mode: 65nm
+# Analysis Mode: MMMC Non-OCV 
+# Parasitics Mode: No SPEF/RCDB
+# Signoff Settings: SI Off 
+#################################################################################
+AAE_INFO: 1 threads acquired from CTE.
+Calculate delays in BcWc mode...
+End delay calculation. (MEM=1288.97 CPU=0:00:00.2 REAL=0:00:00.0)
+*** CDM Built up (cpu=0:00:00.3  real=0:00:01.0  mem= 1289.0M) ***
+
+Begin Power Analysis
+
+    0.00V	    VSS
+    0.90V	    VDD
+Begin Processing Timing Library for Power Calculation
+
+Begin Processing Timing Library for Power Calculation
+
+
+
+Begin Processing Power Net/Grid for Power Calculation
+
+Ended Processing Power Net/Grid for Power Calculation: (cpu=0:00:00, real=0:00:00, mem(process/total)=965.79MB/965.79MB)
+
+Begin Processing Timing Window Data for Power Calculation
+
+Ended Processing Timing Window Data for Power Calculation: (cpu=0:00:00, real=0:00:00, mem(process/total)=965.79MB/965.79MB)
+
+Begin Processing User Attributes
+
+Ended Processing User Attributes: (cpu=0:00:00, real=0:00:00, mem(process/total)=965.79MB/965.79MB)
+
+Begin Processing Signal Activity
+
+
+Starting Activity Propagation
+2026-Mar-05 10:07:06 (2026-Mar-05 18:07:06 GMT)
+2026-Mar-05 10:07:06 (2026-Mar-05 18:07:06 GMT): 10%
+
+Finished Activity Propagation
+2026-Mar-05 10:07:06 (2026-Mar-05 18:07:06 GMT)
+Ended Processing Signal Activity: (cpu=0:00:00, real=0:00:00, mem(process/total)=965.79MB/965.79MB)
+
+Begin Power Computation
+
+      ----------------------------------------------------------
+      # of cell(s) missing both power/leakage table: 0
+      # of cell(s) missing power table: 0
+      # of cell(s) missing leakage table: 0
+      # of MSMV cell(s) missing power_level: 0
+      ----------------------------------------------------------
+
+
+
+Starting Calculating power
+2026-Mar-05 10:07:06 (2026-Mar-05 18:07:06 GMT)
+ ... Calculating switching power
+2026-Mar-05 10:07:06 (2026-Mar-05 18:07:06 GMT): 10%
+2026-Mar-05 10:07:06 (2026-Mar-05 18:07:06 GMT): 20%
+2026-Mar-05 10:07:06 (2026-Mar-05 18:07:06 GMT): 30%
+2026-Mar-05 10:07:06 (2026-Mar-05 18:07:06 GMT): 40%
+2026-Mar-05 10:07:06 (2026-Mar-05 18:07:06 GMT): 50%
+ ... Calculating internal and leakage power
+2026-Mar-05 10:07:06 (2026-Mar-05 18:07:06 GMT): 60%
+2026-Mar-05 10:07:06 (2026-Mar-05 18:07:06 GMT): 70%
+2026-Mar-05 10:07:06 (2026-Mar-05 18:07:06 GMT): 80%
+2026-Mar-05 10:07:06 (2026-Mar-05 18:07:06 GMT): 90%
+
+Finished Calculating power
+2026-Mar-05 10:07:06 (2026-Mar-05 18:07:06 GMT)
+Ended Power Computation: (cpu=0:00:00, real=0:00:00, mem(process/total)=965.79MB/965.79MB)
+
+Begin Processing User Attributes
+
+Ended Processing User Attributes: (cpu=0:00:00, real=0:00:00, mem(process/total)=965.79MB/965.79MB)
+
+Ended Power Analysis: (cpu=0:00:00, real=0:00:00, mem(process/total)=965.79MB/965.79MB)
+
+Begin Static Power Report Generation
+*----------------------------------------------------------------------------------------
+*	Innovus 15.23-s045_1 (64bit) 04/22/2016 12:32 (Linux 2.6.18-194.el5)
+*	
+*
+* 	Date & Time:	2026-Mar-05 10:07:06 (2026-Mar-05 18:07:06 GMT)
+*
+*----------------------------------------------------------------------------------------
+
+*
+
+*	Design: sram_w16
+
+*
+
+*	Liberty Libraries used: 
+
+*	        WC_VIEW: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lib/tcbn65gpluswc.lib
+
+*
+
+*	Power Domain used: 
+
+*		Rail:        VDD 	Voltage:        0.9 
+
+*
+
+*	Power Units = 1mW
+
+*
+
+*	Time Units = 1e-09 secs 
+
+*
+
+*       report_power -outfile ./timingReports/sram_w16_preCTS.power
+
+*
+
+-----------------------------------------------------------------------------------------
+
+
+
+Total Power
+-----------------------------------------------------------------------------------------
+Total Internal Power:        9.07751151 	   91.3881%
+Total Switching Power:       0.77956998 	    7.8483%
+Total Leakage Power:         0.07584099 	    0.7635%
+Total Power:                 9.93292265
+-----------------------------------------------------------------------------------------
+
+
+Group                           Internal   Switching     Leakage       Total  Percentage 
+                                Power      Power         Power         Power  (%)        
+-----------------------------------------------------------------------------------------
+Sequential                         8.911      0.1777     0.06241       9.151       92.13
+Macro                                  0           0           0           0           0
+IO                                     0           0           0           0           0
+Combinational                       0.15      0.6019     0.01333      0.7652       7.704
+Clock (Combinational)             0.0165           0   9.859e-05      0.0166      0.1671
+Clock (Sequential)                     0           0           0           0           0
+-----------------------------------------------------------------------------------------
+Total                              9.078      0.7796     0.07584       9.933         100
+-----------------------------------------------------------------------------------------
+
+
+Rail                  Voltage   Internal   Switching     Leakage       Total  Percentage 
+                                Power      Power         Power         Power  (%)        
+-----------------------------------------------------------------------------------------
+VDD                       0.9      9.078      0.7796     0.07584       9.933         100
+
+
+Clock                           Internal   Switching     Leakage       Total  Percentage 
+                                Power      Power         Power         Power  (%)        
+-----------------------------------------------------------------------------------------
+CLK                               0.0165           0   9.859e-05      0.0166      0.1671
+-----------------------------------------------------------------------------------------
+Total                             0.0165           0   9.859e-05      0.0166      0.1671
+-----------------------------------------------------------------------------------------
+Total leakage power = 0.075841 mW
+Cell usage statistics:  
+Library tcbn65gpluswc , 1925 cells ( 100.000000%) , 0.075841 mW ( 100.000000% ) 
+Ended Static Power Report Generation: (cpu=0:00:00, real=0:00:00,
+mem(process/total)=965.79MB/965.79MB)
+
+
+Output file is ./timingReports/sram_w16_preCTS.power.
+<optDesign CMD> Restore Using all VT Cells
+Reported timing to dir ./timingReports
+**optDesign ... cpu = 0:00:56, real = 0:00:57, mem = 1231.7M, totSessionCpu=0:01:53 **
+** Profile ** Start :  cpu=0:00:00.0, mem=1231.7M
+** Profile ** Other data :  cpu=0:00:00.0, mem=1231.7M
+** Profile ** Overall slacks :  cpu=0:00:00.0, mem=1241.8M
+** Profile ** Total reports :  cpu=0:00:00.2, mem=1233.7M
+** Profile ** DRVs :  cpu=0:00:00.0, mem=1233.7M
+
+------------------------------------------------------------
+     optDesign Final Summary                             
+------------------------------------------------------------
+
+Setup views included:
+ WC_VIEW 
+
++--------------------+---------+---------+---------+
+|     Setup mode     |   all   | reg2reg | default |
++--------------------+---------+---------+---------+
+|           WNS (ns):|  0.015  |  0.382  |  0.015  |
+|           TNS (ns):|  0.000  |  0.000  |  0.000  |
+|    Violating Paths:|    0    |    0    |    0    |
+|          All Paths:|  2240   |   64    |  2240   |
++--------------------+---------+---------+---------+
+
++----------------+-------------------------------+------------------+
+|                |              Real             |       Total      |
+|    DRVs        +------------------+------------+------------------|
+|                |  Nr nets(terms)  | Worst Vio  |  Nr nets(terms)  |
++----------------+------------------+------------+------------------+
+|   max_cap      |      0 (0)       |   0.000    |      5 (5)       |
+|   max_tran     |      0 (0)       |   0.000    |      0 (0)       |
+|   max_fanout   |      0 (0)       |     0      |      0 (0)       |
+|   max_length   |      0 (0)       |     0      |      0 (0)       |
++----------------+------------------+------------+------------------+
+
+Density: 71.108%
+Routing Overflow: 0.00% H and 0.01% V
+------------------------------------------------------------
+** Profile ** Report data :  cpu=0:00:00.0, mem=1233.7M
+**optDesign ... cpu = 0:00:56, real = 0:00:57, mem = 1231.7M, totSessionCpu=0:01:54 **
+*** Finished optDesign ***
+Removing temporary dont_use automatically set for cells with technology sites with no row.
+**place_opt_design ... cpu = 0:01:02, real = 0:01:04, mem = 1166.8M **
+*** Finished GigaPlace ***
+
+*** Summary of all messages that are not suppressed in this session:
+Severity  ID               Count  Summary                                  
+WARNING   IMPTS-403            1  Delay calculation was forced to extrapol...
+WARNING   IMPEXT-3442          5  The version of the capacitance table fil...
+WARNING   IMPDC-1629           1  The default delay limit was set to %d. T...
+WARNING   IMPSP-9042           1  Scan chains were not defined, -ignoreSca...
+WARNING   IMPOPT-3663          1  Power view is not set. First setup analy...
+WARNING   IMPOPT-3564          1  The following cells are set dont_use tem...
+*** Message Summary: 10 warning(s), 0 error(s)
+
+<CMD> saveDesign placement.enc
+Writing Netlist "placement.enc.dat.tmp/sram_w16.v.gz" ...
+Saving AAE Data ...
+Saving preference file placement.enc.dat.tmp/gui.pref.tcl ...
+Saving mode setting ...
+Saving global file ...
+Saving floorplan file ...
+Saving Drc markers ...
+... 86 markers are saved ...
+... 0 geometry drc markers are saved ...
+... 0 antenna drc markers are saved ...
+Saving placement file ...
+Saving route file ...
+*** Completed saveRoute (cpu=0:00:00.0 real=0:00:00.0 mem=1166.8M) ***
+Saving DEF file ...
+Saving rc congestion map placement.enc.dat.tmp/sram_w16.congmap.gz ...
+**ERROR: (IMPOAX-142):	Could not open shared library libinnovusoax22.so : /acsnfs3/software/cadence-innovus152/tools/lib/64bit/libcdsSkillPcell.so: undefined symbol: _ZTIN12OpenAccess_413oaFSComponentE
+
+**ERROR: (IMPOAX-142):	Could not open shared library libcdsSkillPcell.so : (null)
+
+**ERROR: (IMPSYT-6245):	Error , while saving MS constraint file.
+Cmin Cmax
+Generated self-contained design placement.enc.dat.tmp
+
+*** Summary of all messages that are not suppressed in this session:
+Severity  ID               Count  Summary                                  
+ERROR     IMPSYT-6245          1  Error %s, while saving MS constraint fil...
+ERROR     IMPOAX-142           2  %s                                       
+*** Message Summary: 0 warning(s), 3 error(s)
+
