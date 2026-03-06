@@ -31,6 +31,7 @@ catch { setUsefulSkewMode -ecoRoute false }
 catch { setDelayCalMode -enable_high_fanout true }
 catch { setDelayCalMode -engine aae }
 catch { setDelayCalMode -ignoreNetLoad false }
+catch { setPinAssignMode -pinEditInBatch false }
 catch { setTrialRouteMode -handlePreroute true }
 catch { setTrialRouteMode -keepMarkedOptRoutes true }
 catch { setAddStripeMode -break_at block_ring }

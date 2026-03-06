@@ -22783,3 +22783,9 @@ End Summary
 <CMD> zoomOut
 <CMD> pan -6.287 118.816
 <CMD> pan 123.300 -107.121
+<CMD> fit
+
+*** Memory Usage v#1 (Current mem = 1983.395M, initial mem = 149.258M) ***
+*** Message Summary: 5437 warning(s), 29 error(s)
+
+--- Ending "Innovus" (totcpu=3:09:36, real=8:28:12, mem=1983.4M) ---
