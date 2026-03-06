@@ -38,8 +38,8 @@ Verilog RTL and testbenches for single/dual-core MAC + SFP normalization.
 
 **Owners:** Shreeya Bhonsle, Ming-Yang Wu
 
-- [ ] Step 1 PnR
-- [ ] Step 3 PnR
+- [x] Step 1 PnR
+- [x] Step 3 PnR
 - [ ] Step 4 PnR
 - [ ] Step 5 PnR (post-alphas)
 - [ ] Step 6 PnR (minor, tentative)
