@@ -16,9 +16,6 @@ setNanoRouteMode -quiet -drouteStartIteration default
 # Run Routing
 routeDesign -globalDetail
 
-# Early DRC repair
-optDesign -postRoute -drv
-
 # RC extraction
 setExtractRCMode -engine postRoute
 extractRC
@@ -29,6 +26,9 @@ setAnalysisMode -analysisType onChipVariation -cppr both
 # Setup and Hold Optimization
 optDesign -postRoute -setup
 optDesign -postRoute -hold
+
+# Early DRC repair
+optDesign -postRoute -drv
 
 # Final incremental cleanup
 optDesign -postRoute -inc
