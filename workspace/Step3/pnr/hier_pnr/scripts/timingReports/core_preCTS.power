@@ -2,7 +2,7 @@
 *	Innovus 15.23-s045_1 (64bit) 04/22/2016 12:32 (Linux 2.6.18-194.el5)
 *	
 *
-* 	Date & Time:	2026-Mar-06 00:01:52 (2026-Mar-06 08:01:52 GMT)
+* 	Date & Time:	2026-Mar-06 03:33:38 (2026-Mar-06 11:33:38 GMT)
 *
 *----------------------------------------------------------------------------------------
 *
@@ -44,45 +44,45 @@
 
 Total Power 
 -----------------------------------------------------------------------------------------
-Total Internal Power:       78.66004398 	   61.0555%
-Total Switching Power:      48.58710399 	   37.7130%
-Total Leakage Power:         1.58663170 	    1.2315%
-Total Power:               128.83377976 
+Total Internal Power:       78.16985193 	   61.2197%
+Total Switching Power:      47.91001043 	   37.5213%
+Total Leakage Power:         1.60749131 	    1.2589%
+Total Power:               127.68735375 
 -----------------------------------------------------------------------------------------
 
 
 Group                           Internal   Switching     Leakage       Total  Percentage 
                                 Power      Power         Power         Power  (%)        
 -----------------------------------------------------------------------------------------
-Sequential                         32.55       1.497      0.2302       34.28       26.61 
-Macro                                  0      0.1678           0      0.1678      0.1302 
+Sequential                         32.59       1.585      0.2305        34.4       26.94 
+Macro                                  0      0.3966           0      0.3966      0.3106 
 IO                                     0           0           0           0           0 
-Combinational                      46.11       46.92       1.356       94.39       73.26 
+Combinational                      45.58       45.93       1.377       92.89       72.75 
 Clock (Combinational)                  0           0           0           0           0 
 Clock (Sequential)                     0           0           0           0           0 
 -----------------------------------------------------------------------------------------
-Total                              78.66       48.59       1.587       128.8         100 
+Total                              78.17       47.91       1.607       127.7         100 
 -----------------------------------------------------------------------------------------
 
 
 Rail                  Voltage   Internal   Switching     Leakage       Total  Percentage 
                                 Power      Power         Power         Power  (%)        
 -----------------------------------------------------------------------------------------
-VDD                       0.9      78.66       48.59       1.587       128.8         100 
+VDD                       0.9      78.17       47.91       1.607       127.7         100 
 
 
 -----------------------------------------------------------------------------------------
 *	Power Distribution Summary: 
-* 		Highest Average Power: mac_array_instance/col_idx_6__mac_col_inst/mac_8in_instance/U1269 (FA1D4): 	    0.1139 
-* 		Highest Leakage Power: mac_array_instance/col_idx_7__mac_col_inst/mac_8in_instance/U1074 (FA1D4): 	 0.0002643 
-* 		Total Cap: 	2.61844e-10 F
-* 		Total instances in design: 33416
+* 		Highest Average Power:             qmem_instance (sram_w16): 	    0.2093 
+* 		Highest Leakage Power: mac_array_instance/col_idx_8__mac_col_inst/mac_8in_instance/U32 (FA1D4): 	 0.0002653 
+* 		Total Cap: 	2.67233e-10 F
+* 		Total instances in design: 33408
 * 		Total instances in design with no power:     0
 *          Total instances in design with no activity:     0
 * 		Total Fillers and Decap:     0
 -----------------------------------------------------------------------------------------
 
-Total leakage power = 1.58663 mW
+Total leakage power = 1.60749 mW
  Cell usage statistics:  
- Library tcbn65gpluswc , 33414 cells ( 100.000000%) , 1.58663 mW ( 100.000000%  ) 
+ Library tcbn65gpluswc , 33406 cells ( 100.000000%) , 1.60749 mW ( 100.000000%  ) 
  

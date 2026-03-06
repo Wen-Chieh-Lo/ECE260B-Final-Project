@@ -30,7 +30,6 @@ catch {setNanoRouteMode -quiet -drouteFixAntenna true}
 catch {setNanoRouteMode -quiet -droutePostRouteSpreadWire "false"}
 catch {setNanoRouteMode -quiet -drouteStartIteration 0}
 catch {setNanoRouteMode -quiet -routeExpPreserveConstraints true}
-catch {setNanoRouteMode -quiet -routeExpSignatureEco false}
 catch {setNanoRouteMode -quiet -routeSiEffort "high"}
 catch {setNanoRouteMode -quiet -routeWithSiDriven true}
 catch {setNanoRouteMode -quiet -routeWithSiPostRouteFix true}

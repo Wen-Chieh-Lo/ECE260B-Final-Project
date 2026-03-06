@@ -1,5 +1,5 @@
 # Floorplan
-floorPlan -site core -r 1 0.4 20.0 20.0 20.0 20.0
+floorPlan -site core -s 1000 1000 20.0 20.0 20.0 20.0
 
 timeDesign -preplace -prefix preplace
 
@@ -15,7 +15,7 @@ setAddStripeMode -break_at {block_ring}
 
 addStripe -skip_via_on_wire_shape Noshape -block_ring_top_layer_limit M1 -max_same_layer_jog_length 0.8 -padcore_ring_bottom_layer_limit M1 -number_of_sets 25 -ybottom_offset 5 -skip_via_on_pin Standardcell -stacked_via_top_layer M8 -padcore_ring_top_layer_limit M1 -spacing 4 -merge_stripes_value 0.1 -direction horizontal -layer M5 -block_ring_bottom_layer_limit M1 -ytop_offset 5 -width 1 -area {} -nets {VDD VSS} -stacked_via_bottom_layer M1
 
-setObjFPlanBox Instance qmem_instance 100 450 400 750
+setObjFPlanBox Instance qmem_instance 450 100 750 400
 setObjFPlanBox Instance kmem_instance 100 100 400 400
 
 addHaloToBlock {3 3 3 3} kmem_instance
