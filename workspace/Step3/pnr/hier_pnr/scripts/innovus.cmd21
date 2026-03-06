@@ -1,0 +1,161 @@
+#######################################################
+#                                                     
+#  Innovus Command Logging File                     
+#  Created on Thu Mar  5 22:26:00 2026                
+#                                                     
+#######################################################
+
+#@(#)CDS: Innovus v15.23-s045_1 (64bit) 04/22/2016 12:32 (Linux 2.6.18-194.el5)
+#@(#)CDS: NanoRoute 15.23-s045_1 NR160414-1105/15_23-UB (database version 2.30, 317.6.1) {superthreading v1.26}
+#@(#)CDS: AAE 15.23-s014 (64bit) 04/22/2016 (Linux 2.6.18-194.el5)
+#@(#)CDS: CTE 15.23-s022_1 () Apr 22 2016 09:38:45 ( )
+#@(#)CDS: SYNTECH 15.23-s008_1 () Apr 12 2016 21:52:59 ( )
+#@(#)CDS: CPE v15.23-s045
+#@(#)CDS: IQRC/TQRC 15.1.4-s213 (64bit) Tue Feb  9 17:31:28 PST 2016 (Linux 2.6.18-194.el5)
+
+set_global _enable_mmmc_by_default_flow      $CTE::mmmc_default
+suppressMessage ENCEXT-2799
+getDrawView
+loadWorkspace -name Physical
+win
+set init_pwr_net VDD
+set init_gnd_net VSS
+set init_verilog ../../../syn/gate/core.out.v
+set init_design_netlisttype Verilog
+set init_design_settop 1
+set init_top_cell core
+set init_lef_file {/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef ../../sram_pnr/scripts/sram_w16.lef}
+create_library_set -name WC_LIB -timing "$worst_timing_lib ../../sram_pnr/scripts/sram_w16_WC.lib"
+create_library_set -name BC_LIB -timing "$best_timing_lib ../../sram_pnr/scripts/sram_w16_BC.lib"
+create_rc_corner -name Cmax -cap_table $worst_captbl -T 125
+create_rc_corner -name Cmin -cap_table $best_captbl -T -40
+create_delay_corner -name WC -library_set WC_LIB -rc_corner Cmax
+create_delay_corner -name BC -library_set BC_LIB -rc_corner Cmin
+create_constraint_mode -name CON -sdc_file [list $sdc]
+create_analysis_view -name WC_VIEW -delay_corner WC -constraint_mode CON
+create_analysis_view -name BC_VIEW -delay_corner BC -constraint_mode CON
+init_design -setup WC_VIEW -hold BC_VIEW
+set_interactive_constraint_modes {CON}
+setDesignMode -process 65
+floorPlan -site core -r 1 0.4 20.0 20.0 20.0 20.0
+timeDesign -preplace -prefix preplace
+globalNetConnect VDD -type pgpin -pin VDD -inst * -verbose
+globalNetConnect VSS -type pgpin -pin VSS -inst * -verbose
+addRing -spacing {top 2 bottom 2 left 2 right 2} -width {top 4 bottom 4 left 4 right 4} -layer {top M1 bottom M1 left M2 right M2} -center 1 -type core_rings -nets {VSS  VDD}
+setAddStripeMode -break_at block_ring
+addStripe -skip_via_on_wire_shape Noshape -block_ring_top_layer_limit M1 -max_same_layer_jog_length 0.8 -padcore_ring_bottom_layer_limit M1 -number_of_sets 25 -ybottom_offset 5 -skip_via_on_pin Standardcell -stacked_via_top_layer M8 -padcore_ring_top_layer_limit M1 -spacing 4 -merge_stripes_value 0.1 -direction horizontal -layer M5 -block_ring_bottom_layer_limit M1 -ytop_offset 5 -width 1 -area {} -nets {VDD VSS} -stacked_via_bottom_layer M1
+setObjFPlanBox Instance qmem_instance 100 450 400 750
+setObjFPlanBox Instance kmem_instance 100 100 400 400
+addHaloToBlock {3 3 3 3} kmem_instance
+addHaloToBlock {3 3 3 3} qmem_instance
+addRing -nets {VDD VSS} -type block_rings -around each_block -layer {top M1 bottom M1 left M2 right M2} -width {top 0.5 bottom 0.5 left 0.5 right 0.5} -spacing {top 0.5 bottom 0.5 left 0.5 right 0.5}
+globalNetConnect VDD -type pgpin -pin VDD -sinst qmem_instance -verbose -override
+globalNetConnect VSS -type pgpin -pin VSS -sinst qmem_instance -verbose -override
+globalNetConnect VDD -type pgpin -pin VDD -sinst kmem_instance -verbose -override
+globalNetConnect VSS -type pgpin -pin VSS -sinst kmem_instance -verbose -override
+sroute
+verifyConnectivity
+saveDesign floorplan.enc
+setPlaceMode -timingDriven true -reorderScan false -congEffort high -modulePlan True -placeIOPins false
+setOptMode -effort high -powerEffort high -leakageToDynamicRatio 0.5 -fixFanoutLoad true -restruct true -verbose true
+place_opt_design
+saveDesign placement.enc
+set_ccopt_property -update_io_latency false
+set_ccopt_property target_skew 0.05
+set_ccopt_property target_max_trans 0.1
+create_ccopt_clock_tree_spec -file /home/linux/ieng6/ECE260B_WI26_A00/miw090/ECE260B-Final-Project/workspace/Step3/pnr/hier_pnr/constraints/core.ccopt
+ccopt_design
+set_propagated_clock [all_clocks]
+optDesign -postCTS -hold
+saveDesign cts.enc
+fit
+setPinAssignMode -pinEditInBatch true
+editPin -fixOverlap 1 -unit MICRON -spreadDirection clockwise -side Left -layer 3 -spreadType center -spacing 4 -pin {clk reset inst[*] mem_in[*]}
+setPinAssignMode -pinEditInBatch false
+setPinAssignMode -pinEditInBatch true
+editPin -fixOverlap 1 -unit MICRON -spreadDirection clockwise -side Bottom -layer 4 -spreadType center -spacing 4 -pin {out[*]}
+setPinAssignMode -pinEditInBatch false
+checkPinAssignment
+fit
+fit
+uiSetTool select
+fit
+setNanoRouteMode -quiet -drouteAllowMergedWireAtPin false
+setNanoRouteMode -quiet -drouteFixAntenna true
+setNanoRouteMode -quiet -routeWithTimingDriven true
+setNanoRouteMode -quiet -routeWithSiDriven true
+setNanoRouteMode -quiet -routeSiEffort high
+setNanoRouteMode -quiet -routeWithSiPostRouteFix true
+setNanoRouteMode -quiet -drouteAutoStop false
+setNanoRouteMode -quiet -routeSelectedNetOnly false
+setNanoRouteMode -quiet -drouteStartIteration default
+routeDesign -globalDetail
+optDesign -postRoute -drv
+setAnalysisMode -analysisType onChipVariation
+setNanoRouteMode -quiet -drouteAllowMergedWireAtPin false
+setNanoRouteMode -quiet -drouteFixAntenna true
+setNanoRouteMode -quiet -routeWithTimingDriven true
+setNanoRouteMode -quiet -routeWithSiDriven true
+setNanoRouteMode -quiet -routeSiEffort high
+setNanoRouteMode -quiet -routeWithSiPostRouteFix true
+setNanoRouteMode -quiet -drouteAutoStop false
+setNanoRouteMode -quiet -routeSelectedNetOnly false
+setNanoRouteMode -quiet -drouteStartIteration default
+routeDesign -globalDetail
+optDesign -postRoute -drv
+setExtractRCMode -engine postRoute
+extractRC
+setAnalysisMode -analysisType onChipVariation -cppr both
+optDesign -postRoute -setup
+optDesign -postRoute -hold
+optDesign -postRoute -inc
+saveDesign route.enc
+verifyGeometry
+optDesign -postRoute -drv
+optDesign -postRoute -inc
+verifyGeometry
+optDesign -postRoute -drv
+optDesign -postRoute -inc
+verifyGeometry
+verifyConnectivity
+optDesign -postRoute -drv
+optDesign -postRoute -inc
+verifyGeometry
+optDesign -postRoute -inc
+verifyGeometry
+optDesign -postRoute -drv
+verifyGeometry
+verifyConnectivity
+verifyGeometry
+optDesign -postRoute -drv
+verifyGeometry
+verifyGeometry
+verifyConnectivity
+report_timing -max_paths 5 > ${design}.post_route.timing.rpt
+report_power -outfile core.post_route.power.rpt
+summaryReport -nohtml -outfile core.post_route.summary.rpt
+streamOut core.gds2 -merge ./subckt/sram_w16.gds2
+write_lef_abstract core.lef
+defOut -netlist -routing core.def
+saveNetlist core.pnr.v
+setAnalysisMode -setup
+set_analysis_view -setup WC_VIEW -hold WC_VIEW
+do_extract_model -view WC_VIEW -format dotlib ${design}_WC.lib
+write_sdf -view WC_VIEW ${design}_WC.sdf
+setAnalysisMode -hold
+set_analysis_view -setup BC_VIEW -hold BC_VIEW
+do_extract_model -view BC_VIEW -format dotlib ${design}_BC.lib
+write_sdf -view BC_VIEW ${design}_BC.sdf
+uiSetTool select
+setDrawView place
+fit
+zoomIn
+zoomIn
+pan 100.233 -25.692
+pan 107.145 -3.917
+pan 118.897 2.534
+pan 81.338 -1.844
+pan -6.337 -72.813
+pan -2.880 -96.201
+pan 0.116 -86.984
+pan -1.267 -90.555

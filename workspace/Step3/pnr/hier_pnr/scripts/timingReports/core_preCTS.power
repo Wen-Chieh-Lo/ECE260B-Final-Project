@@ -2,7 +2,7 @@
 *	Innovus 15.23-s045_1 (64bit) 04/22/2016 12:32 (Linux 2.6.18-194.el5)
 *	
 *
-* 	Date & Time:	2026-Mar-05 19:09:34 (2026-Mar-06 03:09:34 GMT)
+* 	Date & Time:	2026-Mar-06 00:01:52 (2026-Mar-06 08:01:52 GMT)
 *
 *----------------------------------------------------------------------------------------
 *
@@ -44,45 +44,45 @@
 
 Total Power 
 -----------------------------------------------------------------------------------------
-Total Internal Power:       79.46557762 	   60.9717%
-Total Switching Power:      49.23038234 	   37.7731%
-Total Leakage Power:         1.63592303 	    1.2552%
-Total Power:               130.33188304 
+Total Internal Power:       78.66004398 	   61.0555%
+Total Switching Power:      48.58710399 	   37.7130%
+Total Leakage Power:         1.58663170 	    1.2315%
+Total Power:               128.83377976 
 -----------------------------------------------------------------------------------------
 
 
 Group                           Internal   Switching     Leakage       Total  Percentage 
                                 Power      Power         Power         Power  (%)        
 -----------------------------------------------------------------------------------------
-Sequential                         32.57       1.483      0.2313       34.29       26.31 
-Macro                                  0      0.1663           0      0.1663      0.1276 
+Sequential                         32.55       1.497      0.2302       34.28       26.61 
+Macro                                  0      0.1678           0      0.1678      0.1302 
 IO                                     0           0           0           0           0 
-Combinational                      46.89       47.58       1.405       95.88       73.56 
+Combinational                      46.11       46.92       1.356       94.39       73.26 
 Clock (Combinational)                  0           0           0           0           0 
 Clock (Sequential)                     0           0           0           0           0 
 -----------------------------------------------------------------------------------------
-Total                              79.47       49.23       1.636       130.3         100 
+Total                              78.66       48.59       1.587       128.8         100 
 -----------------------------------------------------------------------------------------
 
 
 Rail                  Voltage   Internal   Switching     Leakage       Total  Percentage 
                                 Power      Power         Power         Power  (%)        
 -----------------------------------------------------------------------------------------
-VDD                       0.9      79.47       49.23       1.636       130.3         100 
+VDD                       0.9      78.66       48.59       1.587       128.8         100 
 
 
 -----------------------------------------------------------------------------------------
 *	Power Distribution Summary: 
-* 		Highest Average Power: mac_array_instance/col_idx_2__mac_col_inst/mac_8in_instance/U1324 (FA1D4): 	    0.1204 
-* 		Highest Leakage Power: mac_array_instance/col_idx_8__mac_col_inst/mac_8in_instance/U981 (FA1D4): 	  0.000265 
-* 		Total Cap: 	2.69241e-10 F
-* 		Total instances in design: 33652
+* 		Highest Average Power: mac_array_instance/col_idx_6__mac_col_inst/mac_8in_instance/U1269 (FA1D4): 	    0.1139 
+* 		Highest Leakage Power: mac_array_instance/col_idx_7__mac_col_inst/mac_8in_instance/U1074 (FA1D4): 	 0.0002643 
+* 		Total Cap: 	2.61844e-10 F
+* 		Total instances in design: 33416
 * 		Total instances in design with no power:     0
 *          Total instances in design with no activity:     0
 * 		Total Fillers and Decap:     0
 -----------------------------------------------------------------------------------------
 
-Total leakage power = 1.63592 mW
+Total leakage power = 1.58663 mW
  Cell usage statistics:  
- Library tcbn65gpluswc , 33650 cells ( 100.000000%) , 1.63592 mW ( 100.000000%  ) 
+ Library tcbn65gpluswc , 33414 cells ( 100.000000%) , 1.58663 mW ( 100.000000%  ) 
  
