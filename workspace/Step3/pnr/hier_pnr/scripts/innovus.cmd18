@@ -1,0 +1,173 @@
+#######################################################
+#                                                     
+#  Innovus Command Logging File                     
+#  Created on Thu Mar  5 15:47:17 2026                
+#                                                     
+#######################################################
+
+#@(#)CDS: Innovus v15.23-s045_1 (64bit) 04/22/2016 12:32 (Linux 2.6.18-194.el5)
+#@(#)CDS: NanoRoute 15.23-s045_1 NR160414-1105/15_23-UB (database version 2.30, 317.6.1) {superthreading v1.26}
+#@(#)CDS: AAE 15.23-s014 (64bit) 04/22/2016 (Linux 2.6.18-194.el5)
+#@(#)CDS: CTE 15.23-s022_1 () Apr 22 2016 09:38:45 ( )
+#@(#)CDS: SYNTECH 15.23-s008_1 () Apr 12 2016 21:52:59 ( )
+#@(#)CDS: CPE v15.23-s045
+#@(#)CDS: IQRC/TQRC 15.1.4-s213 (64bit) Tue Feb  9 17:31:28 PST 2016 (Linux 2.6.18-194.el5)
+
+set_global _enable_mmmc_by_default_flow      $CTE::mmmc_default
+suppressMessage ENCEXT-2799
+getDrawView
+loadWorkspace -name Physical
+win
+set init_pwr_net VDD
+set init_gnd_net VSS
+set init_verilog ../../../syn/gate/core.out.v
+set init_design_netlisttype Verilog
+set init_design_settop 1
+set init_top_cell core
+set init_lef_file {/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lef/tcbn65gplus_8lmT2.lef ../../sram_pnr/scripts/sram_w16.lef}
+create_library_set -name WC_LIB -timing "$worst_timing_lib ../../sram_pnr/scripts/sram_w16_WC.lib"
+create_library_set -name BC_LIB -timing "$best_timing_lib ../../sram_pnr/scripts/sram_w16_BC.lib"
+create_rc_corner -name Cmax -cap_table $worst_captbl -T 125
+create_rc_corner -name Cmin -cap_table $best_captbl -T -40
+create_delay_corner -name WC -library_set WC_LIB -rc_corner Cmax
+create_delay_corner -name BC -library_set BC_LIB -rc_corner Cmin
+create_constraint_mode -name CON -sdc_file [list $sdc]
+create_analysis_view -name WC_VIEW -delay_corner WC -constraint_mode CON
+create_analysis_view -name BC_VIEW -delay_corner BC -constraint_mode CON
+init_design -setup WC_VIEW -hold BC_VIEW
+set_interactive_constraint_modes {CON}
+setDesignMode -process 65
+floorPlan -site core -r 1 0.50 30.0 30.0 30.0 30.0
+timeDesign -preplace -prefix preplace
+globalNetConnect VDD -type pgpin -pin VDD -inst * -verbose
+globalNetConnect VSS -type pgpin -pin VSS -inst * -verbose
+addRing -spacing {top 1 bottom 1 left 1 right 1} -width {top 2 bottom 2 left 2 right 2} -layer {top M1 bottom M1 left M2 right M2} -center 1 -type core_rings -nets {VSS  VDD}
+setAddStripeMode -break_at block_ring
+addStripe -skip_via_on_wire_shape Noshape -block_ring_top_layer_limit M1 -max_same_layer_jog_length 0.8 -padcore_ring_bottom_layer_limit M1 -number_of_sets 25 -ybottom_offset 5 -skip_via_on_pin Standardcell -stacked_via_top_layer M8 -padcore_ring_top_layer_limit M1 -spacing 1 -merge_stripes_value 0.1 -direction horizontal -layer M5 -block_ring_bottom_layer_limit M1 -ytop_offset 5 -width 1 -area {} -nets {VDD VSS} -stacked_via_bottom_layer M1
+setObjFPlanBox Instance qmem_instance 100 450 400 750
+setObjFPlanBox Instance kmem_instance 100 100 400 400
+addHaloToBlock {3 3 3 3} kmem_instance
+addHaloToBlock {3 3 3 3} qmem_instance
+addRing -nets {VDD VSS} -type block_rings -around each_block -layer {top M1 bottom M1 left M2 right M2} -width {top 0.5 bottom 0.5 left 0.5 right 0.5} -spacing {top 0.5 bottom 0.5 left 0.5 right 0.5}
+globalNetConnect VDD -type pgpin -pin VDD -sinst qmem_instance -verbose -override
+globalNetConnect VSS -type pgpin -pin VSS -sinst qmem_instance -verbose -override
+globalNetConnect VDD -type pgpin -pin VDD -sinst kmem_instance -verbose -override
+globalNetConnect VSS -type pgpin -pin VSS -sinst kmem_instance -verbose -override
+sroute
+verifyConnectivity
+saveDesign floorplan.enc
+setPlaceMode -timingDriven true -reorderScan false -congEffort high -modulePlan True -placeIOPins false
+setOptMode -effort high -powerEffort high -leakageToDynamicRatio 0.5 -fixFanoutLoad true -restruct true -verbose true
+place_opt_design
+saveDesign placement.enc
+fit
+set_ccopt_property -update_io_latency false
+set_ccopt_property target_skew 0.05
+set_ccopt_property target_max_trans 0.1
+create_ccopt_clock_tree_spec -file /home/linux/ieng6/ECE260B_WI26_A00/miw090/ECE260B-Final-Project/workspace/Step3/pnr/hier_pnr/constraints/core.ccopt
+ccopt_design
+set_propagated_clock [all_clocks]
+optDesign -postCTS -hold
+saveDesign cts.enc
+setNanoRouteMode -quiet -drouteAllowMergedWireAtPin false
+setNanoRouteMode -quiet -drouteFixAntenna true
+setNanoRouteMode -quiet -routeWithTimingDriven true
+setNanoRouteMode -quiet -routeWithSiDriven true
+setNanoRouteMode -quiet -routeSiEffort high
+setNanoRouteMode -quiet -routeWithSiPostRouteFix true
+setNanoRouteMode -quiet -drouteAutoStop false
+setNanoRouteMode -quiet -routeSelectedNetOnly false
+setNanoRouteMode -quiet -drouteStartIteration default
+routeDesign -globalDetail
+optDesign -postRoute -drv
+verifyConnectivity
+verifyGeometry
+getFillerMode -quiet
+addFiller -cell FILL2 FILL1 FILL4 FILL8 FILL16 DCAP DCAP4 DCAP8 DCAP64 DCAP32 FILL32 -prefix FILLER -doDRC -markFixed
+addFiller -cell FILL2 FILL1 FILL4 FILL8 FILL16 DCAP DCAP4 DCAP8 DCAP64 DCAP32 FILL32 -prefix FILLER -doDRC -markFixed
+optDesign -postRoute -drv
+optDesign -postRoute -opt
+optDesign -postRoute -opt
+optDesign -postRoute -inc
+verifyConnectivity
+fit
+zoomIn
+zoomIn
+zoomIn
+zoomIn
+zoomOut
+zoomOut
+selectMarker 397.4100 349.0250 397.5900 349.1250 1 1 6
+verifyGeometry
+verifyConnectivity
+report_timing -max_paths 5 > ${design}.post_route.timing.rpt
+report_power -outfile core.post_route.power.rpt
+summaryReport -nohtml -outfile core.post_route.summary.rpt
+selectWire 393.4500 349.3500 395.5500 349.4500 3 mac_array_instance/col_idx_1__mac_col_inst/n104
+deselectAll
+selectWire 397.4500 349.0250 397.5500 351.0500 2 mac_array_instance/col_idx_1__mac_col_inst/n104
+deselectAll
+selectInst mac_array_instance/col_idx_1__mac_col_inst/U3
+deselectAll
+selectMarker 397.4100 349.0250 397.5900 349.1250 1 1 6
+zoomOut
+zoomOut
+zoomOut
+zoomOut
+zoomOut
+zoomOut
+zoomIn
+fit
+streamOut core.gds2 -merge ./subckt/sram_w16.gds2
+write_lef_abstract core.lef
+defOut -netlist -routing core.def
+saveNetlist core.pnr.v
+setAnalysisMode -setup
+set_analysis_view -setup WC_VIEW -hold WC_VIEW
+do_extract_model -view WC_VIEW -format dotlib ${design}_WC.lib
+write_sdf -view WC_VIEW ${design}_WC.sdf
+setAnalysisMode -hold
+set_analysis_view -setup BC_VIEW -hold BC_VIEW
+do_extract_model -view BC_VIEW -format dotlib ${design}_BC.lib
+write_sdf -view BC_VIEW ${design}_BC.sdf
+deselectAll
+selectInst FILLER_2639
+zoomIn
+gui_select -rect {320.293 317.500 395.365 331.046}
+zoomBox 296.587 347.980 391.978 366.042
+zoomOut
+zoomIn
+zoomBox 345.329 310.976 346.420 310.976
+zoomOut
+zoomOut
+zoomOut
+zoomOut
+zoomOut
+gui_select -rect {228.189 309.519 338.266 280.704}
+zoomSelected
+gui_select -rect {179.602 307.565 321.339 276.813}
+gui_select -rect {159.754 320.145 323.017 258.642}
+deselectAll
+selectInst kmem_instance
+zoomIn
+zoomIn
+zoomIn
+zoomOut
+zoomOut
+zoomOut
+zoomOut
+zoomOut
+zoomIn
+zoomIn
+zoomIn
+zoomIn
+zoomOut
+zoomOut
+uiSetTool move
+deselectAll
+selectInst U34
+setObjFPlanBox Instance U34 253.0285 333.3545 256.4285 335.1545
+zoomBox 250.537 370.893 249.978 328.397
+zoomOut
+zoomOut
+fit
