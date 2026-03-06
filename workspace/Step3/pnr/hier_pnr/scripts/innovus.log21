@@ -52626,3 +52626,4 @@ End delay calculation. (MEM=2192.01 CPU=0:00:01.0 REAL=0:00:01.0)
 <CMD> pan -2.880 -96.201
 <CMD> pan 0.116 -86.984
 <CMD> pan -1.267 -90.555
+<CMD> fit
