@@ -10,6 +10,7 @@
 #   target        description              filelist (in sim/filelists/)
 #   ------------- -----------------------  --------------------------
 #   fullchip      fullchip single-core     filelist            (default)
+#   controller    controller               filelist_controller
 #   core          single core              filelist_core
 #   mac           mac_array                filelist_mac
 #   sfp_row       sfp_row single-core      filelist_sfp_row
@@ -54,6 +55,7 @@ SYNDIR            := syn
 # target -> filelist filename (shared between sim and syn for filelist name lookup)
 TARGET_FILELIST_table := \
 	fullchip:filelist \
+	controller:filelist_controller \
 	core:filelist_core \
 	mac:filelist_mac \
 	sfp_row:filelist_sfp_row \
@@ -62,6 +64,7 @@ TARGET_FILELIST_table := \
 # target -> waveform filename
 TARGET_WAVEFORM_table := \
 	fullchip:fullchip.vcd \
+	controller:controller.vcd \
 	core:core.vcd \
 	mac:mac_array.vcd \
 	sfp_row:sfp_row.vcd \
@@ -70,11 +73,12 @@ TARGET_WAVEFORM_table := \
 # target -> RTL top_module name (synthesis only; differs where make-target != module name)
 TARGET_TOP_MODULE_table := \
 	core:core \
+	controller:controller \
 	mac:mac_array \
 	sfp_row:sfp_row
 
-SIM_TARGETS := fullchip core mac sfp_row sfp_row_dual
-SYN_TARGETS := sfp_row core mac
+SIM_TARGETS := fullchip controller core mac sfp_row sfp_row_dual
+SYN_TARGETS := sfp_row controller core mac
 
 $(foreach p,$(TARGET_FILELIST_table),$(eval $(firstword $(subst :, ,$(p))): FILELIST_NAME := $(word 2,$(subst :, ,$(p)))))
 $(foreach p,$(TARGET_WAVEFORM_table),$(eval $(firstword $(subst :, ,$(p))): WAVEFORM     := $(word 2,$(subst :, ,$(p)))))
@@ -149,8 +153,8 @@ help:
 	@echo "        make all [TARGET=<name>] [SYN_EFFORT=low|medium|high]"
 	@echo ""
 	@echo "TARGET controls both sim and syn:"
-	@echo "  sim valid: fullchip(default) | core | mac | sfp_row | sfp_row_dual"
-	@echo "  syn valid: core(default)     | sfp_row | mac"
+	@echo "  sim valid: fullchip(default) | core | controller | mac | sfp_row | sfp_row_dual"
+	@echo "  syn valid: core(default)     | controller | sfp_row | mac"
 	@echo "  gls valid: same as sim (uses syn/gate/*.out.v + PDK)"
 	@echo "  (if TARGET is sim-only, syn falls back to its default: core)"
 	@echo ""

@@ -1,0 +1,38 @@
+Controller in progress.
+
+Notes:
+The data control mechanism has been designed, while implementation is in progress. I believe it'll be done before noon tomorrow.
+
+Core
+    |- reg_map: Where upper modules can write in the mode of operation or other configurations, and read status from controller.
+    |- kmem: Upper module can write during kmem status = "kmem_free"
+    |- qmem: Upper module can write during qmem_status = "qmem_free"
+    |- controller: After receiving "start", it latches in reg_map's configuration and starts generating the control signals for computing data stored in kmem and qmem
+    |              Also, controller generates status for upper module to read. 
+    |              For example, after qmem's data went through mac array, the qmem status will be set to free. Then the upper modules knows that vdata can now be writen. It saves cycles.        
+    |- mac_array & ofifo: they are what you know.
+
+
+More about reg_map
+op_mode: The core has 2 operation modes. 
+         0 = multiply data in QMEM and KMEM, apply normalization, then save to PMEM/KMEM.
+         1 = multiply data in QMEM and KMEM, then save to PMEM.
+sfp_write_to_kmem: Only valid under op_mode 0. Default is 1. 
+sfp_write_to_pmem: Only valid under op_mode 0. Default is 0. 
+
+Some scenario which I consider when designing
+1. User want to calculate matrix multiplication, then read it out.
+   => Write data to QMEM; Write data to KMEM
+   => op_mode=1
+   => start
+2. User want to calculate matrix multiplication, apply norm to the outcome, then read it out.
+   => Write data to QMEM; Write data to KMEM
+   => op_mode=0, sfp_write_to_pmem=1 (only pmem is connected to the output)
+   => start
+3. User want to calculate attention 
+   => Write data to QMEM, Write data to KMEM
+   => op_mode=0, sfp_write_to_kmem=1 
+   => start
+   (status: now qmem is free)       => Write vdata to QMEM
+   (status: core is no longer busy) => op_mode=1
+   => start
