@@ -20,10 +20,7 @@ TARGET = core
 # Built-in default: high
 SYN_EFFORT = high
 
-# Absolute path to project root (directory that contains verilog/, syn/, sim/).
-# Leave blank to use the directory where "make" is invoked.
-# Example: PROJECT_REPO_PATH = /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project
-PROJECT_REPO_PATH = 
+
 
 # Verilog preprocessor defines for simulation (iverilog -D) and synthesis (DC -define).
 # Space-separated macro names, e.g.: SFP_LONGDIV SFP_LUTDIV VANILLA
