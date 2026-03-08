@@ -6,7 +6,7 @@
 *
 * ADDR=0: MODE             (Won't take effect until controller received start!)
 *   MSB: op_mode           (0: QK+Norm, 1: VN)
-*      : sfp_write_to_qmem (Only for op_mode=0.)
+*      : sfp_write_to_kmem (Only for op_mode=0.)
 *   LSB: sfp_write_to_pmem (Only for op_mode=0.)
 
 * ADDR=1: STATUS (read-only)
@@ -30,7 +30,7 @@ module reg_map (clk, reset, wen, cen, addr, data_in, data_out, status_from_contr
     // register map
     localparam MODE_ADDR   = 1'b0;
     localparam STATUS_ADDR = 1'b1;
-    reg [2:0] mode_reg;           // {op_mode, sfp_write_to_qmem, sfp_write_to_pmem}
+    reg [2:0] mode_reg;           // {op_mode, sfp_write_to_kmem, sfp_write_to_pmem}
 
     input      [2:0] status_from_controller;
     output     [2:0] mode_to_controller; 

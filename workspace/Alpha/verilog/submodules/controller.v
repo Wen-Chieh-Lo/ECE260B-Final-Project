@@ -45,12 +45,12 @@ module controller(clk, reset, start, mode_from_reg_map, status_to_reg_map, ofifo
 
     // ============== Wires & Regs ============== // 
     wire      busy, qmem_locked, kmem_locked;
-    reg       op_mode, sfp_write_to_qmem, sfp_write_to_pmem; // update from mode_from_reg_map when start&&!busy
+    reg       op_mode, sfp_write_to_kmem, sfp_write_to_pmem; // update from mode_from_reg_map when start&&!busy
 
 
     assign    status_to_reg_map = {busy, qmem_locked, kmem_locked};
     assign    kmem_locked = (MAC_state == S_MAC_LOAD);
-    assign    qmem_locked = (MAC_state == S_MAC_EXEC) || (SFP_state == S_SFP_SFP && sfp_write_to_qmem);
+    assign    qmem_locked = (MAC_state == S_MAC_EXEC) || (SFP_state == S_SFP_SFP && sfp_write_to_kmem);
     assign    busy = ((MAC_state != S_MAC_IDLE) || (SFP_state != S_SFP_IDLE)) && ((MAC_state != S_MAC_DONE) || (SFP_state != S_SFP_DONE)); 
 
     // inst_ctrl[19:0] maps to core.inst: [19]VN_mode [18]sfp_div [17]sfp_acc [16]sfp_processing
@@ -182,10 +182,10 @@ module controller(clk, reset, start, mode_from_reg_map, status_to_reg_map, ofifo
     // controller mode only updates when start and not busy, otherwise hold the value
     always @(posedge clk) begin 
         if(start && !busy) begin
-            {op_mode, sfp_write_to_qmem, sfp_write_to_pmem} <= mode_from_reg_map; // update controller mode from reg_map shadow when start and not busy
+            {op_mode, sfp_write_to_kmem, sfp_write_to_pmem} <= mode_from_reg_map; // update controller mode from reg_map shadow when start and not busy
         end
         else begin
-            {op_mode, sfp_write_to_qmem, sfp_write_to_pmem} <= {op_mode, sfp_write_to_qmem, sfp_write_to_pmem}; 
+            {op_mode, sfp_write_to_kmem, sfp_write_to_pmem} <= {op_mode, sfp_write_to_kmem, sfp_write_to_pmem}; 
         end
     end
 

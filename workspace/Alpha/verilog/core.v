@@ -49,7 +49,7 @@ wire  VN_mode;
 
 reg   [2:0] fifo_valid_cnt;
 
-// Fake mode until reg_map is integrated: {op_mode, sfp_write_to_qmem, sfp_write_to_pmem}, default QK+norm, sfp->kmem only
+// Fake mode until reg_map is integrated: {op_mode, sfp_write_to_kmem, sfp_write_to_pmem}, default QK+norm, sfp->kmem only
 wire [2:0] mode_from_reg_map_fake = 3'b010;
 wire       sfp_busy = 1'b0;  // TODO: connect from sfp_row when available
 
