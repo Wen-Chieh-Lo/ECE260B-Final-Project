@@ -1,0 +1,112 @@
+xrun(64): 20.09-s017: (c) Copyright 1995-2021 Cadence Design Systems, Inc.
+TOOL:	xrun(64)	20.09-s017: Started on Mar 08, 2026 at 00:46:33 PST
+xrun
+	+gui
+	+access+rwc
+	+xm64bit
+	+xmstatus
+	+xmtimescale+1ns/1ps
+	+xmoveride_timescale
+	+define+INITIALIZE_MEMORY
+	-xminitialize rand_2state:1
+	+xmseq_udp_delay+20ps
+	-nowarn CUVWSP
+	-v ./netlist/tcbn65gplus.v
+	-v ./netlist/core.pnr.v
+	./netlist/step1_tb.v
+
+   User defined plus("+") options:
+	+xmoveride_timescale
+
+Recompiling... reason: file './netlist/step1_tb.v' is newer than expected.
+	expected: Sun Mar  8 00:34:57 2026
+	actual:   Sun Mar  8 00:46:29 2026
+file: ./netlist/step1_tb.v
+	module worklib.step1_tb:v
+		errors: 0, warnings: 0
+xmvlog: Memory Usage - Current physical: 23.7M, Current virtual: 96.3M
+xmvlog: CPU Usage - 0.1s system + 1.6s user = 1.6s total (1.7s, 98.1% cpu)
+xmelab: *N,INFSUD: -NOSPECIFY is automatically used with -SEQ_UDP_DELAY.
+		Caching library 'worklib' ....... Done
+		Caching library 'core' ....... Done
+		Caching library 'tcbn65gplus' ....... Done
+	Elaborating the design hierarchy:
+	Top level design units:
+		step1_tb
+	Building instance overlay tables: .................... Done
+	Generating native compiled code:
+		worklib.step1_tb:v <0x4b2cd8e3>
+			streams:  26, words: 46156
+	Building instance specific data structures.
+	Loading native compiled code:     .................... Done
+	Design hierarchy summary:
+		                   Instances  Unique
+		Modules:               36978     406
+		UDPs:                  15982       3
+		Primitives:            71860       9
+		Registers:              5804      48
+		Scalar wires:          10979       -
+		Expanded wires:           72       3
+		Initial blocks:           13      13
+		Cont. assignments:        10      16
+		Pseudo assignments:        3       3
+		Simulation timescale:    1ps
+	Writing initial simulation snapshot: worklib.step1_tb:v
+xmelab: Memory Usage - Final: 62.7M, Peak: 68.3M, Peak virtual: 192.5M
+xmelab: CPU Usage - 0.2s system + 3.1s user = 3.3s total (3.3s, 98.3% cpu)
+
+-------------------------------------
+Relinquished control to SimVision...
+xcelium> 
+xcelium> source /software/ECE/XCELIUM-2009/tools/xcelium/files/xmsimrc
+xcelium> database -open waves -into waves.shm -default
+Created default SHM database waves
+xcelium> probe -create -shm step1_tb.clk step1_tb.reset step1_tb.inst step1_tb.qmem_wr step1_tb.kmem_wr step1_tb.qkmem_add step1_tb.load step1_tb.kmem_rd step1_tb.execute step1_tb.qmem_rd step1_tb.pmem_wr step1_tb.pmem_rd step1_tb.pmem_add step1_tb.pmem_out step1_tb.step1_instance.array_out step1_tb.step1_instance.fifo_wr
+Created probe 1
+xcelium> run
+##### Q data txt reading #####
+##### K data txt reading #####
+##### Qmem writing #####
+##### Kmem writing #####
+##### K loading to MAC #####
+##### Execute #####
+QK phase verification
+  [row]  RTL   : col0 col1 col2 col3 col4 col5 col6 col7
+[0] RTL:      93     -20      -7      94     -48     -45     -63     -86
+     golden:      93     -20      -7      94     -48     -45     -63     -86
+        [OK]
+
+[1] RTL:      52     -21     -73      24      -5     -33     -41     -23
+     golden:      52     -21     -73      24      -5     -33     -41     -23
+        [OK]
+
+[2] RTL:      38      27      50      63     -28      21      -3     -55
+     golden:      38      27      50      63     -28      21      -3     -55
+        [OK]
+
+[3] RTL:      33     -74      17     125     -37     -17     -27     -51
+     golden:      33     -74      17     125     -37     -17     -27     -51
+        [OK]
+
+[4] RTL:      80     -10     -10      13    -138     -37     -90     -56
+     golden:      80     -10     -10      13    -138     -37     -90     -56
+        [OK]
+
+[5] RTL:      42       1      26      68       7       7      -8     -45
+     golden:      42       1      26      68       7       7      -8     -45
+        [OK]
+
+[6] RTL:     -19      48      99      -7      -1      23      46     -20
+     golden:     -19      48      99      -7      -1      23      46     -20
+        [OK]
+
+[7] RTL:     -63      41     128     -46      -1      78      74      37
+     golden:     -63      41     128     -46      -1      78      74      37
+        [OK]
+
+--------------------------------------------
+PASS: all 8 x 8 results correct
+--------------------------------------------
+Simulation complete via $finish(1) at time 111 NS + 0
+./netlist/step1_tb.v:238     #10 $finish;
+xcelium> 

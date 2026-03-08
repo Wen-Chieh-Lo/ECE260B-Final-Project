@@ -1,0 +1,21 @@
+//
+// File created by:  xrun
+// Do not modify this file
+//
++gui
++access+rwc
++xm64bit
++xmstatus
++xmtimescale+1ns/1ps
++xmoveride_timescale
++define+INITIALIZE_MEMORY
+-xminitialize
+rand_2state:1
++xmseq_udp_delay+20ps
+-nowarn
+CUVWSP
+-v
+./netlist/tcbn65gplus.v
+-v
+./netlist/core.pnr.v
+./netlist/step1_tb.v

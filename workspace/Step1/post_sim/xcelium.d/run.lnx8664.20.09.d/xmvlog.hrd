@@ -1,0 +1,10 @@
+//
+// File created by:  xrun
+// Do not modify this file
+//
+-VFILE
+./netlist/tcbn65gplus.v
+-VFILE
+./netlist/core.pnr.v
+-DEFINE
+INITIALIZE_MEMORY
