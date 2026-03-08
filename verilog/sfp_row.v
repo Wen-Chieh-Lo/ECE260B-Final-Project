@@ -1,7 +1,7 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
 
-module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_out);
+module sfp_row (clk, reset, acc, div, fifo_wr, sum_in, sfp_in, sfp_out,sum_q, div_q);
 
   parameter col = 8;
   parameter bw = 8;
@@ -11,15 +11,18 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   localparam bw_out = out_shift + 1'b1;
 
  
-  input  clk, reset, div, acc, fifo_ext_rd;
+  input  clk, reset, div, acc;
   input  [bw_psum+3:0] sum_in;
   input  [col*bw_psum-1:0] sfp_in;
   wire  [col*bw_psum-1:0] abs;
-  reg    div_q;
+  output reg    div_q;
   output [col*bw_out-1:0] sfp_out;
-  output [bw_psum+3:0] sum_out;
+  //output [bw_psum+3:0] sum_out;
+  output reg fifo_wr;
+  output reg [bw_psum+3:0] sum_q;
+
   wire [bw_psum+3:0] sum_this_core;
-  wire signed [bw_psum-1:0] sum_2core;
+  wire signed [bw_psum+3:0] sum_2core;
   wire [bw_psum+3:0] sum8_out;
   wire [bw_psum-1:0] div_out0, div_out1, div_out2, div_out3;
   wire [bw_psum-1:0] div_out4, div_out5, div_out6, div_out7;
@@ -44,8 +47,8 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   reg  [bw_psum-1:0] sfp_out_sign6;
   reg  [bw_psum-1:0] sfp_out_sign7;
 
-  reg [bw_psum+3:0] sum_q;
-  reg fifo_wr;
+  
+  //reg fifo_wr;
   reg acc_d1;  // acc delayed 1 cycle: sum_q updates first, then fifo captures next cycle
 
   assign sfp_in_sign0 =  sfp_in[bw_psum*1-1 : bw_psum*0];
@@ -78,6 +81,8 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   assign abs[bw_psum*7-1 : bw_psum*6] = (sfp_in[bw_psum*7-1]) ?  (~sfp_in[bw_psum*7-1 : bw_psum*6] + 1)  :  sfp_in[bw_psum*7-1 : bw_psum*6];
   assign abs[bw_psum*8-1 : bw_psum*7] = (sfp_in[bw_psum*8-1]) ?  (~sfp_in[bw_psum*8-1 : bw_psum*7] + 1)  :  sfp_in[bw_psum*8-1 : bw_psum*7];
 
+  //assign sum_out = sum_this_core;
+
   fifo_depth16 #(.bw(bw_psum+4)) fifo_inst_int (
      .rd_clk(clk), 
      .wr_clk(clk), 
@@ -88,15 +93,15 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
      .reset(reset)
   );
 
-  fifo_depth16 #(.bw(bw_psum+4)) fifo_inst_ext (
-     .rd_clk(clk), 
+ /* fifo_depth16 #(.bw(bw_psum+4)) fifo_inst_ext (
+     .rd_clk(clk_rd), 
      .wr_clk(clk), 
      .in(sum_q),
      .out(sum_out), 
      .rd(fifo_ext_rd), 
      .wr(fifo_wr), 
      .reset(reset)
-  );
+  );*/
 
   sum8 #(.bw_psum(bw_psum)) sum8_inst (
     .in(abs),
@@ -143,6 +148,8 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
       fifo_wr <= 0;
       div_start <= 0;
       acc_d1 <= 0;
+      sum_q <= 0;
+      div_q <= 0;
     end
     else begin
        div_q <= div ;

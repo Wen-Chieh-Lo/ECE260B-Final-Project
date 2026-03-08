@@ -1,6 +1,6 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
-module core (clk, sum_in, sum_out, mem_in, out, inst, reset);
+module core (clk, sum_in, mem_in, out, inst, reset, ext_fifo_wr, ext_fifo_in, ext_fifo_rd);
 
 parameter col = 8;
 parameter bw = 8;
@@ -9,8 +9,13 @@ parameter sfp_out_shift = 7;
 parameter pr = 8;
 
 input  [bw_psum+3:0] sum_in;
-output [bw_psum+3:0] sum_out;
+//output [bw_psum+3:0] sum_out;
 output [bw_psum*col-1:0] out;
+output  ext_fifo_wr;
+output  [bw_psum+3:0] ext_fifo_in;      
+output ext_fifo_rd;
+
+
 wire   [bw_psum*col-1:0] pmem_out;
 input  [pr*bw-1:0] mem_in;
 input  clk;
@@ -35,7 +40,7 @@ wire [3:0] kmem_add;
 wire [3:0] pmem_add;
 wire [1:0] mac_inst;
 
-wire vproduct_mode;
+wire vprod_mode;
 
 wire  qmem_rd;
 wire  qmem_wr; 
@@ -50,9 +55,8 @@ reg   [2:0] fifo_valid_cnt;
 
 wire sfp_acc;                         // SFP accumulating for normalization
 wire sfp_div;                         // SFP dividing for normalization
-wire sfp_fifo_ext_rd;                 // SFP start to output FIFO -> sfp_sum_out -> other core, not used in single core
+//wire sfp_fifo_ext_rd;                 // SFP start to output FIFO -> sfp_sum_out -> other core, not used in single core
 wire [bw_psum+3:0] sfp_sum_in;        // SFP sum input, is always 0 in single port
-wire [bw_psum+3:0] sfp_sum_out;       // SFP sum output, float in single core
 
 assign VN_mode = inst[19];            // in QK mode, ofifo out goes through sfp and then store into kmem
                                       // in VN mode, ofifo out goes to pmem.
@@ -66,8 +70,10 @@ assign pmem_rd = sfp_processing || inst[1];
 
 
 
-assign sfp_fifo_ext_rd = 1'b0;    // unused in single core
-assign sfp_sum_in = {bw_psum+4{1'b0}}; // unused in single core
+//assign sfp_fifo_ext_rd = 1'b0;    // unused in single core
+assign sfp_sum_in = sum_in;//{bw_psum+4{1'b0}}; // unused in single core
+//assign sfp_sum_out = sum_out;
+//assign sum_out = sfp_sum_out;
 
 assign vprod_mode = inst[19];
 
@@ -142,11 +148,12 @@ sfp_row #(.col(col), .bw(bw), .bw_psum(bw_psum), .out_shift(sfp_out_shift)) sfp_
 	.reset(reset),
 	.acc(sfp_acc),
 	.div(sfp_div),
-	.fifo_ext_rd(sfp_fifo_ext_rd),
+	.fifo_wr(ext_fifo_wr),
 	.sum_in(sfp_sum_in),
-	.sum_out(sfp_sum_out),
 	.sfp_in(pmem_out),
-	.sfp_out(sfp_out)
+	.sfp_out(sfp_out),
+        .sum_q(ext_fifo_in),
+        .div_q(ext_fifo_rd)
 );
 
 
