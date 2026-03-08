@@ -5,9 +5,13 @@ xrun \
 +xmstatus \
 +xmtimescale+1ns/1ps \
 +xmoveride_timescale \
--v ./netlist/add.pnr.v \
++define+INITIALIZE_MEMORY \
+-xminitialize rand_2state:1 \
++xmseq_udp_delay+20ps \
+-nowarn CUVWSP \
 -v ./netlist/tcbn65gplus.v \
-./netlist/add_tb.v
+-v ./netlist/core.pnr.v \
+./netlist/step1_tb.v
 
 
 
