@@ -1,0 +1,26 @@
+//
+// File created by:  xrun
+// Do not modify this file
+//
+-XLMODE
+./xcelium.d/run.lnx8664.20.09.d
+-RUNMODE
+-STATUS
+-DEFINE
+INITIALIZE_MEMORY
+-NOWARN
+CUVWSP
+-VFILE
+./netlist/tcbn65gplus.v
+-VFILE
+./netlist/core.pnr.v
+./netlist/step1_tb.v
+-CDSLIB
+./xcelium.d/run.lnx8664.20.09.d/cdsrun.lib
+-HDLVAR
+./xcelium.d/run.lnx8664.20.09.d/hdlrun.var
+-MESSAGES
+-UPDATE
+-XLLIBSTORE
+./xcelium.d/run.lnx8664.20.09.d/xllibs
+-ALLOWUNBOUND
