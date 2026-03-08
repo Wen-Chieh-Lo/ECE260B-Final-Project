@@ -129,7 +129,7 @@ module fullchip_tb;
 
   for (i = 0; i < total_cycle; i = i + 1)  // N has total_cycle=8 rows
     for (j = 0; j < col; j = j + 1)        // N has col=8 cols
-      N[i][j] = 0
+      N[i][j] = 0;
     // ------------------------------------------------------------
     // Q read
     // ------------------------------------------------------------
@@ -277,7 +277,7 @@ module fullchip_tb;
         // Scoreboard calculation (N)
         unsigned_val = (sum_abs < 0) ? -sum_abs : sum_abs;
         estimated[q*pr + (7-c)]     = (unsigned_val >>> sfp_out_shift); 
-        estimated[q*pr + (7-c) + 8] = (unsigned_val >>> sfp_out_shift); 
+        //estimated[q*pr + (7-c) + 8] = (unsigned_val >>> sfp_out_shift); 
 
         if (sum_abs !== qk_result[row][golden_col[c]]) begin
           err = err + 1;
