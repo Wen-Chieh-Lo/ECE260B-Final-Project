@@ -6,6 +6,9 @@
 // `define LOAD_OTHER_NORM_FILE     // If you want to use TA's norm.txt 
 
 `timescale 1ns/1ps
+`define CYCLE 1
+`define H_CYCLE 0.5
+`define TIME_OUT 100000
 
 
 module core_tb;
@@ -97,6 +100,15 @@ module core_tb;
     .status(status)
   );
 
+  
+
+  //================= clk ==========================//
+  always #(`H_CYCLE) clk = ~clk;
+
+  //================= timeout ======================//
+  initial #(`TIME_OUT) $finish;
+  
+
   initial begin
     $dumpfile("sim/waveform/core.vcd");
     $dumpvars(0, core_tb);
@@ -110,11 +122,12 @@ module core_tb;
         Q[q][j] = captured_data;
       end
 
-    for (q = 0; q < 2; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+    repeat(2) @(negedge clk);
 
     $display("##### K data txt reading #####");
-    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
-    reset = 0;
+    repeat(10) @(negedge clk);
+    apply_2cycles_reset;
+
 
     qkvn_file = $fopen("sim/pattern/kdata.txt", "r");
     for (q = 0; q < col; q = q+1)
@@ -143,7 +156,7 @@ module core_tb;
 
     $display("##### Qmem writing #####");
     for (q = 0; q < total_cycle; q = q+1) begin
-      #0.5 clk = 1'b0;
+      @(negedge clk);
       qmem_wr = 1;
       if (q > 0) qkmem_add = qkmem_add + 1;
       mem_in[1*bw-1:0*bw] = Q[q][7];
@@ -154,16 +167,16 @@ module core_tb;
       mem_in[6*bw-1:5*bw] = Q[q][2];
       mem_in[7*bw-1:6*bw] = Q[q][1];
       mem_in[8*bw-1:7*bw] = Q[q][0];
-      #0.5 clk = 1'b1;
+      @(posedge clk);
     end
-    #0.5 clk = 1'b0;
+    @(negedge clk);
     qmem_wr = 0;
     qkmem_add = 0;
-    #0.5 clk = 1'b1;
+    @(posedge clk);
 
     $display("##### Kmem writing #####");
     for (q = 0; q < col; q = q+1) begin
-      #0.5 clk = 1'b0;
+      @(negedge clk);
       kmem_wr = 1;
       if (q > 0) qkmem_add = qkmem_add + 1;
       mem_in[1*bw-1:0*bw] = K[q][7];
@@ -174,16 +187,14 @@ module core_tb;
       mem_in[6*bw-1:5*bw] = K[q][2];
       mem_in[7*bw-1:6*bw] = K[q][1];
       mem_in[8*bw-1:7*bw] = K[q][0];
-      #0.5 clk = 1'b1;
+      @(posedge clk);
     end
-    #0.5 clk = 1'b0;
+    @(negedge clk);
     kmem_wr = 0;
     qkmem_add = 0;
-    #0.5 clk = 1'b1;
+    @(posedge clk);
 
-    for (q = 0; q < 2; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
-
-
+    repeat(2) @(negedge clk);
 
 
 
@@ -193,10 +204,12 @@ module core_tb;
 
 
 
-    #0.5 clk = 1'b0; start = 1;
-    #0.5 clk = 1'b1;
+
+
+    @(negedge clk); start = 1;
+    @(posedge clk);
     
-    
+
     
     
 
@@ -204,42 +217,35 @@ module core_tb;
 
     $display("##### K data loading to processor #####");
     for (q = 0; q < col+1; q = q+1) begin
-      #0.5 clk = 1'b0; start = 0;
+      @(negedge clk); start = 0;
       load = 1;
       if (q == 1) kmem_rd = 1;
       if (q > 1) qkmem_add = qkmem_add + 1;
-      #0.5 clk = 1'b1;
     end
-    #0.5 clk = 1'b0;
+    @(negedge clk);
     kmem_rd = 0;
     qkmem_add = 0;
-    #0.5 clk = 1'b1;
-    #0.5 clk = 1'b0;
+    @(negedge clk);
     load = 0;
-    #0.5 clk = 1'b1;
 
-    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+    repeat(10) @(negedge clk);
 
     $display("##### execute #####");
     for (q = 0; q < total_cycle; q = q+1) begin
-      #0.5 clk = 1'b0;
+      @(negedge clk);
       execute = 1;
       qmem_rd = 1;
       if (q > 0) qkmem_add = qkmem_add + 1;
-      #0.5 clk = 1'b1;
+
     end
-    #0.5 clk = 1'b0;
+    @(negedge clk);
     qmem_rd = 0;
     qkmem_add = 0;
     execute = 0;
-    #0.5 clk = 1'b1;
 
-    #0.5 clk = 1'b0;
-    #0.5 clk = 1'b1;
-    #0.5 clk = 1'b0;
-    #0.5 clk = 1'b1;
+    repeat(2) @(negedge clk);
 
-    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+    repeat(10) @(negedge clk);
 
 
 
@@ -254,11 +260,9 @@ module core_tb;
   $display("         golden:    ----    ----    ----    ----    ----    ----    ----    ----\n");
   err = 0;
   
-  #0.5 clk = 1'b0;pmem_rd = 1'b1; pmem_add=4'd0;
-  #0.5 clk = 1'b1;
+  @(negedge clk); pmem_rd = 1'b1; pmem_add=4'd0;
   for (q = 0; q < total_cycle; q = q+1) begin
-    #0.5 clk = 1'b0; pmem_add = pmem_add+1; // sample before posedge: pmem_out = row being read (result[q])
-    #0.5 clk = 1'b1; 
+    @(negedge clk); pmem_add = pmem_add+1; // sample before posedge: pmem_out = row being read (result[q])
     row = q;
     $display("   [%0d]   RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", row,
       $signed(pmem_out[7*bw_psum +: bw_psum]), $signed(pmem_out[6*bw_psum +: bw_psum]),
@@ -280,9 +284,8 @@ module core_tb;
     $display("");
     
   end
-  #0.5 clk = 1'b0;
+  @(negedge clk);
   pmem_rd = 1'b0;
-  #0.5 clk = 1'b1;
 
   $display("------------------------------------------------------------");
   if (err == 0) begin
@@ -328,16 +331,15 @@ module core_tb;
 
     
     for (q = 0; q < col; q = q + 1) begin
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 1
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_acc = 1'b1; //posedge 2
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 3
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_acc = 1'b0; //posedge 4
-      for (s = 0; s < sfp_acc_lat; s = s + 1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_div = 1'b1; //posedge 5
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 6
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_div = 1'b0; //posedge 7
-      for (s = 0; s < sfp_div_lat; s = s + 1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; kmem_wr = 1'b1; //posedge 8
+
+                      repeat(2) @(negedge clk);
+      sfp_acc = 1'b1; repeat(2) @(negedge clk);           sfp_acc = 1'b0;
+                      repeat(sfp_acc_lat) @(negedge clk); 
+      sfp_div = 1'b1; repeat(2) @(negedge clk);           sfp_div = 1'b0;
+                      repeat(sfp_div_lat) @(negedge clk);
+
+    
+
       $display("");
       $display("estimated:     %7d %7d %7d %7d %7d %7d %7d %7d ", 
                                 estimated[q*col + 0], estimated[q*col + 1], 
@@ -345,12 +347,12 @@ module core_tb;
                                 estimated[q*col + 4], estimated[q*col + 5], 
                                 estimated[q*col + 6], estimated[q*col + 7]);
 
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; kmem_wr = 1'b0; //posedge 9
+      kmem_wr = 1'b1; @(negedge clk);           kmem_wr = 1'b0;
       pmem_add = pmem_add + 1;
       qkmem_add = qkmem_add + 1;
     end
 
-    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+    repeat(10) @(negedge clk);
     sfp_processing = 1'b0;
     pmem_rd = 1'b0;
    
@@ -361,7 +363,7 @@ module core_tb;
 
     
 
-    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+    repeat(10) @(negedge clk);
 
 
 
@@ -369,9 +371,8 @@ module core_tb;
     $display("");
     $display("VN Product Phase");
     VN_mode = 1'b1;
-    reset = 1'b1;
-    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
-    reset = 1'b0;
+    
+    apply_2cycles_reset;
     
 
 
@@ -389,8 +390,8 @@ module core_tb;
 
   ///// Norm data txt reading /////
   $display("##### norm data txt reading #####");
-  for (q=0; q<10; q=q+1) #0.5 clk = 1'b0; #0.5 clk = 1'b1;   
-  reset = 0;
+  repeat(10) @(negedge clk);
+
   
 
   `ifdef LOAD_OTHER_NORM_FILE
@@ -437,8 +438,7 @@ module core_tb;
 $display("##### Qmem writing  #####");
   qkmem_add = 0;
   for (q=0; q<total_cycle; q=q+1) begin
-
-    #0.5 clk = 1'b0;  
+    
     qmem_wr = 1;  if (q>0) qkmem_add = qkmem_add + 1; 
     
     mem_in[1*bw-1:0*bw] = V_T[q][7];
@@ -450,15 +450,14 @@ $display("##### Qmem writing  #####");
     mem_in[7*bw-1:6*bw] = V_T[q][1];
     mem_in[8*bw-1:7*bw] = V_T[q][0];
 
-    #0.5 clk = 1'b1;  
-
+    @(negedge clk);
   end
 
 
-  #0.5 clk = 1'b0;  
+  
   qmem_wr = 0; 
   qkmem_add = 0;
-  #0.5 clk = 1'b1;  
+  @(negedge clk); 
 ///////////////////////////////////////////
 
 
@@ -470,8 +469,7 @@ $display("##### Qmem writing  #####");
 $display("##### Kmem writing #####");
 
   for (q=0; q<col; q=q+1) begin
-
-    #0.5 clk = 1'b0;  
+  
     kmem_wr = 1; if (q>0) qkmem_add = qkmem_add + 1; 
     
     mem_in[1*bw-1:0*bw] = N[q][7];
@@ -483,22 +481,18 @@ $display("##### Kmem writing #####");
     mem_in[7*bw-1:6*bw] = N[q][1];
     mem_in[8*bw-1:7*bw] = N[q][0];
 
-    #0.5 clk = 1'b1;  
+    @(negedge clk);
 
   end
 
-  #0.5 clk = 1'b0;  
   kmem_wr = 0;  
   qkmem_add = 0;
-  #0.5 clk = 1'b1;  
+  @(negedge clk); 
 ///////////////////////////////////////////
 `endif
 
 
-for (q=0; q<2; q=q+1) begin
-    #0.5 clk = 1'b0;  
-    #0.5 clk = 1'b1;   
-  end
+repeat(2) @(negedge clk);
 
 
 
@@ -507,30 +501,23 @@ for (q=0; q<2; q=q+1) begin
 $display("##### K data loading to processor #####");
 
   for (q=0; q<col+1; q=q+1) begin
-    #0.5 clk = 1'b0;  
+    
     load = 1; 
     if (q==1) kmem_rd = 1;
     if (q>1) begin
        qkmem_add = qkmem_add + 1;
     end
 
-    #0.5 clk = 1'b1;  
+    @(negedge clk);  
   end
 
-  #0.5 clk = 1'b0;  
   kmem_rd = 0; qkmem_add = 0;
-  #0.5 clk = 1'b1;  
-
-  #0.5 clk = 1'b0;  
+  @(negedge clk);  
   load = 0; 
-  #0.5 clk = 1'b1;  
 
 ///////////////////////////////////////////
 
- for (q=0; q<10; q=q+1) begin
-    #0.5 clk = 1'b0;   
-    #0.5 clk = 1'b1;   
- end
+repeat(10) @(negedge clk);
 
 
 
@@ -540,7 +527,6 @@ $display("##### K data loading to processor #####");
 $display("##### execute #####");
 
   for (q=0; q<total_cycle; q=q+1) begin
-    #0.5 clk = 1'b0;  
     execute = 1; 
     qmem_rd = 1;
 
@@ -548,25 +534,18 @@ $display("##### execute #####");
        qkmem_add = qkmem_add + 1;
     end
 
-    #0.5 clk = 1'b1;  
+    @(negedge clk);
   end
 
-  #0.5 clk = 1'b0;  
+  
   qmem_rd = 0; qkmem_add = 0; execute = 0;
-  #0.5 clk = 1'b1;  
+  @(negedge clk);
 
-  #0.5 clk = 1'b0;
-  #0.5 clk = 1'b1;
-  #0.5 clk = 1'b0;
-  #0.5 clk = 1'b1;
-
+  
 
 ///////////////////////////////////////////
 
- for (q=0; q<10; q=q+1) begin
-    #0.5 clk = 1'b0;   
-    #0.5 clk = 1'b1;   
- end
+ repeat(10) @(negedge clk);
 
 
 
@@ -630,4 +609,21 @@ $display("##### execute #####");
     #10 $finish;
   end
 
+
+
+
+  task apply_2cycles_reset;
+    begin
+      reset = 1;
+      repeat(2) @(negedge clk);
+      reset = 0;
+    end
+  endtask
+
+
+
+
 endmodule
+
+
+
