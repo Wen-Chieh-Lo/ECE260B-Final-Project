@@ -1,6 +1,7 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
-module core (clk, sum_in, sum_out, mem_in, out, inst, reset, start, status);
+module core (clk, sum_in, sum_out, mem_in, inst_ext,
+              out, inst, reset, start, status);
 
 parameter col = 8;
 parameter bw = 8;
@@ -13,6 +14,7 @@ output [bw_psum+3:0] sum_out;
 output [bw_psum*col-1:0] out;
 wire   [bw_psum*col-1:0] pmem_out;
 input  [pr*bw-1:0] mem_in;
+input  [5:0]       inst_ext;
 input  clk;
 // input  [16:0] inst; 
 input  [19:0] inst;
@@ -79,18 +81,18 @@ assign vprod_mode = inst[19];
 assign sfp_div = inst[18]; // set as controlled by primary input, may changed to internal FSM
 assign sfp_acc = inst[17]; // set as controlled by primary input, may changed to internal FSM
 assign sfp_processing = inst[16];
-assign qkmem_add= inst[15:12];
+assign qkmem_add= inst_ctrl[15:12];
 // assign pmem_add = inst[11:8];
 
-assign mac_inst = inst[7:6];
-assign qmem_rd  = inst[5];
-assign qmem_wr  = inst[4];
-assign kmem_rd  = inst[3];
-assign kmem_wr  = inst[2];
+assign mac_inst = inst_ctrl[7:6];
+assign qmem_rd  = inst_ctrl[5];
+assign qmem_wr  = inst_ctrl[4];
+assign kmem_rd  = inst_ctrl[3];
+assign kmem_wr  = inst_ctrl[2];
 // assign pmem_rd  = inst[1];
 // assign pmem_wr  = inst[0];
 
-assign mac_in  = inst[6] ? kmem_out : qmem_out;
+assign mac_in  = inst_ctrl[6] ? kmem_out : qmem_out;
 assign out = pmem_out;
 
 
@@ -163,6 +165,7 @@ controller controller_instance (
 	.status_to_reg_map(status),
 	.ofifo_valid(fifo_valid),
 	.sfp_busy(sfp_busy),
+	.inst_ext(inst_ext),
 	.inst_ctrl(inst_ctrl)
 );
 

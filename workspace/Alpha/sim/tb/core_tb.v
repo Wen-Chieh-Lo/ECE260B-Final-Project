@@ -48,6 +48,8 @@ module core_tb;
   reg        reset = 1;
   reg        clk   = 0;
   reg [pr*bw-1:0]   mem_in;
+  reg               kmem_wr_ext=0, qmem_wr_ext=0;
+  reg  [3:0]        qkmem_addr_ext = 4'd0;
   reg               sfp_processing = 0;
   reg               sfp_div = 0, sfp_acc = 0;
   reg               VN_mode = 0;
@@ -89,10 +91,20 @@ module core_tb;
   assign inst[1] = pmem_rd;
   assign inst[0] = pmem_wr;
 
+
+  wire   [5:0]         inst_ext;
+  assign inst_ext[5:2] = qkmem_addr_ext;
+  assign inst_ext[1] = qmem_wr_ext;
+  assign inst_ext[0] = kmem_wr_ext;
+
+
+
+
   core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) core_instance (
     .reset(reset),
     .clk(clk),
     .mem_in(mem_in),
+    .inst_ext(inst_ext),
     .inst(inst),
     .sum_out(),
     .out(pmem_out),
@@ -157,8 +169,8 @@ module core_tb;
     $display("##### Qmem writing #####");
     for (q = 0; q < total_cycle; q = q+1) begin
       @(negedge clk);
-      qmem_wr = 1;
-      if (q > 0) qkmem_add = qkmem_add + 1;
+      qmem_wr_ext = 1;
+      if (q > 0) qkmem_addr_ext = qkmem_addr_ext + 1;
       mem_in[1*bw-1:0*bw] = Q[q][7];
       mem_in[2*bw-1:1*bw] = Q[q][6];
       mem_in[3*bw-1:2*bw] = Q[q][5];
@@ -170,15 +182,15 @@ module core_tb;
       @(posedge clk);
     end
     @(negedge clk);
-    qmem_wr = 0;
-    qkmem_add = 0;
+    qmem_wr_ext = 0;
+    qkmem_addr_ext = 0;
     @(posedge clk);
 
     $display("##### Kmem writing #####");
     for (q = 0; q < col; q = q+1) begin
       @(negedge clk);
-      kmem_wr = 1;
-      if (q > 0) qkmem_add = qkmem_add + 1;
+      kmem_wr_ext = 1;
+      if (q > 0) qkmem_addr_ext = qkmem_addr_ext + 1;
       mem_in[1*bw-1:0*bw] = K[q][7];
       mem_in[2*bw-1:1*bw] = K[q][6];
       mem_in[3*bw-1:2*bw] = K[q][5];
@@ -190,8 +202,8 @@ module core_tb;
       @(posedge clk);
     end
     @(negedge clk);
-    kmem_wr = 0;
-    qkmem_add = 0;
+    kmem_wr_ext = 0;
+    qkmem_addr_ext = 0;
     @(posedge clk);
 
     repeat(2) @(negedge clk);
