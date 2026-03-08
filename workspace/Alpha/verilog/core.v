@@ -1,6 +1,6 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
-module core (clk, sum_in, sum_out, mem_in, out, inst, reset);
+module core (clk, sum_in, sum_out, mem_in, out, inst, reset, start, status);
 
 parameter col = 8;
 parameter bw = 8;
@@ -17,6 +17,8 @@ input  clk;
 // input  [16:0] inst; 
 input  [19:0] inst;
 input  reset;
+input        start;
+output [2:0] status;  // {busy, qmem_locked, kmem_locked} from controller
 
 wire  [pr*bw-1:0] mac_in;
 wire  [pr*bw-1:0] kmem_in;
@@ -47,6 +49,9 @@ wire  VN_mode;
 
 reg   [2:0] fifo_valid_cnt;
 
+// Fake mode until reg_map is integrated: {op_mode, sfp_write_to_qmem, sfp_write_to_pmem}, default QK+norm, sfp->kmem only
+wire [2:0] mode_from_reg_map_fake = 3'b010;
+wire       sfp_busy = 1'b0;  // TODO: connect from sfp_row when available
 
 wire sfp_acc;                         // SFP accumulating for normalization
 wire sfp_div;                         // SFP dividing for normalization
@@ -149,7 +154,17 @@ sfp_row #(.col(col), .bw(bw), .bw_psum(bw_psum), .out_shift(sfp_out_shift)) sfp_
 	.sfp_out(sfp_out)
 );
 
-
+wire [19:0] inst_ctrl;
+controller controller_instance (
+	.clk(clk),
+	.reset(reset),
+	.start(start),
+	.mode_from_reg_map(mode_from_reg_map_fake),
+	.status_to_reg_map(status),
+	.ofifo_valid(fifo_valid),
+	.sfp_busy(sfp_busy),
+	.inst_ctrl(inst_ctrl)
+);
 
 //   //////////// For printing purpose ////////////
 //   always @(posedge clk) begin

@@ -7,6 +7,8 @@
 ./verilog/submodules/sum8.v
 ./verilog/submodules/div.v
 ./verilog/sfp_row.v
+./verilog/submodules/reg_map.v
+./verilog/submodules/controller.v
 
 // --- MAC ---
 ./verilog/mac/mac_col.v
@@ -20,3 +22,4 @@
 ./verilog/memory/fifo_mux_16_1.v
 ./verilog/memory/fifo_mux_8_1.v
 ./verilog/memory/fifo_mux_2_1.v
+

@@ -23,41 +23,53 @@ module core_tb;
     parameter sfp_div_lat = 0;
   `endif
 
+  //================= integer / array storage =====================//
   integer qkvn_file, qkvn_scan_file, captured_data;
-  integer weight [col*pr-1:0];
-  integer K [col-1:0][pr-1:0];
-  integer Q [total_cycle-1:0][pr-1:0];
-  integer N [col-1:0][pr-1:0]; 
-  integer V_T[total_cycle-1:0][pr-1:0];
-  integer result [total_cycle-1:0][col-1:0];
-  integer sum [total_cycle-1:0];
   integer i, j, k, t, p, q, s, u, m, r, c;
-
-  integer estimated [0:total_cycle*col-1];   // computed from mac_data (same formula as sfp_row)
-  integer u0, u1, u2, u3, u4, u5, u6, u7;
   integer err_count;
   integer err, row_err, row;
   integer sum_abs, divisor, unsigned_val;
 
-  reg reset = 1;
-  reg clk = 0;
-  reg [pr*bw-1:0] mem_in;
-  reg sfp_processing = 0;
-  reg sfp_div=0, sfp_acc=0;
-  reg VN_mode = 0;
+  integer weight   [col*pr-1:0];
+  integer K        [col-1:0][pr-1:0];
+  integer Q        [total_cycle-1:0][pr-1:0];
+  integer N        [col-1:0][pr-1:0]; 
+  integer V_T      [total_cycle-1:0][pr-1:0];
+  integer result   [total_cycle-1:0][col-1:0];
+  integer sum      [total_cycle-1:0];
+  integer estimated[0:total_cycle*col-1];   // computed from mac_data (same formula as sfp_row)
+
+  integer u0, u1, u2, u3, u4, u5, u6, u7;
+
+  //================= DUT signals ==================//
+  reg        reset = 1;
+  reg        clk   = 0;
+  reg [pr*bw-1:0]   mem_in;
+  reg               sfp_processing = 0;
+  reg               sfp_div = 0, sfp_acc = 0;
+  reg               VN_mode = 0;
+
+  reg qmem_rd = 0, qmem_wr = 0;
+  reg kmem_rd = 0, kmem_wr = 0;
+  reg pmem_rd = 0, pmem_wr = 0;
+
+  reg        execute = 0, load = 0;
+  reg [3:0]  qkmem_add = 0;
+  reg [3:0]  pmem_add  = 0;
+
+  reg  [bw_psum-1:0]     temp5b;
+  reg  [bw_psum+3:0]     temp_sum;
+  reg  [bw_psum*col-1:0] temp16b;
+
+  //================= core interface ==================//
   // wire [18:0] inst;
-  wire [19:0] inst;
-  reg qmem_rd = 0, qmem_wr = 0, kmem_rd = 0, kmem_wr = 0, pmem_rd = 0, pmem_wr = 0;
-  reg execute = 0, load = 0;
-  reg [3:0] qkmem_add = 0;
-  reg [3:0] pmem_add = 0;
-
-  reg [bw_psum-1:0] temp5b;
-  reg [bw_psum+3:0] temp_sum;
-  reg [bw_psum*col-1:0] temp16b;
-
+  wire [19:0]            inst;
   wire [bw_psum*col-1:0] pmem_out;
-  integer golden_col [0:7];  // RTL col c -> golden result[t][golden_col[c]] (chain mapping)
+
+  integer                golden_col [0:7];  // RTL col c -> golden result[t][golden_col[c]] (chain mapping)
+
+  reg        start = 0;   // controller start (not used when driving inst from tb)
+  wire [2:0] status;      // {busy, qmem_locked, kmem_locked} from controller
 
   assign inst[19] = VN_mode;
   assign inst[18] = sfp_div;            // set by tb so far. usage see sfp_row_tb.
@@ -80,7 +92,9 @@ module core_tb;
     .mem_in(mem_in),
     .inst(inst),
     .sum_out(),
-    .out(pmem_out)
+    .out(pmem_out),
+    .start(start),
+    .status(status)
   );
 
   initial begin
@@ -122,6 +136,7 @@ module core_tb;
       end
       // $display("prd @cycle%2d: %40h", t, temp16b);
     end
+
 
     $display("QK Product Phase");
     VN_mode = 1'b0;
@@ -168,9 +183,28 @@ module core_tb;
 
     for (q = 0; q < 2; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
 
+
+
+
+
+
+
+
+
+
+
+    #0.5 clk = 1'b0; start = 1;
+    #0.5 clk = 1'b1;
+    
+    
+    
+    
+
+
+
     $display("##### K data loading to processor #####");
     for (q = 0; q < col+1; q = q+1) begin
-      #0.5 clk = 1'b0;
+      #0.5 clk = 1'b0; start = 0;
       load = 1;
       if (q == 1) kmem_rd = 1;
       if (q > 1) qkmem_add = qkmem_add + 1;
