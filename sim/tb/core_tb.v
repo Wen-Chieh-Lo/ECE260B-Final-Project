@@ -12,7 +12,7 @@ module core_tb;
 
   parameter total_cycle = 8;
   parameter bw = 8;
-  parameter bw_psum = 2*bw+3;
+  parameter bw_psum = 2*bw+4;
   parameter pr = 8;
   parameter col = 8;
   parameter sfp_out_shift = 7;
@@ -75,12 +75,15 @@ module core_tb;
   assign inst[0] = pmem_wr;
 
   core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) core_instance (
-    .reset(reset),
     .clk(clk),
+    .sum_in({(bw_psum+4){1'b0}}),
     .mem_in(mem_in),
+    .out(pmem_out),
     .inst(inst),
-    .sum_out(),
-    .out(pmem_out)
+    .reset(reset),
+    .ext_fifo_wr(),
+    .ext_fifo_in(),
+    .ext_fifo_rd()
   );
 
   initial begin
