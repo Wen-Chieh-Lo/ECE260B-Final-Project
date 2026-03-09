@@ -48,8 +48,8 @@ module core_tb;
   reg        reset = 1;
   reg        clk   = 0;
   reg [pr*bw-1:0]   mem_in;
-  reg  [1:0]        mem_cmd_ext = 2'd0;
-  reg  [3:0]        addr_ext = 4'd0;
+  reg               kmem_wr_ext=0, qmem_wr_ext=0;
+  reg  [3:0]        qkmem_addr_ext = 4'd0;
   reg               sfp_processing = 0;
   reg               sfp_div = 0, sfp_acc = 0;
   reg               VN_mode = 0;
@@ -67,6 +67,8 @@ module core_tb;
   reg  [bw_psum*col-1:0] temp16b;
 
   //================= core interface ==================//
+  // wire [18:0] inst;
+  wire [19:0]            inst;
   wire [bw_psum*col-1:0] pmem_out;
 
   integer                golden_col [0:7];  // RTL col c -> golden result[t][golden_col[c]] (chain mapping)
@@ -74,17 +76,27 @@ module core_tb;
   reg        start = 0;   // controller start (not used when driving inst from tb)
   wire [2:0] status;      // {busy, qmem_locked, kmem_locked} from controller
 
-  wire   [5:0]         inst_ext;
-  assign inst_ext[5:2] = addr_ext;
-  assign inst_ext[1:0] = mem_cmd_ext;
-  // 00: No Op, 01: kmem wr, 10: qmem wr, 11: pmem rd
-  localparam EXT_CMD_NO_OP   = 2'b00;
-  localparam EXT_CMD_KMEM_WR = 2'b01;
-  localparam EXT_CMD_QMEM_WR = 2'b10;
-  localparam EXT_CMD_PMEM_RD = 2'b11;
+  assign inst[19] = VN_mode;
+  assign inst[18] = sfp_div;            // set by tb so far. usage see sfp_row_tb.
+  assign inst[17] = sfp_acc;            // set by tb so far. usage see sfp_row_tb.
+  assign inst[16] = sfp_processing;
+  assign inst[15:12] = qkmem_add;
+  assign inst[11:8]  = pmem_add;        
+  assign inst[7] = execute;
+  assign inst[6] = load;
+  assign inst[5] = qmem_rd;
+  assign inst[4] = qmem_wr;
+  assign inst[3] = kmem_rd;
+  assign inst[2] = kmem_wr;
+  assign inst[1] = pmem_rd;
+  assign inst[0] = pmem_wr;
 
-  localparam OP_MODE_MULT_NORM = 1'b0;
-  localparam OP_MODE_MULT		   = 1'b1;
+
+  wire   [5:0]         inst_ext;
+  assign inst_ext[5:2] = qkmem_addr_ext;
+  assign inst_ext[1] = qmem_wr_ext;
+  assign inst_ext[0] = kmem_wr_ext;
+
 
 
 
@@ -93,6 +105,7 @@ module core_tb;
     .clk(clk),
     .mem_in(mem_in),
     .inst_ext(inst_ext),
+    .inst(inst),
     .sum_out(),
     .out(pmem_out),
     .start(start),
@@ -151,12 +164,13 @@ module core_tb;
 
 
     $display("QK Product Phase");
-    mem_cmd_ext = EXT_CMD_QMEM_WR;
+    VN_mode = 1'b0;
 
     $display("##### Qmem writing #####");
     for (q = 0; q < total_cycle; q = q+1) begin
       @(negedge clk);
-      if (q > 0) addr_ext = addr_ext + 1;
+      qmem_wr_ext = 1;
+      if (q > 0) qkmem_addr_ext = qkmem_addr_ext + 1;
       mem_in[1*bw-1:0*bw] = Q[q][7];
       mem_in[2*bw-1:1*bw] = Q[q][6];
       mem_in[3*bw-1:2*bw] = Q[q][5];
@@ -168,15 +182,15 @@ module core_tb;
       @(posedge clk);
     end
     @(negedge clk);
-    mem_cmd_ext = EXT_CMD_NO_OP;
-    addr_ext = 0;
+    qmem_wr_ext = 0;
+    qkmem_addr_ext = 0;
     @(posedge clk);
 
-    mem_cmd_ext = EXT_CMD_KMEM_WR;
     $display("##### Kmem writing #####");
     for (q = 0; q < col; q = q+1) begin
       @(negedge clk);
-      if (q > 0) addr_ext = addr_ext + 1;
+      kmem_wr_ext = 1;
+      if (q > 0) qkmem_addr_ext = qkmem_addr_ext + 1;
       mem_in[1*bw-1:0*bw] = K[q][7];
       mem_in[2*bw-1:1*bw] = K[q][6];
       mem_in[3*bw-1:2*bw] = K[q][5];
@@ -188,22 +202,67 @@ module core_tb;
       @(posedge clk);
     end
     @(negedge clk);
-    mem_cmd_ext = EXT_CMD_NO_OP;
-    addr_ext = 0;
+    kmem_wr_ext = 0;
+    qkmem_addr_ext = 0;
     @(posedge clk);
 
     repeat(2) @(negedge clk);
 
 
+
+
+
+
+
+
+
+
+
     @(negedge clk); start = 1;
-    @(negedge clk); start = 0;
-        
-    repeat(32) @(negedge clk);
+    @(posedge clk);
+    
+
+    
+    
+
+
+
+    $display("##### K data loading to processor #####");
+    for (q = 0; q < col+1; q = q+1) begin
+      @(negedge clk); start = 0;
+      load = 1;
+      if (q == 1) kmem_rd = 1;
+      if (q > 1) qkmem_add = qkmem_add + 1;
+    end
+    @(negedge clk);
+    kmem_rd = 0;
+    qkmem_add = 0;
+    @(negedge clk);
+    load = 0;
+
+    repeat(10) @(negedge clk);
+
+    $display("##### execute #####");
+    for (q = 0; q < total_cycle; q = q+1) begin
+      @(negedge clk);
+      execute = 1;
+      qmem_rd = 1;
+      if (q > 0) qkmem_add = qkmem_add + 1;
+
+    end
+    @(negedge clk);
+    qmem_rd = 0;
+    qkmem_add = 0;
+    execute = 0;
+
+    repeat(2) @(negedge clk);
+
+    repeat(10) @(negedge clk);
 
 
 
 
-mem_cmd_ext = EXT_CMD_PMEM_RD;
+
 // RTL column order: col c holds dot with K[7-c], so compare to result[t][7-c]
     for (c = 0; c < col; c = c+1)
       golden_col[c] = 7 - c;
@@ -213,9 +272,9 @@ mem_cmd_ext = EXT_CMD_PMEM_RD;
   $display("         golden:    ----    ----    ----    ----    ----    ----    ----    ----\n");
   err = 0;
   
-  @(negedge clk); addr_ext=4'd0;
+  @(negedge clk); pmem_rd = 1'b1; pmem_add=4'd0;
   for (q = 0; q < total_cycle; q = q+1) begin
-    @(negedge clk); addr_ext = addr_ext+1; // sample before posedge: pmem_out = row being read (result[q])
+    @(negedge clk); pmem_add = pmem_add+1; // sample before posedge: pmem_out = row being read (result[q])
     row = q;
     $display("   [%0d]   RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", row,
       $signed(pmem_out[7*bw_psum +: bw_psum]), $signed(pmem_out[6*bw_psum +: bw_psum]),
@@ -238,7 +297,7 @@ mem_cmd_ext = EXT_CMD_PMEM_RD;
     
   end
   @(negedge clk);
-  mem_cmd_ext = EXT_CMD_NO_OP;
+  pmem_rd = 1'b0;
 
   $display("------------------------------------------------------------");
   if (err == 0) begin
@@ -249,11 +308,6 @@ mem_cmd_ext = EXT_CMD_PMEM_RD;
     $display("------------------------------------------------------------");
   end
   $display("");
-
-
-
-
-
 
   // ----- Estimated: same as sfp_row (sum_abs = sum of |row|, divisor = sum_abs>>7, out[c] = signed(row[c])/divisor)
     $display("##### Estimated normalization (sum_abs>>7, then signed divide) #####");

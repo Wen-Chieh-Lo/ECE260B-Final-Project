@@ -28,8 +28,9 @@ module controller_tb;
 
 	// ================ controller ===================//
 	reg 						start=0;
-	reg  				 		ofifo_valid=0;
-	reg  				 		sfp_busy=0;
+	reg  				 		sfp_done=0;
+	reg op_mode, sfp_write_to_kmem, sfp_write_to_pmem;
+	assign controller_regmap_bus0 = {op_mode, sfp_write_to_kmem, sfp_write_to_pmem};
 	wire [19:0] 				inst_ctrl;
 
 	controller controller_inst(
@@ -38,82 +39,53 @@ module controller_tb;
 		.start(start),
 		.mode_from_reg_map(controller_regmap_bus0),
 		.status_to_reg_map(controller_regmap_bus1),
-		.ofifo_valid(ofifo_valid),
-		.sfp_busy(sfp_busy),
+		.sfp_done(sfp_done),
 		.inst_ctrl(inst_ctrl)
 	);
-
-	reg_map reg_map_inst(
-		.clk(clk),
-		.reset(reset),
-		.wen(reg_map_wen),
-		.cen(reg_map_cen),
-		.addr(reg_map_addr),
-		.data_in(reg_map_data_in),
-		.data_out(reg_map_data_out),
-		.status_from_controller(controller_regmap_bus1),
-		.mode_to_controller(controller_regmap_bus0)
-);
 
 	// data selecting logic
 	
 
 
 
-  
-  
 
-  initial begin
-    $dumpfile("sim/waveform/controller.vcd");
-    $dumpvars(0, controller_tb);
-		
+  	initial begin
+		$dumpfile("sim/waveform/controller.vcd");
+		$dumpvars(0, controller_tb);
+			
 		// Apply reset
 		reset = 0;
 		repeat(2) @(negedge clk); 
-
-    reset = 1;
-    repeat(2) @(negedge clk); 
-
-    reset = 0;
+		reset = 1;
+		repeat(2) @(negedge clk); 
+		reset = 0;
 		@(negedge clk);
 
 
-		//#########################################################
-		//#             Set reg_map to QK+SFP mode                #
-		//#########################################################
-		reg_map_cen = 0; // enable write
-		reg_map_wen = 1; // write
-		reg_map_addr = 0; // mode register
-		reg_map_data_in = 3'b010; // set op_mode=0(QK+SFP), sfp_write_to_qmem=1, sfp_write_to_pmem=0
-		@(negedge clk);
+		
+		// Test QK+SFP mode
+		op_mode = 0;
+		sfp_write_to_kmem = 1;
+		sfp_write_to_pmem = 0;
 
-		reg_map_cen = 1; // disable write
-		@(negedge clk);
+		// Write data to KMEM
+		// Write data to QMEM
+		// Start the controller
 
 		start = 1; // start the controller to update mode from reg_map
-		repeat(2) @(negedge clk);
+		repeat(1) @(negedge clk);
 
 		start = 0;
 		@(negedge clk);
 
 		// wait
-		repeat(10) @(negedge clk);
+		repeat(20) @(negedge clk);
 
-		
-		repeat(7) begin
-			ofifo_valid = 1;
-			sfp_busy = 0;
+		repeat(8) begin
+			sfp_done = 1;
 			@(negedge clk);
-			sfp_busy = 1;
-			repeat(5)@(negedge clk);
 		end	
-		sfp_busy = 0;
-		@(negedge clk);
-		ofifo_valid = 0;
-		sfp_busy = 1;
-		repeat(5)@(negedge clk);
-		ofifo_valid = 0;
-		sfp_busy = 0;
+		sfp_done = 0;
 		repeat(20)@(negedge clk);
 		
 
@@ -153,10 +125,10 @@ module controller_tb;
 
 		
 		repeat(8) begin
-			ofifo_valid = 1;
+			sfp_done = 1;
 			@(negedge clk);
 		end	
-		ofifo_valid = 0;
+		sfp_done = 0;
 		@(negedge clk);
 
 
