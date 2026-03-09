@@ -1,6 +1,6 @@
 #@ # 
 #@ # Running dc_shell Version K-2015.06-SP2 for linux64 -- Aug 31, 2015
-#@ # Date:   Sun Mar  1 00:44:05 2026
+#@ # Date:   Mon Mar  9 11:42:42 2026
 #@ # Run by: c8chiu@ieng6-ece-02.ucsd.edu
 #@ 
 
@@ -3788,9 +3788,9 @@ source /software/nonrdist64/dc-2015.06-64/admin/setup/.synopsys_dc.setup
 #@ }
 #@ # -- End source /software/nonrdist64/dc-2015.06-64/admin/setup/.synopsys_dc.setup
 
-set top_module core; set rtlPath /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/sandbox/Alpha; set filelist_path {syn/filelists/filelist_core}; set syn_effort high; set syn_defines {SFP_LONGDIV}
-source -echo -verbose /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/sandbox/Alpha/syn/run_dc.tcl
-#@ # -- Starting source /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/sandbox/Alpha/syn/run_dc.tcl
+set top_module core; set rtlPath /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/workspace/Alpha; set filelist_path {syn/filelists/filelist_core}; set syn_effort high; set syn_defines {SFP_LONGDIV}
+source -echo -verbose /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/workspace/Alpha/syn/run_dc.tcl
+#@ # -- Starting source /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/workspace/Alpha/syn/run_dc.tcl
 
 #@ # =============================================================================
 #@ # Parameters: set by Makefile (make syn TARGET=mac) or dc_shell -x "set top_module ..."
@@ -3845,10 +3845,7 @@ source -echo -verbose /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Pr
 #@ sh echo hostname
 #@ sh echo uptime
 #@ 
-#@ #Compiler directives
-#@ set_optimize_registers true
-#@ set_cost_priority -delay
-#@ set_max_area 0
+#@ #Compiler directives (global defaults, no current_design needed)
 #@ set compile_effort   "high"
 #@ set compile_no_new_cells_at_top_level false
 #@ set hdlin_enable_vpp true
@@ -3871,6 +3868,11 @@ source -echo -verbose /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Pr
 #@ 
 #@ elaborate $top_module -lib WORK -update
 #@ current_design $top_module
+#@ 
+#@ # Now that current_design is defined, apply design-level directives
+#@ set_optimize_registers true
+#@ set_cost_priority -delay
+#@ set_max_area 0
 #@ 
 #@ # Link Design
 #@ link
@@ -3965,6 +3967,7 @@ source -echo -verbose /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Pr
 #@     if { [file exists $f] } { file rename -force $f work/$f }
 #@ }
 #@ foreach d [glob -nocomplain alib-*] {
+#@     if { [file exists work/$d] } { file delete -force work/$d }
 #@     file rename -force $d work/$d
 #@ }
 #@ 

@@ -19,10 +19,10 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   output [col*bw_out-1:0] sfp_out;
   output [bw_psum+3:0] sum_out;
   wire [bw_psum+3:0] sum_this_core;
-  wire signed [bw_psum-1:0] sum_2core;
+  wire signed [bw_psum+3:0] sum_2core;
   wire [bw_psum+3:0] sum8_out;
-  wire [bw_psum-1:0] div_out0, div_out1, div_out2, div_out3;
-  wire [bw_psum-1:0] div_out4, div_out5, div_out6, div_out7;
+  wire [out_shift-1:0] div_out0, div_out1, div_out2, div_out3;
+  wire [out_shift-1:0] div_out4, div_out5, div_out6, div_out7;
   reg  div_start;
   wire div_done;
   wire signed [bw_psum-1:0] sfp_in_sign0;
@@ -43,6 +43,21 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   reg  [bw_psum-1:0] sfp_out_sign5;
   reg  [bw_psum-1:0] sfp_out_sign6;
   reg  [bw_psum-1:0] sfp_out_sign7;
+
+  // next-state registers
+  reg        fifo_wr_nxt;
+  reg        div_start_nxt;
+  reg        acc_d1_nxt;
+  reg        div_q_nxt;
+  reg [bw_psum+3:0] sum_q_nxt;
+  reg [out_shift-1:0] div_out0_nxt;
+  reg [out_shift-1:0] div_out1_nxt;
+  reg [out_shift-1:0] div_out2_nxt;
+  reg [out_shift-1:0] div_out3_nxt;
+  reg [out_shift-1:0] div_out4_nxt;
+  reg [out_shift-1:0] div_out5_nxt;
+  reg [out_shift-1:0] div_out6_nxt;
+  reg [out_shift-1:0] div_out7_nxt;
 
   reg [bw_psum+3:0] sum_q;
   reg fifo_wr;
@@ -106,76 +121,120 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   );
 
 
-  div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div0 (
-    .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*1-1 : bw_psum*0]),
+  // divider instances use extended bw_psum+4 width and padded inputs
+  div_longdiv #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div0 (
+    .clk(clk), .reset(reset), .start(div_start), .in({4'b0, abs[bw_psum*1-1 : bw_psum*0]}),
     .divisor(sum_2core), .out(div_out0), .done(div_done)
   );
-  div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div1 (
-    .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*2-1 : bw_psum*1]),
+  div_longdiv #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div1 (
+    .clk(clk), .reset(reset), .start(div_start), .in({4'b0, abs[bw_psum*2-1 : bw_psum*1]}),
     .divisor(sum_2core), .out(div_out1), .done()
   );
-  div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div2 (
-    .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*3-1 : bw_psum*2]),
+  div_longdiv #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div2 (
+    .clk(clk), .reset(reset), .start(div_start), .in({4'b0, abs[bw_psum*3-1 : bw_psum*2]}),
     .divisor(sum_2core), .out(div_out2), .done()
   );
-  div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div3 (
-    .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*4-1 : bw_psum*3]),
+  div_longdiv #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div3 (
+    .clk(clk), .reset(reset), .start(div_start), .in({4'b0, abs[bw_psum*4-1 : bw_psum*3]}),
     .divisor(sum_2core), .out(div_out3), .done()
   );
-  div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div4 (
-    .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*5-1 : bw_psum*4]),
+  div_longdiv #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div4 (
+    .clk(clk), .reset(reset), .start(div_start), .in({4'b0, abs[bw_psum*5-1 : bw_psum*4]}),
     .divisor(sum_2core), .out(div_out4), .done()
   );
-  div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div5 (
-    .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*6-1 : bw_psum*5]),
+  div_longdiv #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div5 (
+    .clk(clk), .reset(reset), .start(div_start), .in({4'b0, abs[bw_psum*6-1 : bw_psum*5]}),
     .divisor(sum_2core), .out(div_out5), .done()
   );
-  div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div6 (
-    .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*7-1 : bw_psum*6]),
+  div_longdiv #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div6 (
+    .clk(clk), .reset(reset), .start(div_start), .in({4'b0, abs[bw_psum*7-1 : bw_psum*6]}),
     .divisor(sum_2core), .out(div_out6), .done()
   );
-  div_longdiv #(.bw_psum(bw_psum), .out_shift(out_shift)) div7 (
-    .clk(clk), .reset(reset), .start(div_start), .in(abs[bw_psum*8-1 : bw_psum*7]),
+  div_longdiv #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div7 (
+    .clk(clk), .reset(reset), .start(div_start), .in({4'b0, abs[bw_psum*8-1 : bw_psum*7]}),
     .divisor(sum_2core), .out(div_out7), .done()
   );
   
+  // next-state combinational logic
+  always @(*) begin
+    fifo_wr_nxt   = fifo_wr;
+    div_start_nxt = div_start;
+    acc_d1_nxt    = acc_d1;
+    sum_q_nxt     = sum_q;
+    div_q_nxt     = div_q;
 
+    // hold divider outputs by default
+    div_out0_nxt  = div_out0;
+    div_out1_nxt  = div_out1;
+    div_out2_nxt  = div_out2;
+    div_out3_nxt  = div_out3;
+    div_out4_nxt  = div_out4;
+    div_out5_nxt  = div_out5;
+    div_out6_nxt  = div_out6;
+    div_out7_nxt  = div_out7;
+
+    div_q_nxt   = div;
+    acc_d1_nxt  = acc;
+
+    if (acc) begin
+      sum_q_nxt = sum8_out;
+    end
+
+    fifo_wr_nxt = acc_d1;
+
+    if (!acc) begin
+      if (div) begin
+        div_start_nxt = 1'b1;
+      end else begin
+        div_start_nxt = 1'b0;
+      end
+
+      if (div_done) begin
+        div_out0_nxt = div_out0;
+        div_out1_nxt = div_out1;
+        div_out2_nxt = div_out2;
+        div_out3_nxt = div_out3;
+        div_out4_nxt = div_out4;
+        div_out5_nxt = div_out5;
+        div_out6_nxt = div_out6;
+        div_out7_nxt = div_out7;
+      end
+    end
+  end
+
+  // sequential updates
   always @ (posedge clk) begin
     if (reset) begin
-      fifo_wr <= 0;
-      div_start <= 0;
-      acc_d1 <= 0;
+      fifo_wr       <= 1'b0;
+      div_start     <= 1'b0;
+      acc_d1        <= 1'b0;
+      sum_q         <= {(bw_psum+4){1'b0}};
+      div_q         <= 1'b0;
+      sfp_out_sign0 <= {bw_psum{1'b0}};
+      sfp_out_sign1 <= {bw_psum{1'b0}};
+      sfp_out_sign2 <= {bw_psum{1'b0}};
+      sfp_out_sign3 <= {bw_psum{1'b0}};
+      sfp_out_sign4 <= {bw_psum{1'b0}};
+      sfp_out_sign5 <= {bw_psum{1'b0}};
+      sfp_out_sign6 <= {bw_psum{1'b0}};
+      sfp_out_sign7 <= {bw_psum{1'b0}};
     end
     else begin
-       div_q <= div ;
-       acc_d1 <= acc;
-      //  $display("acc = %0d", acc);
-       if (acc) begin
-         sum_q <= sum8_out;
-       end
-       fifo_wr <= acc_d1;  // write 1 cycle after sum_q updates (aligns sum8/sum8_2stage)
-       if (!acc) begin
-   
-         if (div) begin
-           div_start     <= 1'b1;
-         end else begin
-           div_start     <= 1'b0;
-         end
-
-         if (div_done) begin
-           sfp_out_sign0 <= div_out0;
-           sfp_out_sign1 <= div_out1;
-           sfp_out_sign2 <= div_out2;
-           sfp_out_sign3 <= div_out3;
-           sfp_out_sign4 <= div_out4;
-           sfp_out_sign5 <= div_out5;
-           sfp_out_sign6 <= div_out6;
-           sfp_out_sign7 <= div_out7;
-         end
-
-       end
-   end
- end
+      fifo_wr       <= fifo_wr_nxt;
+      div_start     <= div_start_nxt;
+      acc_d1        <= acc_d1_nxt;
+      sum_q         <= sum_q_nxt;
+      div_q         <= div_q_nxt;
+      sfp_out_sign0 <= {{(bw_psum-out_shift){1'b0}}, div_out0_nxt};
+      sfp_out_sign1 <= {{(bw_psum-out_shift){1'b0}}, div_out1_nxt};
+      sfp_out_sign2 <= {{(bw_psum-out_shift){1'b0}}, div_out2_nxt};
+      sfp_out_sign3 <= {{(bw_psum-out_shift){1'b0}}, div_out3_nxt};
+      sfp_out_sign4 <= {{(bw_psum-out_shift){1'b0}}, div_out4_nxt};
+      sfp_out_sign5 <= {{(bw_psum-out_shift){1'b0}}, div_out5_nxt};
+      sfp_out_sign6 <= {{(bw_psum-out_shift){1'b0}}, div_out6_nxt};
+      sfp_out_sign7 <= {{(bw_psum-out_shift){1'b0}}, div_out7_nxt};
+    end
+  end
 
 
 endmodule
