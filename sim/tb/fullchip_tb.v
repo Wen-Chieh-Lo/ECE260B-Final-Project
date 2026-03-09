@@ -55,6 +55,8 @@ module fullchip_tb;
   reg core0_vn_done = 0;
   reg core1_vn_done = 0;
 
+  reg qk_checked = 0;
+
   reg n_ready       = 0;
 
   integer i, j, qm,q0,q1, k, t, c, row;
@@ -62,16 +64,16 @@ module fullchip_tb;
   integer err, row_err, sum_abs, unsigned_val;
   integer golden_col [0:col-1];
 
-  integer K   [col-1:0][pr-1:0];
-  integer Q   [col-1:0][total_cycle-1:0];
-  integer N   [col-1:0][pr-1:0];
-  integer V_T [total_cycle-1:0][pr-1:0];
+  integer K   [0:half_pr-1][0:pr-1];          // K  : 8 x 16  (rows x cols)
+  integer Q   [0:total_cycle-1][0:half_pr-1]; // Q  : 8 x 8
+  integer N   [0:half_pr-1][0:pr-1];          // N  : 8 x 16
+  integer V_T [0:total_cycle-1][0:half_pr-1]; // VT : 8 x 8 (streamed like Q)
 
-  integer qk_result       [total_cycle-1:0][pr-1:0];
-  integer qk_result_core0 [total_cycle-1:0][half_pr-1:0];
-  integer qk_result_core1 [total_cycle-1:0][half_pr-1:0];
-  integer vn_result_lo    [total_cycle-1:0][col-1:0];
-  integer vn_result_hi    [total_cycle-1:0][col-1:0];
+   integer qk_result       [0:total_cycle-1][0:pr-1];
+  integer qk_result_core0 [0:total_cycle-1][0:col-1];
+  integer qk_result_core1 [0:total_cycle-1][0:col-1];
+  integer vn_result_lo    [0:total_cycle-1][0:col-1];
+  integer vn_result_hi    [0:total_cycle-1][0:col-1];
   integer estimated       [0:total_cycle*pr-1];
 
   wire [bw_psum*col*2-1:0] out;
@@ -152,23 +154,24 @@ module fullchip_tb;
         K[i][j] = 0;
 
     for (i = 0; i < total_cycle; i = i + 1)
-      for (j = 0; j < pr; j = j + 1)
+      for (j = 0; j < half_pr; j = j + 1)
         Q[i][j] = 0;
 
     for (i = 0; i < total_cycle; i = i + 1)
-      for (j = 0; j < pr; j = j + 1)
+      for (j = 0; j < half_pr; j = j + 1)
         V_T[i][j] = 0;
 
     for (i = 0; i < col; i = i + 1)
-      for (j = 0; j < col; j = j + 1)
+      for (j = 0; j < pr; j = j + 1)
         N[i][j] = 0;
 
     qkvn_file = $fopen("sim/pattern/qdata.txt", "r");
     for (qm = 0; qm < total_cycle; qm = qm + 1)
-      for (j = 0; j < pr; j = j + 1) begin
+      for (j = 0; j < col; j = j + 1) begin
         qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
         Q[qm][j] = captured_data;
       end
+    $fclose(qkvn_file);
 
     qkvn_file = $fopen("sim/pattern/kdata.txt", "r");
     for (qm = 0; qm < col; qm = qm + 1)
@@ -176,34 +179,44 @@ module fullchip_tb;
         qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
         K[qm][j] = captured_data;
       end
+    $fclose(qkvn_file);
 
     qkvn_file = $fopen("sim/pattern/vdata.txt", "r");
-    for (qm = 0; qm < total_cycle; qm = qm + 1)
-      for (j = 0; j < pr; j = j + 1) begin
+    for (qm = 0; qm < half_pr; qm = qm + 1)
+      for (j = 0; j < total_cycle; j = j + 1) begin
         qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
-        V_T[qm][j] = captured_data;
+        V_T[j][qm] = captured_data;
       end
+    $fclose(qkvn_file);
 
     for (t = 0; t < total_cycle; t = t + 1)
-      for (qm = 0; qm < col; qm = qm + 1) begin
-        qk_result[t][qm]       = 0;
-        qk_result_core0[t][qm] = 0;
-        qk_result_core1[t][qm] = 0;
-      end
+      for (j = 0; j < pr; j = j + 1)
+        qk_result[t][j] = 0;
 
     for (t = 0; t < total_cycle; t = t + 1)
-      for (qm = 0; qm < col; qm = qm + 1) begin
+      for (j = 0; j < col; j = j + 1) begin
+        vn_result_lo[t][j] = 0;
+        vn_result_hi[t][j] = 0;
+        qk_result_core0[t][j] = 0;
+        qk_result_core1[t][j] = 0;
+      end
+
+      // Golden Q x K = (8x8) x (8x16) = 8x16
+    for (t = 0; t < total_cycle; t = t + 1)
+      for (qm = 0; qm < pr; qm = qm + 1)
         for (k = 0; k < half_pr; k = k + 1)
-          qk_result_core0[t][qm] = qk_result_core0[t][qm] + Q[t][k] * K[qm][k];
-        for (k = half_pr; k < pr; k = k + 1)
-          qk_result_core1[t][qm] = qk_result_core1[t][qm] + Q[t][k] * K[qm][k];
-        qk_result[t][qm] = qk_result_core0[t][qm] + qk_result_core1[t][qm];
+          qk_result[t][qm] = qk_result[t][qm] + Q[t][k] * K[k][qm];
+
+    for (t = 0; t < total_cycle; t = t + 1)
+      for (qm = 0; qm < col; qm = qm + 1) begin
+        qk_result_core0[t][qm] = qk_result[t][qm];
+        qk_result_core1[t][qm] = qk_result[t][qm+col];
       end
 
     repeat(5) @(posedge clk0);
     repeat(3) @(posedge clk1);
     reset = 0;
-
+    //compare QK
     // wait long enough for both core stimulus blocks to complete QK phase
     wait(core0_qk_done && core1_qk_done);
     repeat(2) @(posedge clk0);
@@ -212,53 +225,107 @@ module fullchip_tb;
       golden_col[c] = 7 - c;
 
     err = 0;
+
+    @(posedge clk0);
+    pmem_rd_0 = 1;
+    pmem_add_0 = 0;
+    @(posedge clk1);
+    pmem_rd_1 = 1;
+    pmem_add_1 = 0;
+
     for (qm = 0; qm < total_cycle; qm = qm + 1) begin
       @(posedge clk0);
       row = qm;
+      row_err = 0;
       for (c = 0; c < col; c = c + 1) begin
-        sum_abs = $signed(pmem_out_core0[c*bw_psum +: bw_psum]) +
-                  $signed(pmem_out_core1[c*bw_psum +: bw_psum]);
-        unsigned_val = (sum_abs < 0) ? -sum_abs : sum_abs;
-        estimated[qm*pr + (7-c)] = (unsigned_val >>> sfp_out_shift);
+        if ($signed(pmem_out_core0[c*bw_psum +: bw_psum]) !== qk_result_core0[row][golden_col[c]]) begin
+          err = err + 1;
+          row_err = row_err + 1;
+          $display("QK core0 mismatch row=%0d col=%0d RTL=%0d golden=%0d",
+                   row, c, $signed(pmem_out_core0[c*bw_psum +: bw_psum]),
+                   qk_result_core0[row][golden_col[c]]);
+        end
+        if ($signed(pmem_out_core1[c*bw_psum +: bw_psum]) !== qk_result_core1[row][golden_col[c]]) begin
+          err = err + 1;
+          row_err = row_err + 1;
+          $display("QK core1 mismatch row=%0d col=%0d RTL=%0d golden=%0d",
+                   row, c, $signed(pmem_out_core1[c*bw_psum +: bw_psum]),
+                   qk_result_core1[row][golden_col[c]]);
+        end
+      end
+      $display("QK row %0d : %s", row, (row_err == 0) ? "OK" : "MISMATCH");
+    
+    if (qm < total_cycle-1) begin
+        pmem_add_0 = qm + 1;
+        pmem_add_1 = qm + 1;
       end
     end
 
+    @(posedge clk0) pmem_rd_0 = 0;
+    @(posedge clk1) pmem_rd_1 = 0;
+
+    qk_checked = 1;
+    
+    
+    //compare QK golden vs hardWARE PROD OUTPUT
+
+    //VN phase 
     `ifdef LOAD_OTHER_NORM_FILE
       qkvn_file = $fopen("sim/pattern/norm.txt", "r");
-      for (qm = 0; qm < total_cycle; qm = qm + 1)
-        for (j = 0; j < col; j = j + 1) begin
+      for (qm = 0; qm < half_pr; qm = qm + 1)
+        for (j = 0; j < pr; j = j + 1) begin
           qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
           N[qm][j] = captured_data;
         end
+      $fclose(qkvn_file);
       n_ready = 1;
       `else
-        for (qm = 0; qm < total_cycle; qm = qm + 1)
-          for (j = 0; j < col; j = j + 1) begin
-            if (qk_result[qm][j] < 0)
-              N[qm][j] = (-qk_result[qm][j]) >>> sfp_out_shift;
-            else
-              N[qm][j] = qk_result[qm][j] >>> sfp_out_shift;
-      end
+        for (qm = 0; qm < total_cycle; qm = qm + 1) begin
+        sum_abs = 0;
+        for (j = 0; j < pr; j = j + 1) begin
+          unsigned_val = qk_result[qm][j];
+          if (unsigned_val < 0)
+            unsigned_val = -unsigned_val;
+          sum_abs = sum_abs + unsigned_val;
+        end
+        if (sum_abs == 0)
+          sum_abs = 1;
 
+        for (j = 0; j < pr; j = j + 1) begin
+          unsigned_val = qk_result[qm][j];
+          if (unsigned_val < 0)
+            unsigned_val = -unsigned_val;
+          N[qm][j] = (unsigned_val <<< sfp_out_shift) / sum_abs;
+          estimated[qm*pr + j] = N[qm][j];
+        end
+        end
     `endif
 
-    
+    //golden VT x N
 
     for (t = 0; t < total_cycle; t = t + 1)
       for (qm = 0; qm < col; qm = qm + 1) begin
         vn_result_lo[t][qm] = 0;
         vn_result_hi[t][qm] = 0;
-        for (k = 0; k < pr/2; k = k + 1) begin
-          vn_result_lo[t][qm] = vn_result_lo[t][qm] + N[t][k] * V_T[k][qm];
-          vn_result_hi[t][qm] = vn_result_hi[t][qm] + N[t][k+8] * V_T[k][qm+8];
+        for (k = 0; k < half_pr; k = k + 1) begin
+          vn_result_lo[t][qm] = vn_result_lo[t][qm] + N[k][qm] * V_T[t][k];
+          vn_result_hi[t][qm] = vn_result_hi[t][qm] + N[k][qm+8] * V_T[t][k];
         end
       end
-
+    //compare VN phase
     // wait long enough for VN phase to complete
     wait(core0_vn_done && core1_vn_done);
     repeat(2) @(posedge clk0);
 
     err = 0;
+    
+    @(posedge clk0);
+    pmem_rd_0 = 1;
+    pmem_add_0 = 0;
+    @(posedge clk1);
+    pmem_rd_1 = 1;
+    pmem_add_1 = 0;
+
     for (qm = 0; qm < total_cycle; qm = qm + 1) begin
       @(posedge clk0);
       row = qm;
@@ -273,8 +340,15 @@ module fullchip_tb;
           row_err = row_err + 1;
         end
       end
+            if (qm < total_cycle-1) begin
+        pmem_add_0 = qm + 1;
+        pmem_add_1 = qm + 1;
+      end
       $display("row %0d : %s", row, (row_err==0) ? "OK" : "MISMATCH");
     end
+
+    @(posedge clk0) pmem_rd_0 = 0;
+    @(posedge clk1) pmem_rd_1 = 0;
 
     if (err == 0) $display("PASS");
     else $display("FAIL err=%0d", err);
@@ -344,6 +418,7 @@ module fullchip_tb;
     @(posedge clk0) pmem_rd_0 = 0;
 
     core0_qk_done = 1;
+    wait(qk_checked == 1);
 
     // normalization
     sfp_processing_0 = 1;
@@ -493,6 +568,8 @@ module fullchip_tb;
     @(posedge clk1) pmem_rd_1 = 0;
 
     core1_qk_done = 1;
+
+    wait(qk_checked == 1);
 
     // normalization
     sfp_processing_1 = 1;
