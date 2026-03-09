@@ -69,12 +69,18 @@ module fullchip_tb;
   integer N   [0:half_pr-1][0:pr-1];          // N  : 8 x 16
   integer V_T [0:total_cycle-1][0:half_pr-1]; // VT : 8 x 8 (streamed like Q)
 
-   integer qk_result       [0:total_cycle-1][0:pr-1];
+  integer qk_result       [0:total_cycle-1][0:pr-1];
   integer qk_result_core0 [0:total_cycle-1][0:col-1];
   integer qk_result_core1 [0:total_cycle-1][0:col-1];
   integer vn_result_lo    [0:total_cycle-1][0:col-1];
   integer vn_result_hi    [0:total_cycle-1][0:col-1];
   integer estimated       [0:total_cycle*pr-1];
+
+  // captured DUT rows so checker does not drive pmem controls
+  integer qk_cap_core0 [0:total_cycle-1][0:col-1];
+  integer qk_cap_core1 [0:total_cycle-1][0:col-1];
+  integer vn_cap_core0 [0:total_cycle-1][0:col-1];
+  integer vn_cap_core1 [0:total_cycle-1][0:col-1];
 
   wire [bw_psum*col*2-1:0] out;
   wire [bw_psum*col-1:0] pmem_out_core0;
@@ -199,6 +205,10 @@ module fullchip_tb;
         vn_result_hi[t][j] = 0;
         qk_result_core0[t][j] = 0;
         qk_result_core1[t][j] = 0;
+        qk_cap_core0[t][j] = 0;
+        qk_cap_core1[t][j] = 0;
+        vn_cap_core0[t][j] = 0;
+        vn_cap_core1[t][j] = 0;
       end
 
       // Golden Q x K = (8x8) x (8x16) = 8x16
@@ -226,43 +236,32 @@ module fullchip_tb;
 
     err = 0;
 
-    @(posedge clk0);
-    pmem_rd_0 = 1;
-    pmem_add_0 = 0;
-    @(posedge clk1);
-    pmem_rd_1 = 1;
-    pmem_add_1 = 0;
+    //@(posedge clk0);
+    //pmem_rd_0 = 1;
+    //pmem_add_0 = 0;
+    //@(posedge clk1);
+    //pmem_rd_1 = 1;
+    //pmem_add_1 = 0;
 
     for (qm = 0; qm < total_cycle; qm = qm + 1) begin
-      @(posedge clk0);
       row = qm;
       row_err = 0;
       for (c = 0; c < col; c = c + 1) begin
-        if ($signed(pmem_out_core0[c*bw_psum +: bw_psum]) !== qk_result_core0[row][golden_col[c]]) begin
+        if (qk_cap_core0[row][c] !== qk_result_core0[row][golden_col[c]]) begin
           err = err + 1;
           row_err = row_err + 1;
           $display("QK core0 mismatch row=%0d col=%0d RTL=%0d golden=%0d",
-                   row, c, $signed(pmem_out_core0[c*bw_psum +: bw_psum]),
-                   qk_result_core0[row][golden_col[c]]);
+                   row, c, qk_cap_core0[row][c], qk_result_core0[row][golden_col[c]]);
         end
-        if ($signed(pmem_out_core1[c*bw_psum +: bw_psum]) !== qk_result_core1[row][golden_col[c]]) begin
+        if (qk_cap_core1[row][c] !== qk_result_core1[row][golden_col[c]]) begin
           err = err + 1;
           row_err = row_err + 1;
           $display("QK core1 mismatch row=%0d col=%0d RTL=%0d golden=%0d",
-                   row, c, $signed(pmem_out_core1[c*bw_psum +: bw_psum]),
-                   qk_result_core1[row][golden_col[c]]);
+                   row, c, qk_cap_core1[row][c], qk_result_core1[row][golden_col[c]]);
         end
       end
       $display("QK row %0d : %s", row, (row_err == 0) ? "OK" : "MISMATCH");
-    
-    if (qm < total_cycle-1) begin
-        pmem_add_0 = qm + 1;
-        pmem_add_1 = qm + 1;
-      end
     end
-
-    @(posedge clk0) pmem_rd_0 = 0;
-    @(posedge clk1) pmem_rd_1 = 0;
 
     qk_checked = 1;
     
@@ -319,36 +318,35 @@ module fullchip_tb;
 
     err = 0;
     
-    @(posedge clk0);
-    pmem_rd_0 = 1;
-    pmem_add_0 = 0;
-    @(posedge clk1);
-    pmem_rd_1 = 1;
-    pmem_add_1 = 0;
+    //@(posedge clk0);
+    //pmem_rd_0 = 1;
+    //pmem_add_0 = 0;
+    //@(posedge clk1);
+    //pmem_rd_1 = 1;
+    //pmem_add_1 = 0;
 
     for (qm = 0; qm < total_cycle; qm = qm + 1) begin
-      @(posedge clk0);
+      //@(posedge clk0);
       row = qm;
       row_err = 0;
       for (c = 0; c < col; c = c + 1) begin
-        if ($signed(pmem_out_core0[c*bw_psum +: bw_psum]) != $signed(vn_result_lo[row][7-c])) begin
+        if (vn_cap_core0[row][c] != vn_result_lo[row][7-c]) begin
           err = err + 1;
           row_err = row_err + 1;
+          $display("VN core0 mismatch row=%0d col=%0d RTL=%0d golden=%0d",
+                   row, c, vn_cap_core0[row][c], vn_result_lo[row][7-c]);
         end
-        if ($signed(pmem_out_core1[c*bw_psum +: bw_psum]) != $signed(vn_result_hi[row][7-c])) begin
+        if (vn_cap_core1[row][c] != vn_result_hi[row][7-c]) begin
           err = err + 1;
           row_err = row_err + 1;
+          $display("VN core1 mismatch row=%0d col=%0d RTL=%0d golden=%0d",
+                   row, c, vn_cap_core1[row][c], vn_result_hi[row][7-c]);
         end
       end
-            if (qm < total_cycle-1) begin
-        pmem_add_0 = qm + 1;
-        pmem_add_1 = qm + 1;
-      end
+          
       $display("row %0d : %s", row, (row_err==0) ? "OK" : "MISMATCH");
     end
 
-    @(posedge clk0) pmem_rd_0 = 0;
-    @(posedge clk1) pmem_rd_1 = 0;
 
     if (err == 0) $display("PASS");
     else $display("FAIL err=%0d", err);
@@ -413,8 +411,30 @@ module fullchip_tb;
 
     // QK read
     @(posedge clk0) begin pmem_rd_0 = 1; pmem_add_0 = 0; end
-    for (q0 = 0; q0 < total_cycle; q0 = q0 + 1)
-      @(posedge clk0) pmem_add_0 = q0 + 1;
+    @(posedge clk0) begin
+      qk_cap_core0[0][0] = $signed(pmem_out_core0[0*bw_psum +: bw_psum]);
+      qk_cap_core0[0][1] = $signed(pmem_out_core0[1*bw_psum +: bw_psum]);
+      qk_cap_core0[0][2] = $signed(pmem_out_core0[2*bw_psum +: bw_psum]);
+      qk_cap_core0[0][3] = $signed(pmem_out_core0[3*bw_psum +: bw_psum]);
+      qk_cap_core0[0][4] = $signed(pmem_out_core0[4*bw_psum +: bw_psum]);
+      qk_cap_core0[0][5] = $signed(pmem_out_core0[5*bw_psum +: bw_psum]);
+      qk_cap_core0[0][6] = $signed(pmem_out_core0[6*bw_psum +: bw_psum]);
+      qk_cap_core0[0][7] = $signed(pmem_out_core0[7*bw_psum +: bw_psum]);
+    end
+    for (q0 = 1; q0 < total_cycle; q0 = q0 + 1)begin
+      @(posedge clk0) pmem_add_0 = q0;
+      @(posedge clk0) begin
+        
+        qk_cap_core0[q0][0] = $signed(pmem_out_core0[0*bw_psum +: bw_psum]);
+        qk_cap_core0[q0][1] = $signed(pmem_out_core0[1*bw_psum +: bw_psum]);
+        qk_cap_core0[q0][2] = $signed(pmem_out_core0[2*bw_psum +: bw_psum]);
+        qk_cap_core0[q0][3] = $signed(pmem_out_core0[3*bw_psum +: bw_psum]);
+        qk_cap_core0[q0][4] = $signed(pmem_out_core0[4*bw_psum +: bw_psum]);
+        qk_cap_core0[q0][5] = $signed(pmem_out_core0[5*bw_psum +: bw_psum]);
+        qk_cap_core0[q0][6] = $signed(pmem_out_core0[6*bw_psum +: bw_psum]);
+        qk_cap_core0[q0][7] = $signed(pmem_out_core0[7*bw_psum +: bw_psum]);
+      end
+    end
     @(posedge clk0) pmem_rd_0 = 0;
 
     core0_qk_done = 1;
@@ -495,12 +515,31 @@ module fullchip_tb;
 
     // VN read
     @(posedge clk0) begin pmem_rd_0 = 1; pmem_add_0 = 0; end
-    @(posedge clk0);
-    for (q0 = 0; q0 < total_cycle; q0 = q0 + 1) begin
-      @(posedge clk0);
-      if (q0 < total_cycle - 1) pmem_add_0 = q0 + 1;
-      else pmem_rd_0 = 0;
+    @(posedge clk0)begin
+      vn_cap_core0[0][0] = $signed(pmem_out_core0[0*bw_psum +: bw_psum]);
+      vn_cap_core0[0][1] = $signed(pmem_out_core0[1*bw_psum +: bw_psum]);
+      vn_cap_core0[0][2] = $signed(pmem_out_core0[2*bw_psum +: bw_psum]);
+      vn_cap_core0[0][3] = $signed(pmem_out_core0[3*bw_psum +: bw_psum]);
+      vn_cap_core0[0][4] = $signed(pmem_out_core0[4*bw_psum +: bw_psum]);
+      vn_cap_core0[0][5] = $signed(pmem_out_core0[5*bw_psum +: bw_psum]);
+      vn_cap_core0[0][6] = $signed(pmem_out_core0[6*bw_psum +: bw_psum]);
+      vn_cap_core0[0][7] = $signed(pmem_out_core0[7*bw_psum +: bw_psum]);
     end
+    for (q0 = 1; q0 < total_cycle; q0 = q0 + 1) begin
+      @(posedge clk0) pmem_add_0 = q0;
+      @(posedge clk0) begin
+        //pmem_add_0 = q0;
+        vn_cap_core0[q0][0] = $signed(pmem_out_core0[0*bw_psum +: bw_psum]);
+        vn_cap_core0[q0][1] = $signed(pmem_out_core0[1*bw_psum +: bw_psum]);
+        vn_cap_core0[q0][2] = $signed(pmem_out_core0[2*bw_psum +: bw_psum]);
+        vn_cap_core0[q0][3] = $signed(pmem_out_core0[3*bw_psum +: bw_psum]);
+        vn_cap_core0[q0][4] = $signed(pmem_out_core0[4*bw_psum +: bw_psum]);
+        vn_cap_core0[q0][5] = $signed(pmem_out_core0[5*bw_psum +: bw_psum]);
+        vn_cap_core0[q0][6] = $signed(pmem_out_core0[6*bw_psum +: bw_psum]);
+        vn_cap_core0[q0][7] = $signed(pmem_out_core0[7*bw_psum +: bw_psum]);
+      end
+    end
+    @(posedge clk0) pmem_rd_0 = 0;
 
     core0_vn_done = 1;
 
@@ -563,8 +602,30 @@ module fullchip_tb;
 
     // QK read
     @(posedge clk1) begin pmem_rd_1 = 1; pmem_add_1 = 0; end
-    for (q1 = 0; q1 < total_cycle; q1 = q1 + 1)
-      @(posedge clk1) pmem_add_1 = q1 + 1;
+    @(posedge clk1) begin
+      qk_cap_core1[0][0] = $signed(pmem_out_core1[0*bw_psum +: bw_psum]);
+      qk_cap_core1[0][1] = $signed(pmem_out_core1[1*bw_psum +: bw_psum]);
+      qk_cap_core1[0][2] = $signed(pmem_out_core1[2*bw_psum +: bw_psum]);
+      qk_cap_core1[0][3] = $signed(pmem_out_core1[3*bw_psum +: bw_psum]);
+      qk_cap_core1[0][4] = $signed(pmem_out_core1[4*bw_psum +: bw_psum]);
+      qk_cap_core1[0][5] = $signed(pmem_out_core1[5*bw_psum +: bw_psum]);
+      qk_cap_core1[0][6] = $signed(pmem_out_core1[6*bw_psum +: bw_psum]);
+      qk_cap_core1[0][7] = $signed(pmem_out_core1[7*bw_psum +: bw_psum]);
+    end
+    for (q1 = 1; q1 < total_cycle; q1 = q1 + 1) begin
+      @(posedge clk1) pmem_add_1 = q1;
+      @(posedge clk1) begin
+        //pmem_add_1 = q1;
+        qk_cap_core1[q1][0] = $signed(pmem_out_core1[0*bw_psum +: bw_psum]);
+        qk_cap_core1[q1][1] = $signed(pmem_out_core1[1*bw_psum +: bw_psum]);
+        qk_cap_core1[q1][2] = $signed(pmem_out_core1[2*bw_psum +: bw_psum]);
+        qk_cap_core1[q1][3] = $signed(pmem_out_core1[3*bw_psum +: bw_psum]);
+        qk_cap_core1[q1][4] = $signed(pmem_out_core1[4*bw_psum +: bw_psum]);
+        qk_cap_core1[q1][5] = $signed(pmem_out_core1[5*bw_psum +: bw_psum]);
+        qk_cap_core1[q1][6] = $signed(pmem_out_core1[6*bw_psum +: bw_psum]);
+        qk_cap_core1[q1][7] = $signed(pmem_out_core1[7*bw_psum +: bw_psum]);
+      end
+    end
     @(posedge clk1) pmem_rd_1 = 0;
 
     core1_qk_done = 1;
@@ -646,12 +707,31 @@ module fullchip_tb;
 
     // VN read
     @(posedge clk1) begin pmem_rd_1 = 1; pmem_add_1 = 0; end
-    @(posedge clk1);
-    for (q1 = 0; q1 < total_cycle; q1 = q1 + 1) begin
-      @(posedge clk1);
-      if (q1 < total_cycle - 1) pmem_add_1 = q1 + 1;
-      else pmem_rd_1 = 0;
+    @(posedge clk1) begin
+      vn_cap_core1[0][0] = $signed(pmem_out_core1[0*bw_psum +: bw_psum]);
+      vn_cap_core1[0][1] = $signed(pmem_out_core1[1*bw_psum +: bw_psum]);
+      vn_cap_core1[0][2] = $signed(pmem_out_core1[2*bw_psum +: bw_psum]);
+      vn_cap_core1[0][3] = $signed(pmem_out_core1[3*bw_psum +: bw_psum]);
+      vn_cap_core1[0][4] = $signed(pmem_out_core1[4*bw_psum +: bw_psum]);
+      vn_cap_core1[0][5] = $signed(pmem_out_core1[5*bw_psum +: bw_psum]);
+      vn_cap_core1[0][6] = $signed(pmem_out_core1[6*bw_psum +: bw_psum]);
+      vn_cap_core1[0][7] = $signed(pmem_out_core1[7*bw_psum +: bw_psum]);
     end
+    for (q1 = 1; q1 < total_cycle; q1 = q1 + 1) begin
+      @(posedge clk1) pmem_add_1 = q1;
+      @(posedge clk1) begin
+        //pmem_add_1 = q1;
+        vn_cap_core1[q1][0] = $signed(pmem_out_core1[0*bw_psum +: bw_psum]);
+        vn_cap_core1[q1][1] = $signed(pmem_out_core1[1*bw_psum +: bw_psum]);
+        vn_cap_core1[q1][2] = $signed(pmem_out_core1[2*bw_psum +: bw_psum]);
+        vn_cap_core1[q1][3] = $signed(pmem_out_core1[3*bw_psum +: bw_psum]);
+        vn_cap_core1[q1][4] = $signed(pmem_out_core1[4*bw_psum +: bw_psum]);
+        vn_cap_core1[q1][5] = $signed(pmem_out_core1[5*bw_psum +: bw_psum]);
+        vn_cap_core1[q1][6] = $signed(pmem_out_core1[6*bw_psum +: bw_psum]);
+        vn_cap_core1[q1][7] = $signed(pmem_out_core1[7*bw_psum +: bw_psum]);
+      end
+    end
+    @(posedge clk1) pmem_rd_1 = 0;
 
     core1_vn_done = 1;
 
