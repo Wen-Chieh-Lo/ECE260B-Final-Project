@@ -5,7 +5,7 @@ module sfp_row (clk, reset, acc, div, fifo_wr, sum_in, sfp_in, sfp_out,sum_q, di
 
   parameter col = 8;
   parameter bw = 8;
-  parameter bw_psum = 2*bw+3;
+  parameter bw_psum = 2*bw+4;
   parameter out_shift = 7;
 
   localparam bw_out = out_shift + 1'b1;
