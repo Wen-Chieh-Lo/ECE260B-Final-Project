@@ -179,7 +179,7 @@ module fullchip_tb;
       end
     $fclose(qkvn_file);
 
-    qkvn_file = $fopen("sim/pattern/kdata.txt", "r");
+    qkvn_file = $fopen("sim/pattern/kdata_dual.txt", "r");
     for (qm = 0; qm < col; qm = qm + 1)
       for (j = 0; j < pr; j = j + 1) begin
         qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
@@ -270,7 +270,7 @@ module fullchip_tb;
 
     //VN phase 
     `ifdef LOAD_OTHER_NORM_FILE
-      qkvn_file = $fopen("sim/pattern/norm.txt", "r");
+      qkvn_file = $fopen("sim/pattern/norm_dual.txt", "r");
       for (qm = 0; qm < half_pr; qm = qm + 1)
         for (j = 0; j < pr; j = j + 1) begin
           qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
