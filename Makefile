@@ -51,7 +51,7 @@ PROJ_ROOT := $(CURDIR)
 # ----- Lookup tables -----
 # target -> filelist filename (shared between sim and syn for filelist name lookup)
 TARGET_FILELIST_table := \
-	fullchip:filelist \
+	fullchip:filelist_fullchip \
 	core:filelist_core \
 	mac:filelist_mac \
 	sfp_row:filelist_sfp_row \
