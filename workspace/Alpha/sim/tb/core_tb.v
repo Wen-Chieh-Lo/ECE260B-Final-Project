@@ -15,7 +15,7 @@ module core_tb;
 
   parameter total_cycle = 8;
   parameter bw = 8;
-  parameter bw_psum = 2*bw+3;
+  parameter bw_psum = 2*bw+4;
   parameter pr = 8;
   parameter col = 8;
   parameter sfp_out_shift = 7;

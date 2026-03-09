@@ -1,6 +1,1479 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission
+`timescale 1ns/1ps
 
+module fullchip_tb;
+
+  parameter total_cycle = 8;
+  parameter bw = 8;
+  parameter bw_psum = 2*bw+4;
+  parameter pr = 16;
+  parameter half_pr = 8;
+  parameter col = 8;
+  parameter sfp_out_shift = 7;
+  `ifdef SFP_LONGDIV
+    parameter sfp_div_lat = 8;
+  `else
+    parameter sfp_div_lat = 0;
+  `endif
+
+  parameter real CLK0_PERIOD = 1.0;
+  parameter real CLK1_PERIOD = 2.0;
+
+  reg reset = 1;
+  reg clk0 = 0;
+  reg clk1 = 0;
+
+  // per-core packed inputs
+  reg [half_pr*bw-1:0] mem_in_core0;
+  reg [half_pr*bw-1:0] mem_in_core1;
+  wire [pr*bw-1:0] mem_in;
+
+  reg [19:0] inst0;
+  reg [19:0] inst1;
+  wire [39:0] inst;
+
+  assign mem_in = {mem_in_core1, mem_in_core0};
+  assign inst   = {inst1, inst0};
+
+  // decoded control regs for core0
+  reg VN_mode_0 = 0, sfp_div_0 = 0, sfp_acc_0 = 0, sfp_processing_0 = 0;
+  reg qmem_rd_0 = 0, qmem_wr_0 = 0, kmem_rd_0 = 0, kmem_wr_0 = 0, pmem_rd_0 = 0, pmem_wr_0 = 0;
+  reg execute_0 = 0, load_0 = 0;
+  reg [3:0] qkmem_add_0 = 0;
+  reg [3:0] pmem_add_0  = 0;
+
+  // decoded control regs for core1
+  reg VN_mode_1 = 0, sfp_div_1 = 0, sfp_acc_1 = 0, sfp_processing_1 = 0;
+  reg qmem_rd_1 = 0, qmem_wr_1 = 0, kmem_rd_1 = 0, kmem_wr_1 = 0, pmem_rd_1 = 0, pmem_wr_1 = 0;
+  reg execute_1 = 0, load_1 = 0;
+  reg [3:0] qkmem_add_1 = 0;
+  reg [3:0] pmem_add_1  = 0;
+
+  reg core0_qk_done = 0;
+  reg core1_qk_done = 0;
+  reg core0_vn_done = 0;
+  reg core1_vn_done = 0;
+
+  reg qk_checked = 0;
+
+  reg n_ready       = 0;
+
+  integer i, j, qm,q0,q1, k, t, c, row;
+  integer qkvn_file, qkvn_scan_file, captured_data;
+  integer err, row_err, sum_abs, unsigned_val;
+  integer golden_col [0:col-1];
+
+  integer K   [0:half_pr-1][0:pr-1];          // K  : 8 x 16  (rows x cols)
+  integer Q   [0:total_cycle-1][0:half_pr-1]; // Q  : 8 x 8
+  integer N   [0:half_pr-1][0:pr-1];          // N  : 8 x 16
+  integer V_T [0:total_cycle-1][0:half_pr-1]; // VT : 8 x 8 (streamed like Q)
+
+  integer qk_result       [0:total_cycle-1][0:pr-1];
+  integer qk_result_core0 [0:total_cycle-1][0:col-1];
+  integer qk_result_core1 [0:total_cycle-1][0:col-1];
+  integer vn_result_lo    [0:total_cycle-1][0:col-1];
+  integer vn_result_hi    [0:total_cycle-1][0:col-1];
+  integer estimated       [0:total_cycle*pr-1];
+
+  // captured DUT rows so checker does not drive pmem controls
+  integer qk_cap_core0 [0:total_cycle-1][0:col-1];
+  integer qk_cap_core1 [0:total_cycle-1][0:col-1];
+  integer vn_cap_core0 [0:total_cycle-1][0:col-1];
+  integer vn_cap_core1 [0:total_cycle-1][0:col-1];
+
+  wire [bw_psum*col*2-1:0] out;
+  wire [bw_psum*col-1:0] pmem_out_core0;
+  wire [bw_psum*col-1:0] pmem_out_core1;
+
+  assign pmem_out_core0 = out[bw_psum*col-1:0];
+  assign pmem_out_core1 = out[bw_psum*col*2-1:bw_psum*col];
+
+  // pack inst0
+  always @(*) begin
+    inst0[19]    = VN_mode_0;
+    inst0[18]    = sfp_div_0;
+    inst0[17]    = sfp_acc_0;
+    inst0[16]    = sfp_processing_0;
+    inst0[15:12] = qkmem_add_0;
+    inst0[11:8]  = pmem_add_0;
+    inst0[7]     = execute_0;
+    inst0[6]     = load_0;
+    inst0[5]     = qmem_rd_0;
+    inst0[4]     = qmem_wr_0;
+    inst0[3]     = kmem_rd_0;
+    inst0[2]     = kmem_wr_0;
+    inst0[1]     = pmem_rd_0;
+    inst0[0]     = pmem_wr_0;
+  end
+
+  // pack inst1
+  always @(*) begin
+    inst1[19]    = VN_mode_1;
+    inst1[18]    = sfp_div_1;
+    inst1[17]    = sfp_acc_1;
+    inst1[16]    = sfp_processing_1;
+    inst1[15:12] = qkmem_add_1;
+    inst1[11:8]  = pmem_add_1;
+    inst1[7]     = execute_1;
+    inst1[6]     = load_1;
+    inst1[5]     = qmem_rd_1;
+    inst1[4]     = qmem_wr_1;
+    inst1[3]     = kmem_rd_1;
+    inst1[2]     = kmem_wr_1;
+    inst1[1]     = pmem_rd_1;
+    inst1[0]     = pmem_wr_1;
+  end
+
+  fullchip #(
+    .bw(bw),
+    .bw_psum(bw_psum),
+    .col(col),
+    .pr(pr)
+  ) fullchip_instance (
+    .clk0(clk0),
+    .clk1(clk1),
+    .mem_in(mem_in),
+    .inst(inst),
+    .reset(reset),
+    .out(out)
+  );
+
+  always #(CLK0_PERIOD/2.0) clk0 = ~clk0;
+  always #(CLK1_PERIOD/2.0) clk1 = ~clk1;
+
+  // setup / read files / checking block
+  initial begin
+    $dumpfile("sim/waveform/fullchip.vcd");
+    $dumpvars(0, fullchip_tb);
+
+    mem_in_core0 = 0;
+    mem_in_core1 = 0;
+    core0_qk_done = 0;
+    core1_qk_done = 0;
+    core0_vn_done = 0;
+    core1_vn_done = 0;
+    n_ready = 0;
+
+    for (i = 0; i < col; i = i + 1)
+      for (j = 0; j < pr; j = j + 1)
+        K[i][j] = 0;
+
+    for (i = 0; i < total_cycle; i = i + 1)
+      for (j = 0; j < half_pr; j = j + 1)
+        Q[i][j] = 0;
+
+    for (i = 0; i < total_cycle; i = i + 1)
+      for (j = 0; j < half_pr; j = j + 1)
+        V_T[i][j] = 0;
+
+    for (i = 0; i < col; i = i + 1)
+      for (j = 0; j < pr; j = j + 1)
+        N[i][j] = 0;
+
+    qkvn_file = $fopen("sim/pattern/qdata.txt", "r");
+    for (qm = 0; qm < total_cycle; qm = qm + 1)
+      for (j = 0; j < col; j = j + 1) begin
+        qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
+        Q[qm][j] = captured_data;
+      end
+    $fclose(qkvn_file);
+
+    qkvn_file = $fopen("sim/pattern/kdata_dual.txt", "r");
+    for (qm = 0; qm < col; qm = qm + 1)
+      for (j = 0; j < pr; j = j + 1) begin
+        qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
+        K[qm][j] = captured_data;
+      end
+    $fclose(qkvn_file);
+
+    qkvn_file = $fopen("sim/pattern/vdata.txt", "r");
+    for (qm = 0; qm < half_pr; qm = qm + 1)
+      for (j = 0; j < total_cycle; j = j + 1) begin
+        qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
+        V_T[j][qm] = captured_data;
+      end
+    $fclose(qkvn_file);
+
+    for (t = 0; t < total_cycle; t = t + 1)
+      for (j = 0; j < pr; j = j + 1)
+        qk_result[t][j] = 0;
+
+    for (t = 0; t < total_cycle; t = t + 1)
+      for (j = 0; j < col; j = j + 1) begin
+        vn_result_lo[t][j] = 0;
+        vn_result_hi[t][j] = 0;
+        qk_result_core0[t][j] = 0;
+        qk_result_core1[t][j] = 0;
+        qk_cap_core0[t][j] = 0;
+        qk_cap_core1[t][j] = 0;
+        vn_cap_core0[t][j] = 0;
+        vn_cap_core1[t][j] = 0;
+      end
+
+      // Golden Q x K = (8x8) x (8x16) = 8x16
+    for (t = 0; t < total_cycle; t = t + 1)
+      for (qm = 0; qm < pr; qm = qm + 1)
+        for (k = 0; k < half_pr; k = k + 1)
+          qk_result[t][qm] = qk_result[t][qm] + Q[t][k] * K[k][qm];
+
+    for (t = 0; t < total_cycle; t = t + 1)
+      for (qm = 0; qm < col; qm = qm + 1) begin
+        qk_result_core0[t][qm] = qk_result[t][qm];
+        qk_result_core1[t][qm] = qk_result[t][qm+col];
+      end
+
+    repeat(5) @(posedge clk0);
+    repeat(3) @(posedge clk1);
+    reset = 0;
+    //compare QK
+    // wait long enough for both core stimulus blocks to complete QK phase
+    wait(core0_qk_done && core1_qk_done);
+    repeat(2) @(posedge clk0);
+
+    for (c = 0; c < col; c = c + 1)
+      golden_col[c] = 7 - c;
+
+    err = 0;
+
+    //@(posedge clk0);
+    //pmem_rd_0 = 1;
+    //pmem_add_0 = 0;
+    //@(posedge clk1);
+    //pmem_rd_1 = 1;
+    //pmem_add_1 = 0;
+
+    for (qm = 0; qm < total_cycle; qm = qm + 1) begin
+      row = qm;
+      row_err = 0;
+      for (c = 0; c < col; c = c + 1) begin
+        if (qk_cap_core0[row][c] !== qk_result_core0[row][golden_col[c]]) begin
+          err = err + 1;
+          row_err = row_err + 1;
+          $display("QK core0 mismatch row=%0d col=%0d RTL=%0d golden=%0d",
+                   row, c, qk_cap_core0[row][c], qk_result_core0[row][golden_col[c]]);
+        end
+        if (qk_cap_core1[row][c] !== qk_result_core1[row][golden_col[c]]) begin
+          err = err + 1;
+          row_err = row_err + 1;
+          $display("QK core1 mismatch row=%0d col=%0d RTL=%0d golden=%0d",
+                   row, c, qk_cap_core1[row][c], qk_result_core1[row][golden_col[c]]);
+        end
+      end
+      $display("QK row %0d : %s", row, (row_err == 0) ? "OK" : "MISMATCH");
+    end
+
+    qk_checked = 1;
+    
+    
+    //compare QK golden vs hardWARE PROD OUTPUT
+
+    //VN phase 
+    `ifdef LOAD_OTHER_NORM_FILE
+      qkvn_file = $fopen("sim/pattern/norm_dual.txt", "r");
+      for (qm = 0; qm < half_pr; qm = qm + 1)
+        for (j = 0; j < pr; j = j + 1) begin
+          qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
+          N[qm][j] = captured_data;
+        end
+      $fclose(qkvn_file);
+      n_ready = 1;
+      `else
+        for (qm = 0; qm < total_cycle; qm = qm + 1) begin
+        sum_abs = 0;
+        for (j = 0; j < pr; j = j + 1) begin
+          unsigned_val = qk_result[qm][j];
+          if (unsigned_val < 0)
+            unsigned_val = -unsigned_val;
+          sum_abs = sum_abs + unsigned_val;
+        end
+        if (sum_abs == 0)
+          sum_abs = 1;
+
+        for (j = 0; j < pr; j = j + 1) begin
+          unsigned_val = qk_result[qm][j];
+          if (unsigned_val < 0)
+            unsigned_val = -unsigned_val;
+          N[qm][j] = (unsigned_val <<< sfp_out_shift) / sum_abs;
+          estimated[qm*pr + j] = N[qm][j];
+        end
+        end
+    `endif
+
+    //golden VT x N
+
+    for (t = 0; t < total_cycle; t = t + 1)
+      for (qm = 0; qm < col; qm = qm + 1) begin
+        vn_result_lo[t][qm] = 0;
+        vn_result_hi[t][qm] = 0;
+        for (k = 0; k < half_pr; k = k + 1) begin
+          vn_result_lo[t][qm] = vn_result_lo[t][qm] + N[k][qm] * V_T[t][k];
+          vn_result_hi[t][qm] = vn_result_hi[t][qm] + N[k][qm+8] * V_T[t][k];
+        end
+      end
+    //compare VN phase
+    // wait long enough for VN phase to complete
+    wait(core0_vn_done && core1_vn_done);
+    repeat(2) @(posedge clk0);
+
+    err = 0;
+    
+    //@(posedge clk0);
+    //pmem_rd_0 = 1;
+    //pmem_add_0 = 0;
+    //@(posedge clk1);
+    //pmem_rd_1 = 1;
+    //pmem_add_1 = 0;
+
+    for (qm = 0; qm < total_cycle; qm = qm + 1) begin
+      //@(posedge clk0);
+      row = qm;
+      row_err = 0;
+      for (c = 0; c < col; c = c + 1) begin
+        if (vn_cap_core0[row][c] != vn_result_lo[row][7-c]) begin
+          err = err + 1;
+          row_err = row_err + 1;
+          $display("VN core0 mismatch row=%0d col=%0d RTL=%0d golden=%0d",
+                   row, c, vn_cap_core0[row][c], vn_result_lo[row][7-c]);
+        end
+        if (vn_cap_core1[row][c] != vn_result_hi[row][7-c]) begin
+          err = err + 1;
+          row_err = row_err + 1;
+          $display("VN core1 mismatch row=%0d col=%0d RTL=%0d golden=%0d",
+                   row, c, vn_cap_core1[row][c], vn_result_hi[row][7-c]);
+        end
+      end
+          
+      $display("row %0d : %s", row, (row_err==0) ? "OK" : "MISMATCH");
+    end
+
+
+    if (err == 0) $display("PASS");
+    else $display("FAIL err=%0d", err);
+
+    #100 $finish;
+  end
+
+  // core0 driver
+  initial begin
+    wait(reset == 0);
+
+    // Q write
+    VN_mode_0 = 0;
+    for (q0 = 0; q0 < total_cycle; q0 = q0 + 1) begin
+      @(posedge clk0);
+      qmem_wr_0 = 1;
+      qkmem_add_0 = q0;
+      mem_in_core0[1*bw-1:0*bw] = Q[q0][7];
+      mem_in_core0[2*bw-1:1*bw] = Q[q0][6];
+      mem_in_core0[3*bw-1:2*bw] = Q[q0][5];
+      mem_in_core0[4*bw-1:3*bw] = Q[q0][4];
+      mem_in_core0[5*bw-1:4*bw] = Q[q0][3];
+      mem_in_core0[6*bw-1:5*bw] = Q[q0][2];
+      mem_in_core0[7*bw-1:6*bw] = Q[q0][1];
+      mem_in_core0[8*bw-1:7*bw] = Q[q0][0];
+    end
+    @(posedge clk0) qmem_wr_0 = 0;
+
+    // K write
+    for (q0 = 0; q0 < col; q0 = q0 + 1) begin
+      @(posedge clk0);
+      kmem_wr_0 = 1;
+      qkmem_add_0 = q0;
+      mem_in_core0[1*bw-1:0*bw] = K[q0][7];
+      mem_in_core0[2*bw-1:1*bw] = K[q0][6];
+      mem_in_core0[3*bw-1:2*bw] = K[q0][5];
+      mem_in_core0[4*bw-1:3*bw] = K[q0][4];
+      mem_in_core0[5*bw-1:4*bw] = K[q0][3];
+      mem_in_core0[6*bw-1:5*bw] = K[q0][2];
+      mem_in_core0[7*bw-1:6*bw] = K[q0][1];
+      mem_in_core0[8*bw-1:7*bw] = K[q0][0];
+    end
+    @(posedge clk0) kmem_wr_0 = 0;
+
+    // K load
+    @(posedge clk0) begin load_0 = 1; kmem_rd_0 = 1; qkmem_add_0 = 0; end
+    repeat(col) @(posedge clk0) qkmem_add_0 = qkmem_add_0 + 1;
+    @(posedge clk0) begin load_0 = 0; kmem_rd_0 = 0; end
+
+    repeat(10) @(posedge clk0);
+
+    // Q execute
+    for (q0 = 0; q0 < total_cycle; q0 = q0 + 1) begin
+      @(posedge clk0);
+      execute_0 = 1;
+      qmem_rd_0 = 1;
+      qkmem_add_0 = q0;
+    end
+    @(posedge clk0) begin execute_0 = 0; qmem_rd_0 = 0; end
+
+    repeat(10) @(posedge clk0);
+
+    // QK read
+    @(posedge clk0) begin pmem_rd_0 = 1; pmem_add_0 = 0; end
+    @(posedge clk0) begin
+      qk_cap_core0[0][0] = $signed(pmem_out_core0[0*bw_psum +: bw_psum]);
+      qk_cap_core0[0][1] = $signed(pmem_out_core0[1*bw_psum +: bw_psum]);
+      qk_cap_core0[0][2] = $signed(pmem_out_core0[2*bw_psum +: bw_psum]);
+      qk_cap_core0[0][3] = $signed(pmem_out_core0[3*bw_psum +: bw_psum]);
+      qk_cap_core0[0][4] = $signed(pmem_out_core0[4*bw_psum +: bw_psum]);
+      qk_cap_core0[0][5] = $signed(pmem_out_core0[5*bw_psum +: bw_psum]);
+      qk_cap_core0[0][6] = $signed(pmem_out_core0[6*bw_psum +: bw_psum]);
+      qk_cap_core0[0][7] = $signed(pmem_out_core0[7*bw_psum +: bw_psum]);
+    end
+    for (q0 = 1; q0 < total_cycle; q0 = q0 + 1)begin
+      @(posedge clk0) pmem_add_0 = q0;
+      @(posedge clk0) begin
+        
+        qk_cap_core0[q0][0] = $signed(pmem_out_core0[0*bw_psum +: bw_psum]);
+        qk_cap_core0[q0][1] = $signed(pmem_out_core0[1*bw_psum +: bw_psum]);
+        qk_cap_core0[q0][2] = $signed(pmem_out_core0[2*bw_psum +: bw_psum]);
+        qk_cap_core0[q0][3] = $signed(pmem_out_core0[3*bw_psum +: bw_psum]);
+        qk_cap_core0[q0][4] = $signed(pmem_out_core0[4*bw_psum +: bw_psum]);
+        qk_cap_core0[q0][5] = $signed(pmem_out_core0[5*bw_psum +: bw_psum]);
+        qk_cap_core0[q0][6] = $signed(pmem_out_core0[6*bw_psum +: bw_psum]);
+        qk_cap_core0[q0][7] = $signed(pmem_out_core0[7*bw_psum +: bw_psum]);
+      end
+    end
+    @(posedge clk0) pmem_rd_0 = 0;
+
+    core0_qk_done = 1;
+    wait(qk_checked == 1);
+
+    // normalization
+    sfp_processing_0 = 1;
+    pmem_rd_0 = 1;
+    for (q0 = 0; q0 < col; q0 = q0 + 1) begin
+      @(posedge clk0) pmem_add_0 = q0;
+      repeat(2) @(posedge clk0);
+      @(posedge clk0) sfp_acc_0 = 1;
+      @(posedge clk0) sfp_acc_0 = 0;
+      repeat(10) @(posedge clk1);
+      @(posedge clk0) sfp_div_0 = 1;
+      @(posedge clk0) sfp_div_0 = 0;
+      repeat(sfp_div_lat + 2) @(posedge clk0);
+      @(posedge clk0) begin kmem_wr_0 = 1; qkmem_add_0 = q0; end
+      @(posedge clk0) kmem_wr_0 = 0;
+    end
+    sfp_processing_0 = 0;
+    pmem_rd_0 = 0;
+
+    // V write
+    VN_mode_0 = 1;
+    for (q0 = 0; q0 < total_cycle; q0 = q0 + 1) begin
+      @(posedge clk0);
+      qmem_wr_0 = 1;
+      qkmem_add_0 = q0;
+      mem_in_core0[1*bw-1:0*bw] = V_T[q0][7];
+      mem_in_core0[2*bw-1:1*bw] = V_T[q0][6];
+      mem_in_core0[3*bw-1:2*bw] = V_T[q0][5];
+      mem_in_core0[4*bw-1:3*bw] = V_T[q0][4];
+      mem_in_core0[5*bw-1:4*bw] = V_T[q0][3];
+      mem_in_core0[6*bw-1:5*bw] = V_T[q0][2];
+      mem_in_core0[7*bw-1:6*bw] = V_T[q0][1];
+      mem_in_core0[8*bw-1:7*bw] = V_T[q0][0];
+    end
+    @(posedge clk0) qmem_wr_0 = 0;
+
+    `ifdef LOAD_OTHER_NORM_FILE
+
+    wait(n_ready == 1);
+
+    // N write
+    for (q0 = 0; q0 < col; q0 = q0 + 1) begin
+      @(posedge clk0);
+      kmem_wr_0 = 1;
+      qkmem_add_0 = q0;
+      mem_in_core0[1*bw-1:0*bw] = N[q0][7];
+      mem_in_core0[2*bw-1:1*bw] = N[q0][6];
+      mem_in_core0[3*bw-1:2*bw] = N[q0][5];
+      mem_in_core0[4*bw-1:3*bw] = N[q0][4];
+      mem_in_core0[5*bw-1:4*bw] = N[q0][3];
+      mem_in_core0[6*bw-1:5*bw] = N[q0][2];
+      mem_in_core0[7*bw-1:6*bw] = N[q0][1];
+      mem_in_core0[8*bw-1:7*bw] = N[q0][0];
+    end
+    @(posedge clk0) kmem_wr_0 = 0;
+    
+
+    // N load
+    @(posedge clk0) begin load_0 = 1; kmem_rd_0 = 1; qkmem_add_0 = 0; end
+    repeat(col) @(posedge clk0) qkmem_add_0 = qkmem_add_0 + 1;
+    @(posedge clk0) begin load_0 = 0; kmem_rd_0 = 0; end
+    `endif 
+    
+    // VN execute
+    for (q0 = 0; q0 < total_cycle; q0 = q0 + 1) begin
+      @(posedge clk0);
+      execute_0 = 1;
+      qmem_rd_0 = 1;
+      qkmem_add_0 = q0;
+    end
+    @(posedge clk0) begin execute_0 = 0; qmem_rd_0 = 0; end
+
+    repeat(10) @(posedge clk0);
+
+    // VN read
+    @(posedge clk0) begin pmem_rd_0 = 1; pmem_add_0 = 0; end
+    @(posedge clk0)begin
+      vn_cap_core0[0][0] = $signed(pmem_out_core0[0*bw_psum +: bw_psum]);
+      vn_cap_core0[0][1] = $signed(pmem_out_core0[1*bw_psum +: bw_psum]);
+      vn_cap_core0[0][2] = $signed(pmem_out_core0[2*bw_psum +: bw_psum]);
+      vn_cap_core0[0][3] = $signed(pmem_out_core0[3*bw_psum +: bw_psum]);
+      vn_cap_core0[0][4] = $signed(pmem_out_core0[4*bw_psum +: bw_psum]);
+      vn_cap_core0[0][5] = $signed(pmem_out_core0[5*bw_psum +: bw_psum]);
+      vn_cap_core0[0][6] = $signed(pmem_out_core0[6*bw_psum +: bw_psum]);
+      vn_cap_core0[0][7] = $signed(pmem_out_core0[7*bw_psum +: bw_psum]);
+    end
+    for (q0 = 1; q0 < total_cycle; q0 = q0 + 1) begin
+      @(posedge clk0) pmem_add_0 = q0;
+      @(posedge clk0) begin
+        //pmem_add_0 = q0;
+        vn_cap_core0[q0][0] = $signed(pmem_out_core0[0*bw_psum +: bw_psum]);
+        vn_cap_core0[q0][1] = $signed(pmem_out_core0[1*bw_psum +: bw_psum]);
+        vn_cap_core0[q0][2] = $signed(pmem_out_core0[2*bw_psum +: bw_psum]);
+        vn_cap_core0[q0][3] = $signed(pmem_out_core0[3*bw_psum +: bw_psum]);
+        vn_cap_core0[q0][4] = $signed(pmem_out_core0[4*bw_psum +: bw_psum]);
+        vn_cap_core0[q0][5] = $signed(pmem_out_core0[5*bw_psum +: bw_psum]);
+        vn_cap_core0[q0][6] = $signed(pmem_out_core0[6*bw_psum +: bw_psum]);
+        vn_cap_core0[q0][7] = $signed(pmem_out_core0[7*bw_psum +: bw_psum]);
+      end
+    end
+    @(posedge clk0) pmem_rd_0 = 0;
+
+    core0_vn_done = 1;
+
+  end
+
+  // core1 driver
+  initial begin
+    wait(reset == 0);
+
+    // Q write
+    VN_mode_1 = 0;
+    for (q1 = 0; q1 < total_cycle; q1 = q1 + 1) begin
+      @(posedge clk1);
+      qmem_wr_1 = 1;
+      qkmem_add_1 = q1;
+      mem_in_core1[1*bw-1:0*bw] = Q[q1][7];
+      mem_in_core1[2*bw-1:1*bw] = Q[q1][6];
+      mem_in_core1[3*bw-1:2*bw] = Q[q1][5];
+      mem_in_core1[4*bw-1:3*bw] = Q[q1][4];
+      mem_in_core1[5*bw-1:4*bw] = Q[q1][3];
+      mem_in_core1[6*bw-1:5*bw] = Q[q1][2];
+      mem_in_core1[7*bw-1:6*bw] = Q[q1][1];
+      mem_in_core1[8*bw-1:7*bw] = Q[q1][0];
+    end
+    @(posedge clk1) qmem_wr_1 = 0;
+
+    // K write
+    for (q1 = 0; q1 < col; q1 = q1 + 1) begin
+      @(posedge clk1);
+      kmem_wr_1 = 1;
+      qkmem_add_1 = q1;
+      mem_in_core1[1*bw-1:0*bw] = K[q1][15];
+      mem_in_core1[2*bw-1:1*bw] = K[q1][14];
+      mem_in_core1[3*bw-1:2*bw] = K[q1][13];
+      mem_in_core1[4*bw-1:3*bw] = K[q1][12];
+      mem_in_core1[5*bw-1:4*bw] = K[q1][11];
+      mem_in_core1[6*bw-1:5*bw] = K[q1][10];
+      mem_in_core1[7*bw-1:6*bw] = K[q1][9];
+      mem_in_core1[8*bw-1:7*bw] = K[q1][8];
+    end
+    @(posedge clk1) kmem_wr_1 = 0;
+
+    // K load
+    @(posedge clk1) begin load_1 = 1; kmem_rd_1 = 1; qkmem_add_1 = 0; end
+    repeat(col) @(posedge clk1) qkmem_add_1 = qkmem_add_1 + 1;
+    @(posedge clk1) begin load_1 = 0; kmem_rd_1 = 0; end
+
+    repeat(10) @(posedge clk1);
+
+    // Q execute
+    for (q1 = 0; q1 < total_cycle; q1 = q1 + 1) begin
+      @(posedge clk1);
+      execute_1 = 1;
+      qmem_rd_1 = 1;
+      qkmem_add_1 = q1;
+    end
+    @(posedge clk1) begin execute_1 = 0; qmem_rd_1 = 0; end
+
+    repeat(10) @(posedge clk1);
+
+    // QK read
+    @(posedge clk1) begin pmem_rd_1 = 1; pmem_add_1 = 0; end
+    @(posedge clk1) begin
+      qk_cap_core1[0][0] = $signed(pmem_out_core1[0*bw_psum +: bw_psum]);
+      qk_cap_core1[0][1] = $signed(pmem_out_core1[1*bw_psum +: bw_psum]);
+      qk_cap_core1[0][2] = $signed(pmem_out_core1[2*bw_psum +: bw_psum]);
+      qk_cap_core1[0][3] = $signed(pmem_out_core1[3*bw_psum +: bw_psum]);
+      qk_cap_core1[0][4] = $signed(pmem_out_core1[4*bw_psum +: bw_psum]);
+      qk_cap_core1[0][5] = $signed(pmem_out_core1[5*bw_psum +: bw_psum]);
+      qk_cap_core1[0][6] = $signed(pmem_out_core1[6*bw_psum +: bw_psum]);
+      qk_cap_core1[0][7] = $signed(pmem_out_core1[7*bw_psum +: bw_psum]);
+    end
+    for (q1 = 1; q1 < total_cycle; q1 = q1 + 1) begin
+      @(posedge clk1) pmem_add_1 = q1;
+      @(posedge clk1) begin
+        //pmem_add_1 = q1;
+        qk_cap_core1[q1][0] = $signed(pmem_out_core1[0*bw_psum +: bw_psum]);
+        qk_cap_core1[q1][1] = $signed(pmem_out_core1[1*bw_psum +: bw_psum]);
+        qk_cap_core1[q1][2] = $signed(pmem_out_core1[2*bw_psum +: bw_psum]);
+        qk_cap_core1[q1][3] = $signed(pmem_out_core1[3*bw_psum +: bw_psum]);
+        qk_cap_core1[q1][4] = $signed(pmem_out_core1[4*bw_psum +: bw_psum]);
+        qk_cap_core1[q1][5] = $signed(pmem_out_core1[5*bw_psum +: bw_psum]);
+        qk_cap_core1[q1][6] = $signed(pmem_out_core1[6*bw_psum +: bw_psum]);
+        qk_cap_core1[q1][7] = $signed(pmem_out_core1[7*bw_psum +: bw_psum]);
+      end
+    end
+    @(posedge clk1) pmem_rd_1 = 0;
+
+    core1_qk_done = 1;
+
+    wait(qk_checked == 1);
+
+    // normalization
+    sfp_processing_1 = 1;
+    pmem_rd_1 = 1;
+    for (q1 = 0; q1 < col; q1 = q1 + 1) begin
+      @(posedge clk1) pmem_add_1 = q1;
+      repeat(2) @(posedge clk1);
+      @(posedge clk1) sfp_acc_1 = 1;
+      @(posedge clk1) sfp_acc_1 = 0;
+      repeat(10) @(posedge clk0);
+      @(posedge clk1) sfp_div_1 = 1;
+      @(posedge clk1) sfp_div_1 = 0;
+      repeat(sfp_div_lat + 2) @(posedge clk1);
+      @(posedge clk1) begin kmem_wr_1 = 1; qkmem_add_1 = q1; end
+      @(posedge clk1) kmem_wr_1 = 0;
+    end
+    sfp_processing_1 = 0;
+    pmem_rd_1 = 0;
+
+    // V write
+    VN_mode_1 = 1;
+    for (q1 = 0; q1 < total_cycle; q1 = q1 + 1) begin
+      @(posedge clk1);
+      qmem_wr_1 = 1;
+      qkmem_add_1 = q1;
+      mem_in_core1[1*bw-1:0*bw] = V_T[q1][7];
+      mem_in_core1[2*bw-1:1*bw] = V_T[q1][6];
+      mem_in_core1[3*bw-1:2*bw] = V_T[q1][5];
+      mem_in_core1[4*bw-1:3*bw] = V_T[q1][4];
+      mem_in_core1[5*bw-1:4*bw] = V_T[q1][3];
+      mem_in_core1[6*bw-1:5*bw] = V_T[q1][2];
+      mem_in_core1[7*bw-1:6*bw] = V_T[q1][1];
+      mem_in_core1[8*bw-1:7*bw] = V_T[q1][0];
+    end
+    @(posedge clk1) qmem_wr_1 = 0;
+
+  
+  `ifdef LOAD_OTHER_NORM_FILE
+    wait(n_ready == 1);
+
+    // N write
+    for (q1 = 0; q1 < col; q1 = q1 + 1) begin
+      @(posedge clk1);
+      kmem_wr_1 = 1;
+      qkmem_add_1 = q1;
+      mem_in_core1[1*bw-1:0*bw] = N[q1][15];
+      mem_in_core1[2*bw-1:1*bw] = N[q1][14];
+      mem_in_core1[3*bw-1:2*bw] = N[q1][13];
+      mem_in_core1[4*bw-1:3*bw] = N[q1][12];
+      mem_in_core1[5*bw-1:4*bw] = N[q1][11];
+      mem_in_core1[6*bw-1:5*bw] = N[q1][10];
+      mem_in_core1[7*bw-1:6*bw] = N[q1][9];
+      mem_in_core1[8*bw-1:7*bw] = N[q1][8];
+    end
+    @(posedge clk1) kmem_wr_1 = 0;
+
+    // N load
+    @(posedge clk1) begin load_1 = 1; kmem_rd_1 = 1; qkmem_add_1 = 0; end
+    repeat(col) @(posedge clk1) qkmem_add_1 = qkmem_add_1 + 1;
+    @(posedge clk1) begin load_1 = 0; kmem_rd_1 = 0; end
+
+    `endif
+
+    // VN execute
+    for (q1 = 0; q1 < total_cycle; q1 = q1 + 1) begin
+      @(posedge clk1);
+      execute_1 = 1;
+      qmem_rd_1 = 1;
+      qkmem_add_1 = q1;
+    end
+    @(posedge clk1) begin execute_1 = 0; qmem_rd_1 = 0; end
+
+    repeat(10) @(posedge clk1);
+
+    // VN read
+    @(posedge clk1) begin pmem_rd_1 = 1; pmem_add_1 = 0; end
+    @(posedge clk1) begin
+      vn_cap_core1[0][0] = $signed(pmem_out_core1[0*bw_psum +: bw_psum]);
+      vn_cap_core1[0][1] = $signed(pmem_out_core1[1*bw_psum +: bw_psum]);
+      vn_cap_core1[0][2] = $signed(pmem_out_core1[2*bw_psum +: bw_psum]);
+      vn_cap_core1[0][3] = $signed(pmem_out_core1[3*bw_psum +: bw_psum]);
+      vn_cap_core1[0][4] = $signed(pmem_out_core1[4*bw_psum +: bw_psum]);
+      vn_cap_core1[0][5] = $signed(pmem_out_core1[5*bw_psum +: bw_psum]);
+      vn_cap_core1[0][6] = $signed(pmem_out_core1[6*bw_psum +: bw_psum]);
+      vn_cap_core1[0][7] = $signed(pmem_out_core1[7*bw_psum +: bw_psum]);
+    end
+    for (q1 = 1; q1 < total_cycle; q1 = q1 + 1) begin
+      @(posedge clk1) pmem_add_1 = q1;
+      @(posedge clk1) begin
+        //pmem_add_1 = q1;
+        vn_cap_core1[q1][0] = $signed(pmem_out_core1[0*bw_psum +: bw_psum]);
+        vn_cap_core1[q1][1] = $signed(pmem_out_core1[1*bw_psum +: bw_psum]);
+        vn_cap_core1[q1][2] = $signed(pmem_out_core1[2*bw_psum +: bw_psum]);
+        vn_cap_core1[q1][3] = $signed(pmem_out_core1[3*bw_psum +: bw_psum]);
+        vn_cap_core1[q1][4] = $signed(pmem_out_core1[4*bw_psum +: bw_psum]);
+        vn_cap_core1[q1][5] = $signed(pmem_out_core1[5*bw_psum +: bw_psum]);
+        vn_cap_core1[q1][6] = $signed(pmem_out_core1[6*bw_psum +: bw_psum]);
+        vn_cap_core1[q1][7] = $signed(pmem_out_core1[7*bw_psum +: bw_psum]);
+      end
+    end
+    @(posedge clk1) pmem_rd_1 = 0;
+
+    core1_vn_done = 1;
+
+  end
+
+endmodule
+
+/*
+`timescale 1ns/1ps
+
+module fullchip_tb;
+
+  parameter total_cycle = 8;
+  parameter bw = 8;
+  parameter bw_psum = 2*bw+4;
+  parameter pr = 16;
+  parameter half_pr = 8;
+  parameter col = 8;
+  parameter sfp_out_shift = 7;
+  parameter sfp_acc_lat = 1;
+
+  parameter CLK0_PERIOD = 2;
+  parameter CLK1_PERIOD = 4;
+
+  `ifdef SFP_LONGDIV
+    parameter sfp_div_lat = 8;
+  `else
+    parameter sfp_div_lat = 0;
+  `endif
+
+  integer qkvn_file, qkvn_scan_file, captured_data;
+
+  integer K   [col-1:0][pr-1:0];
+  integer Q   [total_cycle-1:0][pr-1:0];
+  integer N   [total_cycle-1:0][col-1:0];
+  integer V_T [pr-1:0][col-1:0];
+
+  integer qk_result       [total_cycle-1:0][col-1:0];
+  integer qk_result_core0 [total_cycle-1:0][col-1:0];
+  integer qk_result_core1 [total_cycle-1:0][col-1:0];
+
+  integer vn_result_lo [total_cycle-1:0][col-1:0];
+  integer vn_result_hi [total_cycle-1:0][col-1:0];
+
+  integer estimated [0:total_cycle*pr-1];
+
+  integer i, j, k, t, q, c;
+  integer err, row_err, row;
+  integer sum_abs, unsigned_val;
+  integer golden_col [0:col-1];
+
+  integer q0, q1;
+
+  reg reset = 1;
+  reg clk0 = 0;
+  reg clk1 = 0;
+
+  // -------------------------------
+  // Per-core TB-side buses
+  // -------------------------------
+  reg [half_pr*bw-1:0] mem_in_core0_tb;
+  reg [half_pr*bw-1:0] mem_in_core1_tb;
+
+  reg [19:0] inst0_tb;
+  reg [19:0] inst1_tb;
+
+  wire [pr*bw-1:0] mem_in;
+  wire [39:0]      inst;
+
+  assign mem_in = {mem_in_core1_tb, mem_in_core0_tb};
+  assign inst   = {inst1_tb, inst0_tb};
+
+  // -------------------------------
+  // Core0 control fields
+  // -------------------------------
+  reg VN_mode_0 = 0;
+  reg sfp_div_0 = 0, sfp_acc_0 = 0, sfp_processing_0 = 0;
+  reg qmem_rd_0 = 0, qmem_wr_0 = 0, kmem_rd_0 = 0, kmem_wr_0 = 0, pmem_rd_0 = 0, pmem_wr_0 = 0;
+  reg execute_0 = 0, load_0 = 0;
+  reg [3:0] qkmem_add_0 = 0;
+  reg [3:0] pmem_add_0  = 0;
+
+  // -------------------------------
+  // Core1 control fields
+  // -------------------------------
+  reg VN_mode_1 = 0;
+  reg sfp_div_1 = 0, sfp_acc_1 = 0, sfp_processing_1 = 0;
+  reg qmem_rd_1 = 0, qmem_wr_1 = 0, kmem_rd_1 = 0, kmem_wr_1 = 0, pmem_rd_1 = 0, pmem_wr_1 = 0;
+  reg execute_1 = 0, load_1 = 0;
+  reg [3:0] qkmem_add_1 = 0;
+  reg [3:0] pmem_add_1  = 0;
+
+  // pack inst0
+  always @(*) begin
+    inst0_tb[19]   = VN_mode_0;
+    inst0_tb[18]   = sfp_div_0;
+    inst0_tb[17]   = sfp_acc_0;
+    inst0_tb[16]   = sfp_processing_0;
+    inst0_tb[15:12]= qkmem_add_0;
+    inst0_tb[11:8] = pmem_add_0;
+    inst0_tb[7]    = execute_0;
+    inst0_tb[6]    = load_0;
+    inst0_tb[5]    = qmem_rd_0;
+    inst0_tb[4]    = qmem_wr_0;
+    inst0_tb[3]    = kmem_rd_0;
+    inst0_tb[2]    = kmem_wr_0;
+    inst0_tb[1]    = pmem_rd_0;
+    inst0_tb[0]    = pmem_wr_0;
+  end
+
+  // pack inst1
+  always @(*) begin
+    inst1_tb[19]   = VN_mode_1;
+    inst1_tb[18]   = sfp_div_1;
+    inst1_tb[17]   = sfp_acc_1;
+    inst1_tb[16]   = sfp_processing_1;
+    inst1_tb[15:12]= qkmem_add_1;
+    inst1_tb[11:8] = pmem_add_1;
+    inst1_tb[7]    = execute_1;
+    inst1_tb[6]    = load_1;
+    inst1_tb[5]    = qmem_rd_1;
+    inst1_tb[4]    = qmem_wr_1;
+    inst1_tb[3]    = kmem_rd_1;
+    inst1_tb[2]    = kmem_wr_1;
+    inst1_tb[1]    = pmem_rd_1;
+    inst1_tb[0]    = pmem_wr_1;
+  end
+
+  wire [bw_psum*col*2-1:0] out;
+  wire [bw_psum*col-1:0] pmem_out_core0;
+  wire [bw_psum*col-1:0] pmem_out_core1;
+
+  assign pmem_out_core0 = out[bw_psum*col-1:0];
+  assign pmem_out_core1 = out[bw_psum*col*2-1:bw_psum*col];
+
+  fullchip #(
+    .bw(bw),
+    .bw_psum(bw_psum),
+    .col(col),
+    .pr(pr)
+  ) fullchip_instance (
+    .clk0(clk0),
+    .clk1(clk1),
+    .mem_in(mem_in),
+    .inst(inst),
+    .reset(reset),
+    .out(out)
+  );
+
+  always #(CLK0_PERIOD/2.0) clk0 = ~clk0;
+  always #(CLK1_PERIOD/2.0) clk1 = ~clk1;
+
+  // -------------------------------
+  // Phase/event control
+  // -------------------------------
+  event ev_start_q_write,  ev_done_q_write_0,  ev_done_q_write_1;
+  event ev_start_k_write,  ev_done_k_write_0,  ev_done_k_write_1;
+  event ev_start_k_load,   ev_done_k_load_0,   ev_done_k_load_1;
+  event ev_start_q_exec,   ev_done_q_exec_0,   ev_done_q_exec_1;
+  event ev_start_q_read,   ev_done_q_read_0,   ev_done_q_read_1;
+  event ev_start_norm,     ev_done_norm_0,     ev_done_norm_1;
+  event ev_start_v_write,  ev_done_v_write_0,  ev_done_v_write_1;
+  event ev_start_v_load,   ev_done_v_load_0,   ev_done_v_load_1;
+  event ev_start_n_write,  ev_done_n_write_0,  ev_done_n_write_1;
+  event ev_start_vn_exec,  ev_done_vn_exec_0,  ev_done_vn_exec_1;
+  event ev_start_vn_read,  ev_done_vn_read_0,  ev_done_vn_read_1;
+
+  // -------------------------------
+  // Helper tasks: core0 packing
+  // -------------------------------
+  task load_q_core0;
+    input integer row_idx;
+    begin
+      mem_in_core0_tb[1*bw-1:0*bw] = Q[row_idx][7];
+      mem_in_core0_tb[2*bw-1:1*bw] = Q[row_idx][6];
+      mem_in_core0_tb[3*bw-1:2*bw] = Q[row_idx][5];
+      mem_in_core0_tb[4*bw-1:3*bw] = Q[row_idx][4];
+      mem_in_core0_tb[5*bw-1:4*bw] = Q[row_idx][3];
+      mem_in_core0_tb[6*bw-1:5*bw] = Q[row_idx][2];
+      mem_in_core0_tb[7*bw-1:6*bw] = Q[row_idx][1];
+      mem_in_core0_tb[8*bw-1:7*bw] = Q[row_idx][0];
+    end
+  endtask
+
+  task load_q_core1;
+    input integer row_idx;
+    begin
+      mem_in_core1_tb[1*bw-1:0*bw] = Q[row_idx][15];
+      mem_in_core1_tb[2*bw-1:1*bw] = Q[row_idx][14];
+      mem_in_core1_tb[3*bw-1:2*bw] = Q[row_idx][13];
+      mem_in_core1_tb[4*bw-1:3*bw] = Q[row_idx][12];
+      mem_in_core1_tb[5*bw-1:4*bw] = Q[row_idx][11];
+      mem_in_core1_tb[6*bw-1:5*bw] = Q[row_idx][10];
+      mem_in_core1_tb[7*bw-1:6*bw] = Q[row_idx][9];
+      mem_in_core1_tb[8*bw-1:7*bw] = Q[row_idx][8];
+    end
+  endtask
+
+  task load_k_core0;
+    input integer row_idx;
+    begin
+      mem_in_core0_tb[1*bw-1:0*bw] = K[row_idx][7];
+      mem_in_core0_tb[2*bw-1:1*bw] = K[row_idx][6];
+      mem_in_core0_tb[3*bw-1:2*bw] = K[row_idx][5];
+      mem_in_core0_tb[4*bw-1:3*bw] = K[row_idx][4];
+      mem_in_core0_tb[5*bw-1:4*bw] = K[row_idx][3];
+      mem_in_core0_tb[6*bw-1:5*bw] = K[row_idx][2];
+      mem_in_core0_tb[7*bw-1:6*bw] = K[row_idx][1];
+      mem_in_core0_tb[8*bw-1:7*bw] = K[row_idx][0];
+    end
+  endtask
+
+  task load_k_core1;
+    input integer row_idx;
+    begin
+      mem_in_core1_tb[1*bw-1:0*bw] = K[row_idx][15];
+      mem_in_core1_tb[2*bw-1:1*bw] = K[row_idx][14];
+      mem_in_core1_tb[3*bw-1:2*bw] = K[row_idx][13];
+      mem_in_core1_tb[4*bw-1:3*bw] = K[row_idx][12];
+      mem_in_core1_tb[5*bw-1:4*bw] = K[row_idx][11];
+      mem_in_core1_tb[6*bw-1:5*bw] = K[row_idx][10];
+      mem_in_core1_tb[7*bw-1:6*bw] = K[row_idx][9];
+      mem_in_core1_tb[8*bw-1:7*bw] = K[row_idx][8];
+    end
+  endtask
+
+  task load_v_core0;
+    input integer col_idx;
+    begin
+      mem_in_core0_tb[1*bw-1:0*bw] = V_T[7][col_idx];
+      mem_in_core0_tb[2*bw-1:1*bw] = V_T[6][col_idx];
+      mem_in_core0_tb[3*bw-1:2*bw] = V_T[5][col_idx];
+      mem_in_core0_tb[4*bw-1:3*bw] = V_T[4][col_idx];
+      mem_in_core0_tb[5*bw-1:4*bw] = V_T[3][col_idx];
+      mem_in_core0_tb[6*bw-1:5*bw] = V_T[2][col_idx];
+      mem_in_core0_tb[7*bw-1:6*bw] = V_T[1][col_idx];
+      mem_in_core0_tb[8*bw-1:7*bw] = V_T[0][col_idx];
+    end
+  endtask
+
+  task load_v_core1;
+    input integer col_idx;
+    begin
+      mem_in_core1_tb[1*bw-1:0*bw] = V_T[15][col_idx];
+      mem_in_core1_tb[2*bw-1:1*bw] = V_T[14][col_idx];
+      mem_in_core1_tb[3*bw-1:2*bw] = V_T[13][col_idx];
+      mem_in_core1_tb[4*bw-1:3*bw] = V_T[12][col_idx];
+      mem_in_core1_tb[5*bw-1:4*bw] = V_T[11][col_idx];
+      mem_in_core1_tb[6*bw-1:5*bw] = V_T[10][col_idx];
+      mem_in_core1_tb[7*bw-1:6*bw] = V_T[9][col_idx];
+      mem_in_core1_tb[8*bw-1:7*bw] = V_T[8][col_idx];
+    end
+  endtask
+
+  task load_n_core_same;
+    input integer row_idx;
+    input integer which_core; // unused except to keep calls symmetric
+    begin
+      // N is only 8-wide, so both cores get the same N[row][0:7]
+      if (which_core == 0) begin
+        mem_in_core0_tb[1*bw-1:0*bw] = N[row_idx][7];
+        mem_in_core0_tb[2*bw-1:1*bw] = N[row_idx][6];
+        mem_in_core0_tb[3*bw-1:2*bw] = N[row_idx][5];
+        mem_in_core0_tb[4*bw-1:3*bw] = N[row_idx][4];
+        mem_in_core0_tb[5*bw-1:4*bw] = N[row_idx][3];
+        mem_in_core0_tb[6*bw-1:5*bw] = N[row_idx][2];
+        mem_in_core0_tb[7*bw-1:6*bw] = N[row_idx][1];
+        mem_in_core0_tb[8*bw-1:7*bw] = N[row_idx][0];
+      end else begin
+        mem_in_core1_tb[1*bw-1:0*bw] = N[row_idx][7];
+        mem_in_core1_tb[2*bw-1:1*bw] = N[row_idx][6];
+        mem_in_core1_tb[3*bw-1:2*bw] = N[row_idx][5];
+        mem_in_core1_tb[4*bw-1:3*bw] = N[row_idx][4];
+        mem_in_core1_tb[5*bw-1:4*bw] = N[row_idx][3];
+        mem_in_core1_tb[6*bw-1:5*bw] = N[row_idx][2];
+        mem_in_core1_tb[7*bw-1:6*bw] = N[row_idx][1];
+        mem_in_core1_tb[8*bw-1:7*bw] = N[row_idx][0];
+      end
+    end
+  endtask
+
+  // -------------------------------
+  // Setup + orchestration + checking
+  // -------------------------------
+  initial begin
+    $dumpfile("sim/waveform/fullchip.vcd");
+    $dumpvars(0, fullchip_tb);
+
+    mem_in_core0_tb = 0;
+    mem_in_core1_tb = 0;
+
+    for (i = 0; i < col; i = i + 1)
+      for (j = 0; j < pr; j = j + 1)
+        K[i][j] = 0;
+
+    for (i = 0; i < total_cycle; i = i + 1)
+      for (j = 0; j < pr; j = j + 1)
+        Q[i][j] = 0;
+
+    for (i = 0; i < pr; i = i + 1)
+      for (j = 0; j < col; j = j + 1)
+        V_T[i][j] = 0;
+
+    for (i = 0; i < total_cycle; i = i + 1)
+      for (j = 0; j < col; j = j + 1)
+        N[i][j] = 0;
+
+    $display("##### Q data txt reading #####");
+    qkvn_file = $fopen("sim/pattern/qdata.txt", "r");
+    for (q = 0; q < total_cycle; q = q + 1)
+      for (j = 0; j < pr; j = j + 1) begin
+        qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
+        Q[q][j] = captured_data;
+      end
+
+    $display("##### K data txt reading #####");
+    qkvn_file = $fopen("sim/pattern/kdata.txt", "r");
+    for (q = 0; q < col; q = q + 1)
+      for (j = 0; j < pr; j = j + 1) begin
+        qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
+        K[q][j] = captured_data;
+      end
+
+    $display("##### V data txt reading #####");
+    qkvn_file = $fopen("sim/pattern/vdata.txt", "r");
+    for (q = 0; q < col; q = q + 1)
+      for (j = 0; j < pr; j = j + 1) begin
+        qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
+        V_T[j][q] = captured_data;
+      end
+
+    for (t = 0; t < total_cycle; t = t + 1)
+      for (q = 0; q < col; q = q + 1) begin
+        qk_result[t][q]       = 0;
+        qk_result_core0[t][q] = 0;
+        qk_result_core1[t][q] = 0;
+      end
+
+    for (t = 0; t < total_cycle; t = t + 1) begin
+      for (q = 0; q < col; q = q + 1) begin
+        for (k = 0; k < half_pr; k = k + 1)
+          qk_result_core0[t][q] = qk_result_core0[t][q] + Q[t][k] * K[q][k];
+        for (k = half_pr; k < pr; k = k + 1)
+          qk_result_core1[t][q] = qk_result_core1[t][q] + Q[t][k] * K[q][k];
+        qk_result[t][q] = qk_result_core0[t][q] + qk_result_core1[t][q];
+      end
+    end
+
+    for (t = 0; t < total_cycle; t = t + 1) begin
+      for (q = 0; q < col; q = q + 1) begin
+        vn_result_lo[t][q] = 0;
+        vn_result_hi[t][q] = 0;
+        for (k = 0; k < pr/2; k = k + 1) begin
+          vn_result_lo[t][q] = vn_result_lo[t][q] + N[t][k] * V_T[k][q];
+          vn_result_hi[t][q] = vn_result_hi[t][q] + N[t][k] * V_T[k+8][q];
+        end
+      end
+    end
+
+    repeat(5) @(posedge clk0);
+    repeat(3) @(posedge clk1);
+    reset = 0;
+
+    // ---------------- Q write ----------------
+    -> ev_start_q_write;
+    @ev_done_q_write_0;
+    @ev_done_q_write_1;
+
+    // ---------------- K write ----------------
+    -> ev_start_k_write;
+    @ev_done_k_write_0;
+    @ev_done_k_write_1;
+
+    // ---------------- K load ----------------
+    -> ev_start_k_load;
+    @ev_done_k_load_0;
+    @ev_done_k_load_1;
+
+    repeat(10) @(posedge clk0);
+
+    // ---------------- Q execute ----------------
+    -> ev_start_q_exec;
+    @ev_done_q_exec_0;
+    @ev_done_q_exec_1;
+
+    repeat(10) @(posedge clk0);
+
+    // ---------------- QK read/check ----------------
+    for (c = 0; c < col; c = c + 1)
+      golden_col[c] = 7 - c;
+
+    -> ev_start_q_read;
+    @ev_done_q_read_0;
+    @ev_done_q_read_1;
+
+    err = 0;
+    for (q = 0; q < total_cycle; q = q + 1) begin
+      row = q;
+      @(posedge clk0);
+      for (c = 0; c < col; c = c + 1) begin
+        sum_abs = $signed(pmem_out_core0[c*bw_psum +: bw_psum]) +
+                  $signed(pmem_out_core1[c*bw_psum +: bw_psum]);
+        unsigned_val = (sum_abs < 0) ? -sum_abs : sum_abs;
+        estimated[q*pr + (7-c)] = (unsigned_val >>> sfp_out_shift);
+        if (sum_abs !== qk_result[row][golden_col[c]])
+          err = err + 1;
+      end
+    end
+
+    // N from scoreboard
+    for (q = 0; q < total_cycle; q = q + 1)
+      for (j = 0; j < col; j = j + 1)
+        N[q][j] = estimated[q*pr + j];
+
+    // ---------------- normalization ----------------
+    -> ev_start_norm;
+    @ev_done_norm_0;
+    @ev_done_norm_1;
+
+    // ---------------- V write ----------------
+    -> ev_start_v_write;
+    @ev_done_v_write_0;
+    @ev_done_v_write_1;
+
+    // ---------------- V load ----------------
+    -> ev_start_v_load;
+    @ev_done_v_load_0;
+    @ev_done_v_load_1;
+
+    // recompute VN golden now that N is available
+    for (t = 0; t < total_cycle; t = t + 1) begin
+      for (q = 0; q < col; q = q + 1) begin
+        vn_result_lo[t][q] = 0;
+        vn_result_hi[t][q] = 0;
+        for (k = 0; k < pr/2; k = k + 1) begin
+          vn_result_lo[t][q] = vn_result_lo[t][q] + N[t][k] * V_T[k][q];
+          vn_result_hi[t][q] = vn_result_hi[t][q] + N[t][k] * V_T[k+8][q];
+        end
+      end
+    end
+
+    // ---------------- N write ----------------
+    -> ev_start_n_write;
+    @ev_done_n_write_0;
+    @ev_done_n_write_1;
+
+    // ---------------- VN execute ----------------
+    -> ev_start_vn_exec;
+    @ev_done_vn_exec_0;
+    @ev_done_vn_exec_1;
+
+    repeat(10) @(posedge clk0);
+
+    // ---------------- VN read ----------------
+    -> ev_start_vn_read;
+    @ev_done_vn_read_0;
+    @ev_done_vn_read_1;
+
+    $display("##### Final Verification #####");
+    err = 0;
+
+    for (q = 0; q < total_cycle; q = q + 1) begin
+      row = q;
+      @(posedge clk0);
+
+      $display("Row %0d:", row);
+      $display("  Core0 RTL: %7d %7d %7d %7d %7d %7d %7d %7d",
+        $signed(pmem_out_core0[7*bw_psum +: bw_psum]), $signed(pmem_out_core0[6*bw_psum +: bw_psum]),
+        $signed(pmem_out_core0[5*bw_psum +: bw_psum]), $signed(pmem_out_core0[4*bw_psum +: bw_psum]),
+        $signed(pmem_out_core0[3*bw_psum +: bw_psum]), $signed(pmem_out_core0[2*bw_psum +: bw_psum]),
+        $signed(pmem_out_core0[1*bw_psum +: bw_psum]), $signed(pmem_out_core0[0*bw_psum +: bw_psum]));
+      $display("  Core0 Gld: %7d %7d %7d %7d %7d %7d %7d %7d",
+        vn_result_lo[row][0], vn_result_lo[row][1], vn_result_lo[row][2], vn_result_lo[row][3],
+        vn_result_lo[row][4], vn_result_lo[row][5], vn_result_lo[row][6], vn_result_lo[row][7]);
+
+      $display("  Core1 RTL: %7d %7d %7d %7d %7d %7d %7d %7d",
+        $signed(pmem_out_core1[7*bw_psum +: bw_psum]), $signed(pmem_out_core1[6*bw_psum +: bw_psum]),
+        $signed(pmem_out_core1[5*bw_psum +: bw_psum]), $signed(pmem_out_core1[4*bw_psum +: bw_psum]),
+        $signed(pmem_out_core1[3*bw_psum +: bw_psum]), $signed(pmem_out_core1[2*bw_psum +: bw_psum]),
+        $signed(pmem_out_core1[1*bw_psum +: bw_psum]), $signed(pmem_out_core1[0*bw_psum +: bw_psum]));
+      $display("  Core1 Gld: %7d %7d %7d %7d %7d %7d %7d %7d",
+        vn_result_hi[row][0], vn_result_hi[row][1], vn_result_hi[row][2], vn_result_hi[row][3],
+        vn_result_hi[row][4], vn_result_hi[row][5], vn_result_hi[row][6], vn_result_hi[row][7]);
+
+      row_err = 0;
+      for (c = 0; c < col; c = c + 1) begin
+        if ($signed(pmem_out_core0[c*bw_psum +: bw_psum]) != $signed(vn_result_lo[row][golden_col[c]])) begin
+          err = err + 1;
+          row_err = row_err + 1;
+        end
+        if ($signed(pmem_out_core1[c*bw_psum +: bw_psum]) != $signed(vn_result_hi[row][golden_col[c]])) begin
+          err = err + 1;
+          row_err = row_err + 1;
+        end
+      end
+      $display("  Status: %s", (row_err == 0) ? "[OK]" : "[MISMATCH]");
+      $display("");
+    end
+
+    if (err == 0)
+      $display("##### SIMULATION PASSED! Total Errors: %0d #####", err);
+    else
+      $display("##### SIMULATION FAILED! Total Errors: %0d #####", err);
+
+    #100 $finish;
+  end
+
+  // -------------------------------
+  // Core0 driver
+  // -------------------------------
+  initial begin
+    forever begin
+      @ev_start_q_write;
+      for (q0 = 0; q0 < total_cycle; q0 = q0 + 1) begin
+        @(posedge clk0);
+        qmem_wr_0   = 1'b1;
+        qkmem_add_0 = q0;
+        load_q_core0(q0);
+      end
+      @(posedge clk0) qmem_wr_0 = 1'b0;
+      -> ev_done_q_write_0;
+
+      @ev_start_k_write;
+      for (q0 = 0; q0 < col; q0 = q0 + 1) begin
+        @(posedge clk0);
+        kmem_wr_0   = 1'b1;
+        qkmem_add_0 = q0;
+        load_k_core0(q0);
+      end
+      @(posedge clk0) kmem_wr_0 = 1'b0;
+      -> ev_done_k_write_0;
+
+      @ev_start_k_load;
+      @(posedge clk0) begin load_0 = 1'b1; kmem_rd_0 = 1'b1; qkmem_add_0 = 0; end
+      repeat(col) @(posedge clk0) qkmem_add_0 = qkmem_add_0 + 1;
+      @(posedge clk0) begin load_0 = 1'b0; kmem_rd_0 = 1'b0; end
+      -> ev_done_k_load_0;
+
+      @ev_start_q_exec;
+      for (q0 = 0; q0 < total_cycle; q0 = q0 + 1) begin
+        @(posedge clk0);
+        execute_0   = 1'b1;
+        qmem_rd_0   = 1'b1;
+        qkmem_add_0 = q0;
+      end
+      @(posedge clk0) begin execute_0 = 1'b0; qmem_rd_0 = 1'b0; end
+      -> ev_done_q_exec_0;
+
+      @ev_start_q_read;
+      @(posedge clk0) begin pmem_rd_0 = 1'b1; pmem_add_0 = 0; end
+      for (q0 = 0; q0 < total_cycle; q0 = q0 + 1)
+        @(posedge clk0) pmem_add_0 = q0 + 1;
+      @(posedge clk0) pmem_rd_0 = 1'b0;
+      -> ev_done_q_read_0;
+
+      @ev_start_norm;
+      sfp_processing_0 = 1'b1;
+      pmem_rd_0 = 1'b1;
+      for (q0 = 0; q0 < col; q0 = q0 + 1) begin
+        @(posedge clk0) pmem_add_0 = q0;
+        repeat(2) @(posedge clk0);
+        @(posedge clk0) sfp_acc_0 = 1'b1;
+        @(posedge clk0) sfp_acc_0 = 1'b0;
+        repeat(10) @(posedge clk1);
+        @(posedge clk0) sfp_div_0 = 1'b1;
+        @(posedge clk0) sfp_div_0 = 1'b0;
+        repeat(sfp_div_lat + 2) @(posedge clk0);
+        @(posedge clk0) begin kmem_wr_0 = 1'b1; qkmem_add_0 = q0; end
+        @(posedge clk0) kmem_wr_0 = 1'b0;
+      end
+      sfp_processing_0 = 1'b0;
+      pmem_rd_0 = 1'b0;
+      -> ev_done_norm_0;
+
+      @ev_start_v_write;
+      VN_mode_0 = 1'b1;
+      for (q0 = 0; q0 < col; q0 = q0 + 1) begin
+        @(posedge clk0);
+        kmem_wr_0   = 1'b1;
+        qkmem_add_0 = q0;
+        load_v_core0(q0);
+      end
+      @(posedge clk0) kmem_wr_0 = 1'b0;
+      -> ev_done_v_write_0;
+
+      @ev_start_v_load;
+      @(posedge clk0) begin load_0 = 1'b1; kmem_rd_0 = 1'b1; qkmem_add_0 = 0; end
+      repeat(col) @(posedge clk0) qkmem_add_0 = qkmem_add_0 + 1;
+      @(posedge clk0) begin load_0 = 1'b0; kmem_rd_0 = 1'b0; end
+      -> ev_done_v_load_0;
+
+      @ev_start_n_write;
+      for (q0 = 0; q0 < total_cycle; q0 = q0 + 1) begin
+        @(posedge clk0);
+        qmem_wr_0   = 1'b1;
+        qkmem_add_0 = q0;
+        load_n_core_same(q0, 0);
+      end
+      @(posedge clk0) qmem_wr_0 = 1'b0;
+      -> ev_done_n_write_0;
+
+      @ev_start_vn_exec;
+      for (q0 = 0; q0 < total_cycle; q0 = q0 + 1) begin
+        @(posedge clk0);
+        execute_0   = 1'b1;
+        qmem_rd_0   = 1'b1;
+        qkmem_add_0 = q0;
+      end
+      @(posedge clk0) begin execute_0 = 1'b0; qmem_rd_0 = 1'b0; end
+      -> ev_done_vn_exec_0;
+
+      @ev_start_vn_read;
+      @(posedge clk0) begin pmem_rd_0 = 1'b1; pmem_add_0 = 0; end
+      @(posedge clk0);
+      for (q0 = 0; q0 < total_cycle; q0 = q0 + 1) begin
+        @(posedge clk0);
+        if (q0 < total_cycle - 1) pmem_add_0 = q0 + 1;
+        else pmem_rd_0 = 1'b0;
+      end
+      -> ev_done_vn_read_0;
+    end
+  end
+
+  // -------------------------------
+  // Core1 driver
+  // -------------------------------
+  initial begin
+    forever begin
+      @ev_start_q_write;
+      for (q1 = 0; q1 < total_cycle; q1 = q1 + 1) begin
+        @(posedge clk1);
+        qmem_wr_1   = 1'b1;
+        qkmem_add_1 = q1;
+        load_q_core1(q1);
+      end
+      @(posedge clk1) qmem_wr_1 = 1'b0;
+      -> ev_done_q_write_1;
+
+      @ev_start_k_write;
+      for (q1 = 0; q1 < col; q1 = q1 + 1) begin
+        @(posedge clk1);
+        kmem_wr_1   = 1'b1;
+        qkmem_add_1 = q1;
+        load_k_core1(q1);
+      end
+      @(posedge clk1) kmem_wr_1 = 1'b0;
+      -> ev_done_k_write_1;
+
+      @ev_start_k_load;
+      @(posedge clk1) begin load_1 = 1'b1; kmem_rd_1 = 1'b1; qkmem_add_1 = 0; end
+      repeat(col) @(posedge clk1) qkmem_add_1 = qkmem_add_1 + 1;
+      @(posedge clk1) begin load_1 = 1'b0; kmem_rd_1 = 1'b0; end
+      -> ev_done_k_load_1;
+
+      @ev_start_q_exec;
+      for (q1 = 0; q1 < total_cycle; q1 = q1 + 1) begin
+        @(posedge clk1);
+        execute_1   = 1'b1;
+        qmem_rd_1   = 1'b1;
+        qkmem_add_1 = q1;
+      end
+      @(posedge clk1) begin execute_1 = 1'b0; qmem_rd_1 = 1'b0; end
+      -> ev_done_q_exec_1;
+
+      @ev_start_q_read;
+      @(posedge clk1) begin pmem_rd_1 = 1'b1; pmem_add_1 = 0; end
+      for (q1 = 0; q1 < total_cycle; q1 = q1 + 1)
+        @(posedge clk1) pmem_add_1 = q1 + 1;
+      @(posedge clk1) pmem_rd_1 = 1'b0;
+      -> ev_done_q_read_1;
+
+      @ev_start_norm;
+      sfp_processing_1 = 1'b1;
+      pmem_rd_1 = 1'b1;
+      for (q1 = 0; q1 < col; q1 = q1 + 1) begin
+        @(posedge clk1) pmem_add_1 = q1;
+        repeat(2) @(posedge clk1);
+        @(posedge clk1) sfp_acc_1 = 1'b1;
+        @(posedge clk1) sfp_acc_1 = 1'b0;
+        repeat(10) @(posedge clk0);
+        @(posedge clk1) sfp_div_1 = 1'b1;
+        @(posedge clk1) sfp_div_1 = 1'b0;
+        repeat(sfp_div_lat + 2) @(posedge clk1);
+        @(posedge clk1) begin kmem_wr_1 = 1'b1; qkmem_add_1 = q1; end
+        @(posedge clk1) kmem_wr_1 = 1'b0;
+      end
+      sfp_processing_1 = 1'b0;
+      pmem_rd_1 = 1'b0;
+      -> ev_done_norm_1;
+
+      @ev_start_v_write;
+      VN_mode_1 = 1'b1;
+      for (q1 = 0; q1 < col; q1 = q1 + 1) begin
+        @(posedge clk1);
+        kmem_wr_1   = 1'b1;
+        qkmem_add_1 = q1;
+        load_v_core1(q1);
+      end
+      @(posedge clk1) kmem_wr_1 = 1'b0;
+      -> ev_done_v_write_1;
+
+      @ev_start_v_load;
+      @(posedge clk1) begin load_1 = 1'b1; kmem_rd_1 = 1'b1; qkmem_add_1 = 0; end
+      repeat(col) @(posedge clk1) qkmem_add_1 = qkmem_add_1 + 1;
+      @(posedge clk1) begin load_1 = 1'b0; kmem_rd_1 = 1'b0; end
+      -> ev_done_v_load_1;
+
+      @ev_start_n_write;
+      for (q1 = 0; q1 < total_cycle; q1 = q1 + 1) begin
+        @(posedge clk1);
+        qmem_wr_1   = 1'b1;
+        qkmem_add_1 = q1;
+        load_n_core_same(q1, 1);
+      end
+      @(posedge clk1) qmem_wr_1 = 1'b0;
+      -> ev_done_n_write_1;
+
+      @ev_start_vn_exec;
+      for (q1 = 0; q1 < total_cycle; q1 = q1 + 1) begin
+        @(posedge clk1);
+        execute_1   = 1'b1;
+        qmem_rd_1   = 1'b1;
+        qkmem_add_1 = q1;
+      end
+      @(posedge clk1) begin execute_1 = 1'b0; qmem_rd_1 = 1'b0; end
+      -> ev_done_vn_exec_1;
+
+      @ev_start_vn_read;
+      @(posedge clk1) begin pmem_rd_1 = 1'b1; pmem_add_1 = 0; end
+      @(posedge clk1);
+      for (q1 = 0; q1 < total_cycle; q1 = q1 + 1) begin
+        @(posedge clk1);
+        if (q1 < total_cycle - 1) pmem_add_1 = q1 + 1;
+        else pmem_rd_1 = 1'b0;
+      end
+      -> ev_done_vn_read_1;
+    end
+  end
+
+endmodule
+
+/*
 
 `timescale 1ns/1ps
 
@@ -361,7 +1834,7 @@ module fullchip_tb;
     //**************************//
     //   LOAD_OTHER_NORM_FILE   //
     //**************************//
-    qkvn_file = $fopen("sim/pattern/norm.txt", "r");
+  /*  qkvn_file = $fopen("sim/pattern/norm.txt", "r");
     // Assuming norm.txt is formatted for the full width
     for (q=0; q<total_cycle; q=q+1) begin
       for (j=0; j<col; j=j+1) begin
@@ -373,7 +1846,7 @@ module fullchip_tb;
     //******************************************//
     // Use N calculated from QK product scoreboard //
     //******************************************//
-    for (q=0; q<total_cycle; q=q+1) begin
+  /*  for (q=0; q<total_cycle; q=q+1) begin
       for (j=0; j<col; j=j+1) begin
         // Use the 'estimated' array generated during the QK phase
         N[q][j] = estimated[q*pr + j];
@@ -382,26 +1855,26 @@ module fullchip_tb;
   `endif
 
     // Loading N 
-    for (q = 0; q < total_cycle; q = q + 1) begin
+    for (q0 = 0; q0 < total_cycle; q0 = q0 + 1) begin
       @(posedge clk0);
-      qmem_wr = 1'b1; qkmem_add = q;
+      qmem_wr = 1'b1; qkmem_add = q0;
     
-      mem_in[1*bw-1:0*bw] = N[q][7];  mem_in[2*bw-1:1*bw] = N[q][6];
-      mem_in[3*bw-1:2*bw] = N[q][5];  mem_in[4*bw-1:3*bw] = N[q][4];
-      mem_in[5*bw-1:4*bw] = N[q][3];  mem_in[6*bw-1:5*bw] = N[q][2];
-      mem_in[7*bw-1:6*bw] = N[q][1];  mem_in[8*bw-1:7*bw] = N[q][0];
-      mem_in[9*bw-1:8*bw] = N[q][7];  mem_in[10*bw-1:9*bw] = N[q][6];
-      mem_in[11*bw-1:10*bw] = N[q][5]; mem_in[12*bw-1:11*bw] = N[q][4];
-      mem_in[13*bw-1:12*bw] = N[q][3]; mem_in[14*bw-1:13*bw] = N[q][2];
-      mem_in[15*bw-1:14*bw] = N[q][1]; mem_in[16*bw-1:15*bw] = N[q][0];
+      mem_in[1*bw-1:0*bw] = N[q0][7];  mem_in[2*bw-1:1*bw] = N[q0][6];
+      mem_in[3*bw-1:2*bw] = N[q0][5];  mem_in[4*bw-1:3*bw] = N[q0][4];
+      mem_in[5*bw-1:4*bw] = N[q0][3];  mem_in[6*bw-1:5*bw] = N[q0][2];
+      mem_in[7*bw-1:6*bw] = N[q0][1];  mem_in[8*bw-1:7*bw] = N[q0][0];
+      mem_in[9*bw-1:8*bw] = N[q0][7];  mem_in[10*bw-1:9*bw] = N[q0][6];
+      mem_in[11*bw-1:10*bw] = N[q0][5]; mem_in[12*bw-1:11*bw] = N[q0][4];
+      mem_in[13*bw-1:12*bw] = N[q0][3]; mem_in[14*bw-1:13*bw] = N[q0][2];
+      mem_in[15*bw-1:14*bw] = N[q0][1]; mem_in[16*bw-1:15*bw] = N[q0][0];
     end
     @(posedge clk0) qmem_wr = 1'b0;
 
 
     // Execute VN Matrix-Vector Multiplication
-    for (q = 0; q < total_cycle; q = q + 1) begin
+    for (q0 = 0; q0 < total_cycle; q0 = q0 + 1) begin
       @(posedge clk0); 
-      execute = 1'b1; qmem_rd = 1'b1; qkmem_add = q;
+      execute = 1'b1; qmem_rd = 1'b1; qkmem_add = q0;
     end
     @(posedge clk0) begin execute = 1'b0; qmem_rd = 1'b0; end
 
@@ -419,10 +1892,10 @@ module fullchip_tb;
 
     @(posedge clk0);
 
-    for (q = 0; q < total_cycle; q = q + 1) begin
+    for (q0 = 0; q0 < total_cycle; q0 = q0 + 1) begin
       @(posedge clk0);
-      if (q < total_cycle - 1) pmem_add = q + 1; else pmem_rd = 1'b0;
-      row = q;
+      if (q0 < total_cycle - 1) pmem_add = q0 + 1; else pmem_rd = 1'b0;
+      row = q0;
       
       $display("Row %0d:", row);
       $display("  Core0 RTL: %7d %7d %7d %7d %7d %7d %7d %7d",
@@ -467,4 +1940,4 @@ module fullchip_tb;
   #100 $finish;
   end
 
-endmodule
+endmodule*/

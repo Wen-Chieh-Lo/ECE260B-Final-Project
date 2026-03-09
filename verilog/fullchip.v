@@ -10,7 +10,7 @@ parameter half_pr = 8;
 
 input  clk0, clk1; 
 input  [pr*bw-1:0] mem_in; 
-input  [19:0] inst; //[18:0]
+input  [39:0] inst; //[18:0]
 input  reset;
 
 output [bw_psum*col*2-1:0] out;
@@ -23,6 +23,7 @@ wire [bw_psum*col-1:0] out_0;
 wire [bw_psum*col-1:0] out_1;
 
 wire [half_pr*bw-1:0] core0_mem_in, core1_mem_in;
+wire [19:0] inst0, inst1;
 
 wire fifo_rd_core0, fifo_rd_core1;
 wire fifo_wr_core0, fifo_wr_core1;
@@ -35,6 +36,9 @@ assign sfp_sum_in_1 = (!fifo_empty_0_1 && fifo_rd_core1) ? sum_out_0_1 : {(bw_ps
 assign core0_mem_in = mem_in[half_pr*bw-1:0];
 assign core1_mem_in = mem_in[pr*bw-1:half_pr*bw];
 
+assign inst0 = inst[19:0];
+assign inst1 = inst[39:20];
+
 assign out = {out_1, out_0};
 
 core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(half_pr)) core_instance_0 (
@@ -42,7 +46,7 @@ core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(half_pr)) core_instance_0 (
       .sum_in(sfp_sum_in_0),
       .mem_in(core0_mem_in),
       .out(out_0),
-      .inst(inst),
+      .inst(inst0),
       .reset(reset),
       .ext_fifo_wr(fifo_wr_core0),
       .ext_fifo_in(ext_fifo_in_0),
@@ -54,7 +58,7 @@ core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(half_pr)) core_instance_1 (
       .sum_in(sfp_sum_in_1),
       .mem_in(core1_mem_in),
       .out(out_1),
-      .inst(inst),
+      .inst(inst1),
       .reset(reset),
       .ext_fifo_wr(fifo_wr_core1),
       .ext_fifo_in(ext_fifo_in_1),

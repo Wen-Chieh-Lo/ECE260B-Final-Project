@@ -5,7 +5,7 @@ module core (clk, sum_in, sum_out, mem_in, inst_ext,
 
 parameter col = 8;
 parameter bw = 8;
-parameter bw_psum = 2*bw+3;
+parameter bw_psum = 2*bw+4;
 parameter sfp_out_shift = 7;
 parameter pr = 8;
 localparam VEC_LEN      = 4'd8;

@@ -3,7 +3,7 @@
 module mac_8in (clk, out, a, b);
 
 parameter bw = 8;
-parameter bw_psum = 2*bw+3;
+parameter bw_psum = 2*bw+4;
 parameter pr = 64; // parallel factor: number of inputs = 64
 
 input clk;
