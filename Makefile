@@ -25,6 +25,7 @@
 #   core     core         filelist_core                 common.sdc  gate/core.out.v     (default)
 #   sfp_row  sfp_row      filelist_sfp_row              common.sdc  gate/sfp_row.out.v
 #   mac      mac_array    filelist_mac                  common.sdc  gate/mac_array.out.v
+#   fullchip fullchip     filelist_fullchip             common.sdc  gate/fullchip.out.v
 #
 # Defaults can also be set in USER_DEFINE_TASK_VARS (command-line overrides that file).
 # Waveforms  : sim/waveform/*.vcd
@@ -43,8 +44,9 @@ SYN_FILELISTS_DIR := syn/filelists
 IVERILOG          := iverilog
 VVP               := vvp
 OUT               := sim/compiled
-GLS_OUT      := gls/compiled
+GLS_OUT           := gls/compiled
 SYNDIR            := syn
+PNRDIR            := pnr/scripts
 
 PROJ_ROOT := $(CURDIR)
 
@@ -67,12 +69,13 @@ TARGET_WAVEFORM_table := \
 
 # target -> RTL top_module name (synthesis only; differs where make-target != module name)
 TARGET_TOP_MODULE_table := \
+	fullchip:fullchip \
 	core:core \
 	mac:mac_array \
 	sfp_row:sfp_row
 
 SIM_TARGETS := fullchip core mac sfp_row sfp_row_dual
-SYN_TARGETS := sfp_row core mac
+SYN_TARGETS := fullchip sfp_row core mac
 
 $(foreach p,$(TARGET_FILELIST_table),$(eval $(firstword $(subst :, ,$(p))): FILELIST_NAME := $(word 2,$(subst :, ,$(p)))))
 $(foreach p,$(TARGET_WAVEFORM_table),$(eval $(firstword $(subst :, ,$(p))): WAVEFORM     := $(word 2,$(subst :, ,$(p)))))
@@ -82,7 +85,7 @@ $(foreach p,$(TARGET_FILELIST_table),$(eval gls_$(firstword $(subst :, ,$(p))): 
 $(foreach p,$(TARGET_WAVEFORM_table),$(eval gls_$(firstword $(subst :, ,$(p))): WAVEFORM     := $(word 2,$(subst :, ,$(p)))))
 
 # ----- Phony declarations -----
-.PHONY: all clean help default sim syn gls parse $(SIM_TARGETS) $(addprefix gls_,$(SIM_TARGETS))
+.PHONY: all clean help default sim syn gls pnr parse $(SIM_TARGETS) $(addprefix gls_,$(SIM_TARGETS))
 
 default: sim
 
@@ -132,6 +135,10 @@ SYN_EFFORT ?= high
 syn:
 	@cd $(SYNDIR) && dc_shell -f run_dc.tcl -x "set top_module $(TOP_MODULE); set rtlPath $(PROJ_ROOT); set filelist_path {$(SYN_FILELIST)}; set syn_effort $(SYN_EFFORT); set syn_defines {$(USER_DEFINES)}"
 
+# ----- Place-and-route (Innovus); uses same TARGET as syn (design = TOP_MODULE) -----
+pnr:
+	@cd $(PNRDIR) && DESIGN=$(TOP_MODULE) innovus -init ./innovus.tcl
+
 # ----- Utilities -----
 parse:  ## Parse syn/log/*.rep and print summary (uses shell script; no Python needed)
 	@bash $(SYNDIR)/parse_reports.sh $(SYNDIR)/log
@@ -145,11 +152,13 @@ help:
 	@echo "        make gls [TARGET=<name>]  # gate-level sim (gls/tb + syn/gate + PDK)"
 	@echo "        make syn [TARGET=<name>] [SYN_EFFORT=low|medium|high]"
 	@echo "        make all [TARGET=<name>] [SYN_EFFORT=low|medium|high]"
+	@echo "        make pnr [TARGET=<name>]  # Innovus; netlist from syn/gate/<top>.out.v"
 	@echo ""
-	@echo "TARGET controls both sim and syn:"
+	@echo "TARGET controls sim, syn, gls, and pnr:"
 	@echo "  sim valid: fullchip(default) | core | mac | sfp_row | sfp_row_dual"
-	@echo "  syn valid: core(default)     | sfp_row | mac"
+	@echo "  syn valid: fullchip | core(default) | sfp_row | mac"
 	@echo "  gls valid: same as sim (uses syn/gate/*.out.v + PDK)"
+	@echo "  pnr valid: same as syn (loads syn/gate/<top>.out.v + pnr/constraints/<top>.sdc)"
 	@echo "  (if TARGET is sim-only, syn falls back to its default: core)"
 	@echo ""
 	@echo "SYN_EFFORT (default: high):"

@@ -1,9 +1,14 @@
-# Load design
-set desdir 		"./netlist"
+# Load design (design name from env DESIGN, e.g. make pnr TARGET=fullchip -> DESIGN=fullchip)
+if {[info exists env(DESIGN)] && $env(DESIGN) ne ""} {
+  set design $env(DESIGN)
+} else {
+  set design "core"
+}
+set desdir 		"../../syn/gate"
+set constraint_dir	"../constraints"
 set libdir 		"/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata"
-set design 		"add"
 set netlist 		"$desdir/$design.out.v"
-set sdc 		"./constraints/$design.sdc"
+set sdc 		"$constraint_dir/$design.sdc"
 set best_timing_lib 	"$libdir/lib/tcbn65gplusbc.lib"
 set worst_timing_lib 	"$libdir/lib/tcbn65gpluswc.lib"
 set lef 		"$libdir/lef/tcbn65gplus_8lmT2.lef"
