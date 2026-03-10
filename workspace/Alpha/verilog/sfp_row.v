@@ -1,7 +1,7 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
 
-module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_out);
+module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_out, sfp_out_valid);
 
   parameter col = 8;
   parameter bw = 8;
@@ -16,6 +16,7 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   input  [col*bw_psum-1:0] sfp_in;
   wire  [col*bw_psum-1:0] abs;
   reg    div_q;
+  output reg sfp_out_valid;
   output [col*bw_out-1:0] sfp_out;
   output [bw_psum+3:0] sum_out;
   wire [bw_psum+3:0] sum_this_core;
@@ -24,6 +25,8 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   wire [out_shift-1:0] div_out0, div_out1, div_out2, div_out3;
   wire [out_shift-1:0] div_out4, div_out5, div_out6, div_out7;
   reg  div_start;
+  reg  div_started;
+  wire div_valid;
   wire div_done;
   wire signed [bw_psum-1:0] sfp_in_sign0;
   wire signed [bw_psum-1:0] sfp_in_sign1;
@@ -49,6 +52,7 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   reg        div_start_nxt;
   reg        acc_d1_nxt;
   reg        div_q_nxt;
+  reg        div_started_nxt;
   reg [bw_psum+3:0] sum_q_nxt;
   reg [out_shift-1:0] div_out0_nxt;
   reg [out_shift-1:0] div_out1_nxt;
@@ -58,10 +62,13 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   reg [out_shift-1:0] div_out5_nxt;
   reg [out_shift-1:0] div_out6_nxt;
   reg [out_shift-1:0] div_out7_nxt;
+  
 
   reg [bw_psum+3:0] sum_q;
   reg fifo_wr;
   reg acc_d1;  // acc delayed 1 cycle: sum_q updates first, then fifo captures next cycle
+
+  assign div_valid = div_started && div_done;
 
   assign sfp_in_sign0 =  sfp_in[bw_psum*1-1 : bw_psum*0];
   assign sfp_in_sign1 =  sfp_in[bw_psum*2-1 : bw_psum*1];
@@ -126,7 +133,7 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   // combinational division: use direct div, treat divider as always-done
   div #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div0 (
     .in({4'b0, abs[bw_psum*1-1 : bw_psum*0]}),
-    .divisor(sum_2core), .out(div_out0)
+    .divisor(sum_2core), .out(div_out0), .done(div_done)
   );
   div #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div1 (
     .in({4'b0, abs[bw_psum*2-1 : bw_psum*1]}),
@@ -156,7 +163,6 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
     .in({4'b0, abs[bw_psum*8-1 : bw_psum*7]}),
     .divisor(sum_2core), .out(div_out7)
   );
-  assign div_done = 1'b1;
 `else
   // multi-cycle long division (uses div_longdiv)
   div_longdiv #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div0 (
@@ -237,6 +243,23 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
         div_out7_nxt = div_out7;
       end
     end
+
+    if(!div_started)begin
+      if(div_start)begin
+        div_started_nxt = 1'b1;
+      end
+      else begin
+        div_started_nxt = 1'b0;
+      end
+    end
+    else begin
+      if(div_done)begin
+        div_started_nxt = 1'b0;
+      end
+      else begin
+        div_started_nxt = div_started;
+      end
+    end
   end
 
   // sequential updates
@@ -247,6 +270,7 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
       acc_d1        <= 1'b0;
       sum_q         <= {(bw_psum+4){1'b0}};
       div_q         <= 1'b0;
+      div_started   <= 1'b0;
       sfp_out_sign0 <= {bw_psum{1'b0}};
       sfp_out_sign1 <= {bw_psum{1'b0}};
       sfp_out_sign2 <= {bw_psum{1'b0}};
@@ -255,6 +279,7 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
       sfp_out_sign5 <= {bw_psum{1'b0}};
       sfp_out_sign6 <= {bw_psum{1'b0}};
       sfp_out_sign7 <= {bw_psum{1'b0}};
+      sfp_out_valid <= 1'b0;
     end
     else begin
       fifo_wr       <= fifo_wr_nxt;
@@ -262,6 +287,7 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
       acc_d1        <= acc_d1_nxt;
       sum_q         <= sum_q_nxt;
       div_q         <= div_q_nxt;
+      div_started   <= div_started_nxt;
       sfp_out_sign0 <= {{(bw_psum-out_shift){1'b0}}, div_out0_nxt};
       sfp_out_sign1 <= {{(bw_psum-out_shift){1'b0}}, div_out1_nxt};
       sfp_out_sign2 <= {{(bw_psum-out_shift){1'b0}}, div_out2_nxt};
@@ -270,6 +296,7 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
       sfp_out_sign5 <= {{(bw_psum-out_shift){1'b0}}, div_out5_nxt};
       sfp_out_sign6 <= {{(bw_psum-out_shift){1'b0}}, div_out6_nxt};
       sfp_out_sign7 <= {{(bw_psum-out_shift){1'b0}}, div_out7_nxt};
+      sfp_out_valid <= div_valid;  //the latency after division is 1 cyc. So we explicitly delay 1 cyc here.
     end
   end
 

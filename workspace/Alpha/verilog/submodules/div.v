@@ -12,12 +12,14 @@ module div #(
 ) (
   input  [bw_psum-1:0] in,
   input  signed [bw_psum-1:0] divisor,
-  output [out_shift-1:0] out
+  output [out_shift-1:0] out,
+  output done
 );
   wire [bw_psum+out_shift-1:0] full_quotient;
 
   assign full_quotient = {in, {out_shift{1'b0}}} / divisor;
   assign out           = full_quotient[out_shift-1:0];
+  assign done = 1'b1;
 endmodule
 
 // -----------------------------------------------------------------------------
@@ -30,9 +32,11 @@ module div_lut #(
 ) (
   input  [bw_psum-1:0] in,
   input  signed [bw_psum-1:0] divisor,
-  output [bw_psum-1:0] out
+  output [bw_psum-1:0] out,
+  output done
 );
   assign out = {in, {out_shift{1'b0}}} / divisor;
+  assign done = 1'b1;
 endmodule
 
 

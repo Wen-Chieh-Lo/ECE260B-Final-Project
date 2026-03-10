@@ -30,6 +30,7 @@ wire  [bw_psum*col-1:0] array_out;
 wire  [col-1:0] fifo_wr;
 wire  sfp_processing;
 wire fifo_valid;
+wire sfp_out_valid;
 wire [3:0] qkmem_add;
 wire [3:0] kmem_add;
 wire [3:0] pmem_add;
@@ -146,7 +147,8 @@ sfp_row #(.col(col), .bw(bw), .bw_psum(bw_psum), .out_shift(sfp_out_shift)) sfp_
 	.sum_in(sfp_sum_in),
 	.sum_out(sfp_sum_out),
 	.sfp_in(pmem_out),
-	.sfp_out(sfp_out)
+	.sfp_out(sfp_out),
+	.sfp_out_valid(sfp_out_valid)
 );
 
 
