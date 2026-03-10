@@ -1,267 +1,282 @@
-// Mac verification: TB + DUT (mac_array_top) in one file.
-// Phase 1 (QK product): Q/K files -> qmem/kmem write -> K load -> execute -> sample pmem out, compare to golden.
-// Phase 2 (Normalize ): sfu_row takes input from pmem, and store output into kmem. Golden is displayed by tb simultaneously.
-// Phase 3 (VN product): LOAD_OTHER_NORM_FILE decides whether we use TA's norm.txt. Other than that, the flow is identical to phase 1.   
-
-// `define LOAD_OTHER_NORM_FILE     // If you want to use TA's norm.txt 
+// Core Verification
 
 `timescale 1ns/1ps
+`define CYCLE 1
+`define H_CYCLE 0.5
+`define TIME_OUT 100000
 
 
 module core_tb;
+	parameter total_cycle = 8;
+	parameter bw = 8;
+	parameter bw_psum = 2*bw+4;
+	parameter pr = 8;
+	parameter col = 8;
+	parameter sfp_out_shift = 7;
+	parameter sfp_acc_lat = 1;
+	`ifdef SFP_LONGDIV
+		parameter sfp_div_lat = 8;  // div_longdiv: 1 input reg + 6 iter + 1
+	`else
+		parameter sfp_div_lat = 0;
+	`endif
 
-  parameter total_cycle = 8;
-  parameter bw = 8;
-  parameter bw_psum = 2*bw+4;
-  parameter pr = 8;
-  parameter col = 8;
-  parameter sfp_out_shift = 7;
-  parameter sfp_acc_lat = 1;
-  `ifdef SFP_LONGDIV
-    parameter sfp_div_lat = 8;  // div_longdiv: 1 input reg + 6 iter + 1
-  `else
-    parameter sfp_div_lat = 0;
-  `endif
+	//================= integer / array storage =====================//
+	integer qkvn_file, qkvn_scan_file, captured_data;
+	integer i, j, k, t, p, q, s, u, m, r, c;
+	integer err_count;
+	integer err, row_err, row;
+	integer sum_abs, divisor, unsigned_val;
 
-  integer qkvn_file, qkvn_scan_file, captured_data;
-  integer weight [col*pr-1:0];
-  integer K [col-1:0][pr-1:0];
-  integer Q [total_cycle-1:0][pr-1:0];
-  integer N [col-1:0][pr-1:0]; 
-  integer V_T[total_cycle-1:0][pr-1:0];
-  integer result [total_cycle-1:0][col-1:0];
-  integer sum [total_cycle-1:0];
-  integer i, j, k, t, p, q, s, u, m, r, c;
-
-  integer estimated [0:total_cycle*col-1];   // computed from mac_data (same formula as sfp_row)
-  integer u0, u1, u2, u3, u4, u5, u6, u7;
-  integer err_count;
-  integer err, row_err, row;
-  integer sum_abs, divisor, unsigned_val;
-
-  reg reset = 1;
-  reg clk = 0;
-  reg [pr*bw-1:0] mem_in;
-  reg sfp_processing = 0;
-  reg sfp_div=0, sfp_acc=0;
-  reg VN_mode = 0;
-  // wire [18:0] inst;
-  wire [19:0] inst;
-  reg qmem_rd = 0, qmem_wr = 0, kmem_rd = 0, kmem_wr = 0, pmem_rd = 0, pmem_wr = 0;
-  reg execute = 0, load = 0;
-  reg [3:0] qkmem_add = 0;
-  reg [3:0] pmem_add = 0;
-
-  reg [bw_psum-1:0] temp5b;
-  reg [bw_psum+3:0] temp_sum;
-  reg [bw_psum*col-1:0] temp16b;
-
-  wire [bw_psum*col-1:0] pmem_out;
-  integer golden_col [0:7];  // RTL col c -> golden result[t][golden_col[c]] (chain mapping)
-
-  assign inst[19] = VN_mode;
-  assign inst[18] = sfp_div;            // set by tb so far. usage see sfp_row_tb.
-  assign inst[17] = sfp_acc;            // set by tb so far. usage see sfp_row_tb.
-  assign inst[16] = sfp_processing;
-  assign inst[15:12] = qkmem_add;
-  assign inst[11:8]  = pmem_add;        
-  assign inst[7] = execute;
-  assign inst[6] = load;
-  assign inst[5] = qmem_rd;
-  assign inst[4] = qmem_wr;
-  assign inst[3] = kmem_rd;
-  assign inst[2] = kmem_wr;
-  assign inst[1] = pmem_rd;
-  assign inst[0] = pmem_wr;
-
-  core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) core_instance (
-    .reset(reset),
-    .clk(clk),
-    .mem_in(mem_in),
-    .inst(inst),
-    .sum_out(),
-    .out(pmem_out)
-  );
-
-  initial begin
-    $dumpfile("gls/waveform/core.vcd");
-    $dumpvars(0, core_tb);
+	integer K        [col-1:0][pr-1:0];
+	integer Q        [total_cycle-1:0][pr-1:0];
+	integer V_T      [total_cycle-1:0][pr-1:0];
+	integer result   [total_cycle-1:0][col-1:0];
+	integer sum      [total_cycle-1:0];
+	integer estimated[0:total_cycle*col-1];   // computed from mac_data (same formula as sfp_row)
+	integer          golden_col [0:7];  // RTL col c -> golden result[t][golden_col[c]] (chain mapping)
 
 
-    $display("##### Q data txt reading #####");
-    qkvn_file = $fopen("gls/pattern/qdata.txt", "r");
-    for (q = 0; q < total_cycle; q = q+1)
+
+	//================= clk ==========================//
+	reg                clk   = 0;
+	always #(`H_CYCLE) clk = ~clk;
+
+	//================= timeout ======================//
+	initial #(`TIME_OUT) $finish;
+
+	//============= Input to DUT  ===============//
+	reg               	reset = 1;
+	reg        			start = 0;
+	reg  [pr*bw-1:0]  	mem_in;
+	reg  [1:0]        	mem_cmd_ext = 2'd0;
+  	reg  [3:0]        	addr_ext = 4'd0;
+
+	wire [5:0]       	inst_ext;
+	assign inst_ext = {addr_ext, mem_cmd_ext};
+
+	// 00: No Op, 01: kmem wr, 10: qmem wr, 11: pmem rd
+	localparam EXT_CMD_NO_OP   = 2'b00;
+	localparam EXT_CMD_KMEM_WR = 2'b01;
+	localparam EXT_CMD_QMEM_WR = 2'b10;
+	localparam EXT_CMD_PMEM_RD = 2'b11;
+
+ 
+	reg 		set_mode;
+	reg [2:0]   mode_in;
+	// Mode setting.
+	localparam CORE_MODE_MULT_save_to_PMEM					= 3'b100;
+	localparam CORE_MODE_MULT_NORM_save_to_PMEM 			= 3'b001;
+	localparam CORE_MODE_MULT_NORM_save_to_KMEM 			= 3'b010;
+	localparam CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM 	= 3'b011;
+
+	//============= DUT's Output  ===============//
+	wire [3:0] 							status;      // {busy, qmem_locked, kmem_locked, pmem_locked} from controller
+	wire [bw_psum*col-1:0]	pmem_out;
+	wire busy, qmem_locked, kmem_locked, pmem_locked;
+	assign busy = status[3];
+	assign qmem_locked = status[2];
+	assign kmem_locked = status[1];
+	assign pmem_locked = status[0];
+
+	core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) core_instance (
+			.reset(reset),
+			.clk(clk),
+			.set_mode(set_mode),
+			.mode_in(mode_in),
+			.mem_in(mem_in),
+			.inst_ext(inst_ext),
+			.sum_out(),
+			.out(pmem_out),
+			.start(start),
+			.status(status)
+	);
+
+	
+	
+initial begin
+	$dumpfile("sim/waveform/core.vcd");
+	$dumpvars(0, core_tb);
+	$display("");
+	
+//########################################################################
+//  				data.txt -> Integer Arrays: Q, K, V_T						  
+//########################################################################
+	// $display("##### Q data txt reading #####");
+	qkvn_file = $fopen("sim/pattern/qdata.txt", "r");
+	for (q = 0; q < total_cycle; q = q+1)begin
+		for (j = 0; j < pr; j = j+1) begin
+			qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
+			Q[q][j] = captured_data;
+	  end
+	end
+	// $display("##### K data txt reading #####");
+	qkvn_file = $fopen("sim/pattern/kdata.txt", "r");
+	for (q = 0; q < total_cycle; q = q+1)begin
+		for (j = 0; j < pr; j = j+1) begin
+			qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
+			K[q][j] = captured_data;
+		end
+	end
+	// $display("##### V data txt reading #####");
+    qkvn_file = $fopen("sim/pattern/vdata.txt", "r");
+    for (q = 0; q < total_cycle; q = q+1)begin
       for (j = 0; j < pr; j = j+1) begin
-        qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
-        Q[q][j] = captured_data;
+            qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
+            V_T[j][q] = captured_data;
       end
-
-    for (q = 0; q < 2; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
-
-    $display("##### K data txt reading #####");
-    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
-    reset = 0;
-
-    qkvn_file = $fopen("gls/pattern/kdata.txt", "r");
-    for (q = 0; q < col; q = q+1)
-      for (j = 0; j < pr; j = j+1) begin
-        qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
-        K[q][j] = captured_data;
-      end
-
-    // $display("##### Estimated multiplication result #####");
-    for (t = 0; t < total_cycle; t = t+1)
-      for (q = 0; q < col; q = q+1)
-        result[t][q] = 0;
-    for (t = 0; t < total_cycle; t = t+1) begin
-      for (q = 0; q < col; q = q+1) begin
-        for (k = 0; k < pr; k = k+1)
-          result[t][q] = result[t][q] + Q[t][k] * K[q][k];
-        // temp5b = result[t][q];
-        // temp16b = {temp16b[139:0], temp5b};
-      end
-      // $display("prd @cycle%2d: %40h", t, temp16b);
     end
 
-    $display("QK Product Phase");
-    VN_mode = 1'b0;
+Reset2Cyc;
+$monitor ("time %6t    | start %b   | busy %b   | qmem_locked %b   | kmem_locked %b  | pmem_locked %b", 
+			  $time, 		 start, 	  busy, 	  qmem_locked, 		 kmem_locked, 	   pmem_locked);
 
-    $display("##### Qmem writing #####");
-    for (q = 0; q < total_cycle; q = q+1) begin
-      #0.5 clk = 1'b0;
-      qmem_wr = 1;
-      if (q > 0) qkmem_add = qkmem_add + 1;
-      mem_in[1*bw-1:0*bw] = Q[q][7];
-      mem_in[2*bw-1:1*bw] = Q[q][6];
-      mem_in[3*bw-1:2*bw] = Q[q][5];
-      mem_in[4*bw-1:3*bw] = Q[q][4];
-      mem_in[5*bw-1:4*bw] = Q[q][3];
-      mem_in[6*bw-1:5*bw] = Q[q][2];
-      mem_in[7*bw-1:6*bw] = Q[q][1];
-      mem_in[8*bw-1:7*bw] = Q[q][0];
-      #0.5 clk = 1'b1;
-    end
-    #0.5 clk = 1'b0;
-    qmem_wr = 0;
-    qkmem_add = 0;
-    #0.5 clk = 1'b1;
+//########################################################################
+// Test 1: Matrix Multiplication		 				 				 
+// K -> KMEM  |  Result = Q * Transpose(K)
+// Q -> QMEM  |  Verify PMEM  =?=  Result
+//########################################################################
+//============     Ground Truth Calculation: Result     ==================
+	for (t = 0; t < total_cycle; t = t+1)
+	  for (q = 0; q < col; q = q+1)
+		result[t][q] = 0;
+	for (t = 0; t < total_cycle; t = t+1) begin
+	  for (q = 0; q < col; q = q+1) begin
+		for (k = 0; k < pr; k = k+1)
+		  result[t][q] = result[t][q] + Q[t][k] * K[q][k];
+	  end
+	end
 
-    $display("##### Kmem writing #####");
+//============      	 Write Config to Core    		==================
+CoreSetMode(CORE_MODE_MULT_save_to_PMEM);
+
+//============      	 Write to Core's KMEM    		==================
+	
+	@(negedge clk);
+	mem_cmd_ext = EXT_CMD_KMEM_WR;
+	addr_ext = 0;
+
     for (q = 0; q < col; q = q+1) begin
-      #0.5 clk = 1'b0;
-      kmem_wr = 1;
-      if (q > 0) qkmem_add = qkmem_add + 1;
-      mem_in[1*bw-1:0*bw] = K[q][7];
-      mem_in[2*bw-1:1*bw] = K[q][6];
-      mem_in[3*bw-1:2*bw] = K[q][5];
-      mem_in[4*bw-1:3*bw] = K[q][4];
-      mem_in[5*bw-1:4*bw] = K[q][3];
-      mem_in[6*bw-1:5*bw] = K[q][2];
-      mem_in[7*bw-1:6*bw] = K[q][1];
-      mem_in[8*bw-1:7*bw] = K[q][0];
-      #0.5 clk = 1'b1;
+		mem_in[1*bw-1:0*bw] = K[q][7];
+		mem_in[2*bw-1:1*bw] = K[q][6];
+		mem_in[3*bw-1:2*bw] = K[q][5];
+		mem_in[4*bw-1:3*bw] = K[q][4];
+		mem_in[5*bw-1:4*bw] = K[q][3];
+		mem_in[6*bw-1:5*bw] = K[q][2];
+		mem_in[7*bw-1:6*bw] = K[q][1];
+		mem_in[8*bw-1:7*bw] = K[q][0];
+      	@(negedge clk);
+
+	  	addr_ext = addr_ext + 4'd1;
     end
-    #0.5 clk = 1'b0;
-    kmem_wr = 0;
-    qkmem_add = 0;
-    #0.5 clk = 1'b1;
+    mem_cmd_ext = EXT_CMD_NO_OP;
+    addr_ext    = 0;
 
-    for (q = 0; q < 2; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+    @(negedge clk);
 
-    $display("##### K data loading to processor #####");
-    for (q = 0; q < col+1; q = q+1) begin
-      #0.5 clk = 1'b0;
-      load = 1;
-      if (q == 1) kmem_rd = 1;
-      if (q > 1) qkmem_add = qkmem_add + 1;
-      #0.5 clk = 1'b1;
+//============      	 Write to Core's QMEM    		==================
+	@(negedge clk);
+	mem_cmd_ext = EXT_CMD_QMEM_WR;
+	addr_ext = 0;
+
+    for (q = 0; q < col; q = q+1) begin
+		mem_in[1*bw-1:0*bw] = Q[q][7];
+		mem_in[2*bw-1:1*bw] = Q[q][6];
+		mem_in[3*bw-1:2*bw] = Q[q][5];
+		mem_in[4*bw-1:3*bw] = Q[q][4];
+		mem_in[5*bw-1:4*bw] = Q[q][3];
+		mem_in[6*bw-1:5*bw] = Q[q][2];
+		mem_in[7*bw-1:6*bw] = Q[q][1];
+		mem_in[8*bw-1:7*bw] = Q[q][0];
+      	@(negedge clk);
+
+	  	addr_ext = addr_ext + 4'd1;
     end
-    #0.5 clk = 1'b0;
-    kmem_rd = 0;
-    qkmem_add = 0;
-    #0.5 clk = 1'b1;
-    #0.5 clk = 1'b0;
-    load = 0;
-    #0.5 clk = 1'b1;
+    mem_cmd_ext = EXT_CMD_NO_OP;
+    addr_ext    = 0;
 
-    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+    @(negedge clk);
 
-    $display("##### execute #####");
-    for (q = 0; q < total_cycle; q = q+1) begin
-      #0.5 clk = 1'b0;
-      execute = 1;
-      qmem_rd = 1;
-      if (q > 0) qkmem_add = qkmem_add + 1;
-      #0.5 clk = 1'b1;
-    end
-    #0.5 clk = 1'b0;
-    qmem_rd = 0;
-    qkmem_add = 0;
-    execute = 0;
-    #0.5 clk = 1'b1;
+//============		  Start the core & wait for done	==================
+Start1Cyc;
+wait(!busy); @(negedge clk);
 
-    #0.5 clk = 1'b0;
-    #0.5 clk = 1'b1;
-    #0.5 clk = 1'b0;
-    #0.5 clk = 1'b1;
+//============		  Pretty Verification Banner :D 	==================
+	// RTL column order: col c holds dot with K[7-c], so compare to result[t][7-c]
+	for (c = 0; c < col; c = c+1) golden_col[c] = 7 - c;
+	$display("################################################################## ");
+	$display("               |  Matrix Multiplication						     ");
+	$display("      Test 1   |  PMEM =?= QMEM * Transpose(KMEM)			 	 ");
+	$display("------------------------------------------------------------------ ");		 				 	 				 
+	$display("  PMEM content :  					");
+	$display("  [row]  RTL   :  col0  col1  col2  col3  col4  col5  col6  col7");
+	$display("         golden:  ----  ----  ----  ----  ----  ----  ----  ----");
+	err = 0;
 
-    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+//============			Read Core's PMEM & Evaluate		==================
+	@(negedge clk);
+	mem_cmd_ext = EXT_CMD_PMEM_RD;
+	addr_ext=4'd0;
+	@(negedge clk); //mem read has 1 cyc latency
+
+  	for (q = 0; q < total_cycle; q = q+1) begin // sample before posedge: pmem_out = row being read (result[q]) 
+    	
+		row = q;
+    	$display("   [%0d]   RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row,
+					$signed(pmem_out[7*bw_psum +: bw_psum]), $signed(pmem_out[6*bw_psum +: bw_psum]),
+					$signed(pmem_out[5*bw_psum +: bw_psum]), $signed(pmem_out[4*bw_psum +: bw_psum]),
+					$signed(pmem_out[3*bw_psum +: bw_psum]), $signed(pmem_out[2*bw_psum +: bw_psum]),
+					$signed(pmem_out[1*bw_psum +: bw_psum]), $signed(pmem_out[0*bw_psum +: bw_psum]));
+    	$display("         golden: %5d %5d %5d %5d %5d %5d %5d %5d",
+					result[row][0], result[row][1], result[row][2], result[row][3],
+					result[row][4], result[row][5], result[row][6], result[row][7]);
+    	row_err = 0;
+    	for (c = 0; c < col; c = c+1) begin
+      		if ($signed(pmem_out[c*bw_psum +: bw_psum]) !== result[row][golden_col[c]]) begin
+        		$display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c, $signed(pmem_out[c*bw_psum +: bw_psum]), result[row][golden_col[c]]);
+        		err = err + 1;
+        		row_err = row_err + 1;
+      		end
+    	end
+    	$display("       %s", (row_err == 0) ? "[OK]" : "[MISMATCH]");
+		
+		addr_ext = addr_ext+1;
+		@(negedge clk);  //mem read has 1 cyc latency
+  	end
+
+
+	mem_cmd_ext = EXT_CMD_NO_OP;
+	$display("------------------------------------------------------------");
+	if (err == 0) begin
+		$display("  PASS  %0d rows x %0d cols  all match estimated result", total_cycle, col);
+		$display("------------------------------------------------------------");
+	end else begin
+		$display("  FAIL  %0d mismatches", err);
+		$display("------------------------------------------------------------");
+	end
+	$display("");
 
 
 
 
 
-// RTL column order: col c holds dot with K[7-c], so compare to result[t][7-c]
-    for (c = 0; c < col; c = c+1)
-      golden_col[c] = 7 - c;
-  $display("QK phase verification start (checking pmem content)\n");
-  $display("##### sample pmem content & compare to golden #####");
-  $display("  [row]  RTL   :    col0    col1    col2    col3    col4    col5    col6    col7");
-  $display("         golden:    ----    ----    ----    ----    ----    ----    ----    ----\n");
-  err = 0;
-  
-  #0.5 clk = 1'b0;pmem_rd = 1'b1; pmem_add=4'd0;
-  #0.5 clk = 1'b1;
-  for (q = 0; q < total_cycle; q = q+1) begin
-    #0.5 clk = 1'b0; pmem_add = pmem_add+1; // sample before posedge: pmem_out = row being read (result[q])
-    #0.5 clk = 1'b1; 
-    row = q;
-    $display("   [%0d]   RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", row,
-      $signed(pmem_out[7*bw_psum +: bw_psum]), $signed(pmem_out[6*bw_psum +: bw_psum]),
-      $signed(pmem_out[5*bw_psum +: bw_psum]), $signed(pmem_out[4*bw_psum +: bw_psum]),
-      $signed(pmem_out[3*bw_psum +: bw_psum]), $signed(pmem_out[2*bw_psum +: bw_psum]),
-      $signed(pmem_out[1*bw_psum +: bw_psum]), $signed(pmem_out[0*bw_psum +: bw_psum]));
-    $display("         golden: %7d %7d %7d %7d %7d %7d %7d %7d",
-      result[row][0], result[row][1], result[row][2], result[row][3],
-      result[row][4], result[row][5], result[row][6], result[row][7]);
-    row_err = 0;
-    for (c = 0; c < col; c = c+1) begin
-      if ($signed(pmem_out[c*bw_psum +: bw_psum]) !== result[row][golden_col[c]]) begin
-        $display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c, $signed(pmem_out[c*bw_psum +: bw_psum]), result[row][golden_col[c]]);
-        err = err + 1;
-        row_err = row_err + 1;
-      end
-    end
-    $display("       %s", (row_err == 0) ? "[OK]" : "[MISMATCH]");
-    $display("");
-    
-  end
-  #0.5 clk = 1'b0;
-  pmem_rd = 1'b0;
-  #0.5 clk = 1'b1;
 
-  $display("------------------------------------------------------------");
-  if (err == 0) begin
-    $display("  PASS  %0d rows x %0d cols  all match estimated result", total_cycle, col);
-    $display("------------------------------------------------------------");
-  end else begin
-    $display("  FAIL  %0d mismatches", err);
-    $display("------------------------------------------------------------");
-  end
-  $display("");
-
-  // ----- Estimated: same as sfp_row (sum_abs = sum of |row|, divisor = sum_abs>>7, out[c] = signed(row[c])/divisor)
-    $display("##### Estimated normalization (sum_abs>>7, then signed divide) #####");
+Reset2Cyc;
+//########################################################################
+// Test 2: Matrix Multiplication + Result Normalization		 				 				 
+// K -> KMEM  |  Estimated = Norm ( Q * Transpose(K))
+// Q -> QMEM  |  Verify PMEM  =?=  Estimated (LONGDIV & VANILLA should match)
+//########################################################################
+//============     Ground Truth Calculation: Estimated  ==================
+	for (t = 0; t < total_cycle; t = t+1)
+	  for (q = 0; q < col; q = q+1)
+		result[t][q] = 0;
+	for (t = 0; t < total_cycle; t = t+1) begin
+	  for (q = 0; q < col; q = q+1) begin
+		for (k = 0; k < pr; k = k+1)
+		  result[t][q] = result[t][q] + Q[t][k] * K[q][k];
+	  end
+	end
+	// $display("##### Estimated normalization (sum_abs>>7, then signed divide) #####");
     for (r = 0; r < total_cycle; r = r + 1) begin
       sum_abs = 0;
       for (c = 0; c < col; c = c + 1) begin
@@ -280,320 +295,292 @@ module core_tb;
     end
 
 
+//============      	 Write Config to Core    		==================
+CoreSetMode(CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM);
 
+//============      	 Write to Core's KMEM    		==================
+	@(negedge clk);
+	mem_cmd_ext = EXT_CMD_KMEM_WR;
+	addr_ext = 0;
 
+    for (q = 0; q < col; q = q+1) begin
+		mem_in[1*bw-1:0*bw] = K[q][7];
+		mem_in[2*bw-1:1*bw] = K[q][6];
+		mem_in[3*bw-1:2*bw] = K[q][5];
+		mem_in[4*bw-1:3*bw] = K[q][4];
+		mem_in[5*bw-1:4*bw] = K[q][3];
+		mem_in[6*bw-1:5*bw] = K[q][2];
+		mem_in[7*bw-1:6*bw] = K[q][1];
+		mem_in[8*bw-1:7*bw] = K[q][0];
+      	@(negedge clk);
 
-    $display("");
-    $display("##### sfp processing #####");
-    $display("estimated:        col0    col1    col2    col3    col4    col5    col6    col7 ");
-    $display("to kmem  :       63:56   55:48   47:40   39:32   31:24   23:16   15: 8    7: 0 ");
-    sfp_processing = 1'b1;
-    pmem_add = 0;
-    qkmem_add = 0;
-    pmem_rd = 1;
-
-    
-    for (q = 0; q < col; q = q + 1) begin
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 1
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_acc = 1'b1; //posedge 2
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 3
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_acc = 1'b0; //posedge 4
-      for (s = 0; s < sfp_acc_lat; s = s + 1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_div = 1'b1; //posedge 5
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 6
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_div = 1'b0; //posedge 7
-      for (s = 0; s < sfp_div_lat; s = s + 1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; kmem_wr = 1'b1; //posedge 8
-      $display("");
-      $display("estimated:     %7d %7d %7d %7d %7d %7d %7d %7d ", 
-                                estimated[q*col + 0], estimated[q*col + 1], 
-                                estimated[q*col + 2], estimated[q*col + 3], 
-                                estimated[q*col + 4], estimated[q*col + 5], 
-                                estimated[q*col + 6], estimated[q*col + 7]);
-
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; kmem_wr = 1'b0; //posedge 9
-      pmem_add = pmem_add + 1;
-      qkmem_add = qkmem_add + 1;
+	  	addr_ext = addr_ext + 4'd1;
     end
+    mem_cmd_ext = EXT_CMD_NO_OP;
+    addr_ext    = 0;
 
-    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
-    sfp_processing = 1'b0;
-    pmem_rd = 1'b0;
-   
-    $display("------------------------------------------------------------");
-    $display("Please check manually, since there's no output port for kmem.");
-    $display("------------------------------------------------------------");
-    $display("");
+    @(negedge clk);
 
-    
+//============      	 Write to Core's QMEM    		==================
+	@(negedge clk);
+	mem_cmd_ext = EXT_CMD_QMEM_WR;
+	addr_ext = 0;
 
-    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+    for (q = 0; q < col; q = q+1) begin
+		mem_in[1*bw-1:0*bw] = Q[q][7];
+		mem_in[2*bw-1:1*bw] = Q[q][6];
+		mem_in[3*bw-1:2*bw] = Q[q][5];
+		mem_in[4*bw-1:3*bw] = Q[q][4];
+		mem_in[5*bw-1:4*bw] = Q[q][3];
+		mem_in[6*bw-1:5*bw] = Q[q][2];
+		mem_in[7*bw-1:6*bw] = Q[q][1];
+		mem_in[8*bw-1:7*bw] = Q[q][0];
+      	@(negedge clk);
 
-
-
-
-    $display("");
-    $display("VN Product Phase");
-    VN_mode = 1'b1;
-    reset = 1'b1;
-    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
-    reset = 1'b0;
-    
-
-
-  ///// V data txt reading /////
-  $display("##### V data txt reading #####");
-    qkvn_file = $fopen("gls/pattern/vdata.txt", "r");
-    // V_T := [pr-1:0][col-1:0]
-    for (q=0; q<col; q=q+1) begin
-      for (j=0; j<pr; j=j+1) begin
-            qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
-            V_T[j][q] = captured_data;
-      end
+	  	addr_ext = addr_ext + 4'd1;
     end
+    mem_cmd_ext = EXT_CMD_NO_OP;
+    addr_ext    = 0;
+
+    @(negedge clk);
+
+//============		  Start the core & wait for done	==================
+Start1Cyc;
+wait(!busy); @(negedge clk);
+
+//============		  Pretty Verification Banner :D 	==================
+	// RTL column order: col c holds dot with K[7-c], so compare to result[t][7-c]
+	for (c = 0; c < col; c = c+1) golden_col[c] = 7 - c;
+	
+	$display("################################################################## ");
+	$display("               |  Matrix Multiplication + Result Normalization	 	 ");
+	$display("     Test 2    |  PMEM  =?=  Norm (QMEM * Transpose(KMEM))			 ");
+	$display("------------------------------------------------------------------ ");
+	$display("               |  LONGDIV/VANILLA should match; LUTDIV might not");
+	$display("     Notes     |  Norm is saved to both PMEM & KMEM in this mode");
+	$display("------------------------------------------------------------------ ");		 				 
+	$display("  PMEM content :  					");
+	$display("  [row]  RTL   :  col0  col1  col2  col3  col4  col5  col6  col7");
+	$display("         golden:  ----  ----  ----  ----  ----  ----  ----  ----");
+	err = 0;
+
+//============			Read Core's PMEM & Evaluate		==================
+	@(negedge clk);
+	mem_cmd_ext = EXT_CMD_PMEM_RD;
+	addr_ext=4'd0;
+	@(negedge clk); //mem read has 1 cyc latency
+
+  	for (q = 0; q < total_cycle; q = q+1) begin // sample before posedge: pmem_out = row being read (result[q]) 
+    	
+		row = q;
+    	$display("   [%0d]   RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row,
+					$signed(pmem_out[7*bw_psum +: bw_psum]), $signed(pmem_out[6*bw_psum +: bw_psum]),
+					$signed(pmem_out[5*bw_psum +: bw_psum]), $signed(pmem_out[4*bw_psum +: bw_psum]),
+					$signed(pmem_out[3*bw_psum +: bw_psum]), $signed(pmem_out[2*bw_psum +: bw_psum]),
+					$signed(pmem_out[1*bw_psum +: bw_psum]), $signed(pmem_out[0*bw_psum +: bw_psum]));
+    	$display("         golden: %5d %5d %5d %5d %5d %5d %5d %5d",
+							estimated[row*col + 0], estimated[row*col + 1], 
+							estimated[row*col + 2], estimated[row*col + 3], 
+							estimated[row*col + 4], estimated[row*col + 5], 
+							estimated[row*col + 6], estimated[row*col + 7]);
+    	row_err = 0;
+    	for (c = 0; c < col; c = c+1) begin
+      		if ($signed(pmem_out[c*bw_psum +: bw_psum]) !== estimated[row*col + golden_col[c]]) begin
+        		$display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c, $signed(pmem_out[c*bw_psum +: bw_psum]), estimated[row*col + golden_col[c]]);
+        		err = err + 1;
+        		row_err = row_err + 1;
+      		end
+    	end
+    	$display("       %s", (row_err == 0) ? "[OK]" : "[MISMATCH]");
+		
+		addr_ext = addr_ext+1;
+		@(negedge clk);  //mem read has 1 cyc latency
+  	end
 
 
-  ///// Norm data txt reading /////
-  $display("##### norm data txt reading #####");
-  for (q=0; q<10; q=q+1) #0.5 clk = 1'b0; #0.5 clk = 1'b1;   
-  reset = 0;
-  
+	mem_cmd_ext = EXT_CMD_NO_OP;
+	$display("------------------------------------------------------------");
+	if (err == 0) begin
+		$display("  PASS  %0d rows x %0d cols  all match estimated result", total_cycle, col);
+		$display("------------------------------------------------------------");
+	end else begin
+		$display("  FAIL  %0d mismatches", err);
+		$display("------------------------------------------------------------");
+	end
+	$display("");
 
-  `ifdef LOAD_OTHER_NORM_FILE
-  //**************************//
-  //   LOAD_OTHER_NORM_FILE   //
-  //**************************//
-  qkvn_file = $fopen("gls/pattern/norm.txt", "r");
-  // N := [total_cycle-1:0][col-1:0]
-  for (q=0; q<total_cycle; q=q+1) begin
-    for (j=0; j<col; j=j+1) begin
-          qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
-          N[q][j] = captured_data;
+
+
+Reset2Cyc;
+//########################################################################
+// Test 3: Full MULT-NORM-MULT Pipeline	
+// Remember we saved the norm to KMEM in Test 2?				 				 
+// V_T -> QMEM  |  Verify PMEM  =?=   V_T * Transpose(Norm)
+//########################################################################
+//============     Ground Truth Calculation: Result     ==================
+	for (t = 0; t < total_cycle; t = t+1)
+	  for (q = 0; q < col; q = q+1)
+		result[t][q] = 0;
+	for (t = 0; t < total_cycle; t = t+1) begin
+	  for (q = 0; q < col; q = q+1) begin
+		for (k = 0; k < pr; k = k+1)
+		  result[t][q] = result[t][q] + V_T[t][k] * estimated[q*col+k];
+	  end
+	end
+
+//============      	 Write Config to Core    		==================
+CoreSetMode(CORE_MODE_MULT_save_to_PMEM);
+
+//============    	Don't touch Core's KMEM !   		==================
+//============      Only Write to Core's QMEM    		==================
+	@(negedge clk);
+	mem_cmd_ext = EXT_CMD_QMEM_WR;
+	addr_ext = 0;
+
+    for (q = 0; q < col; q = q+1) begin
+		mem_in[1*bw-1:0*bw] = V_T[q][7];
+		mem_in[2*bw-1:1*bw] = V_T[q][6];
+		mem_in[3*bw-1:2*bw] = V_T[q][5];
+		mem_in[4*bw-1:3*bw] = V_T[q][4];
+		mem_in[5*bw-1:4*bw] = V_T[q][3];
+		mem_in[6*bw-1:5*bw] = V_T[q][2];
+		mem_in[7*bw-1:6*bw] = V_T[q][1];
+		mem_in[8*bw-1:7*bw] = V_T[q][0];
+      	@(negedge clk);
+
+	  	addr_ext = addr_ext + 4'd1;
     end
-  end
+    mem_cmd_ext = EXT_CMD_NO_OP;
+    addr_ext    = 0;
 
-  `else
-  //*****************************//
-  // Calculate N from QK product //
-  //*****************************//
-  for (q=0; q<total_cycle; q=q+1) begin
-    for (j=0; j<col; j=j+1) begin
-          N[q][j] = estimated[q*col+j];
-    end
-  end
+    @(negedge clk);
 
-`endif
+//============		  Start the core & wait for done	==================
+Start1Cyc;
+wait(!busy); @(negedge clk);
 
-// $display("##### Estimated multiplication result #####");
-    for (t = 0; t < total_cycle; t = t+1)
-      for (q = 0; q < col; q = q+1)
-        result[t][q] = 0;
-    for (t = 0; t < total_cycle; t = t+1) begin
-      for (q = 0; q < col; q = q+1) begin
-        for (k = 0; k < pr; k = k+1)
-          result[t][q] = result[t][q] + V_T[t][k] * N[q][k];
-        // temp5b = result[t][q];
-        // temp16b = {temp16b[139:0], temp5b};
-      end
-      // $display("prd @cycle%2d: %40h", t, temp16b);
-    end
+//============		  Pretty Verification Banner :D 	==================
+	// RTL column order: col c holds dot with K[7-c], so compare to result[t][7-c]
+	for (c = 0; c < col; c = c+1) golden_col[c] = 7 - c;
+	$display("################################################################## ");
+	$display("               |  Full MULT-NORM-MULT Pipeline				     ");
+	$display("      Test 3   |  PMEM =?= QMEM * Transpose(Norm)			 	     ");
+	$display("------------------------------------------------------------------ ");		 				 	 				 
+	$display("               |  This test depends on Test2");
+	$display("     Notes     |  The command to the core is the same as Test 1");
+	$display("------------------------------------------------------------------ ");		 				 
+	$display("  PMEM content :  					");
+	$display("  [row]  RTL   :  col0  col1  col2  col3  col4  col5  col6  col7");
+	$display("         golden:  ----  ----  ----  ----  ----  ----  ----  ----");
+	err = 0;
 
+//============			Read Core's PMEM & Evaluate		==================
+	@(negedge clk);
+	mem_cmd_ext = EXT_CMD_PMEM_RD;
+	addr_ext=4'd0;
+	@(negedge clk); //mem read has 1 cyc latency
 
-///// Qmem writing  /////
-$display("##### Qmem writing  #####");
-  qkmem_add = 0;
-  for (q=0; q<total_cycle; q=q+1) begin
-
-    #0.5 clk = 1'b0;  
-    qmem_wr = 1;  if (q>0) qkmem_add = qkmem_add + 1; 
-    
-    mem_in[1*bw-1:0*bw] = V_T[q][7];
-    mem_in[2*bw-1:1*bw] = V_T[q][6];
-    mem_in[3*bw-1:2*bw] = V_T[q][5];
-    mem_in[4*bw-1:3*bw] = V_T[q][4];
-    mem_in[5*bw-1:4*bw] = V_T[q][3];
-    mem_in[6*bw-1:5*bw] = V_T[q][2];
-    mem_in[7*bw-1:6*bw] = V_T[q][1];
-    mem_in[8*bw-1:7*bw] = V_T[q][0];
-
-    #0.5 clk = 1'b1;  
-
-  end
-
-
-  #0.5 clk = 1'b0;  
-  qmem_wr = 0; 
-  qkmem_add = 0;
-  #0.5 clk = 1'b1;  
-///////////////////////////////////////////
+  	for (q = 0; q < total_cycle; q = q+1) begin // sample before posedge: pmem_out = row being read (result[q]) 
+    	
+		row = q;
+    	$display("   [%0d]   RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row,
+					$signed(pmem_out[7*bw_psum +: bw_psum]), $signed(pmem_out[6*bw_psum +: bw_psum]),
+					$signed(pmem_out[5*bw_psum +: bw_psum]), $signed(pmem_out[4*bw_psum +: bw_psum]),
+					$signed(pmem_out[3*bw_psum +: bw_psum]), $signed(pmem_out[2*bw_psum +: bw_psum]),
+					$signed(pmem_out[1*bw_psum +: bw_psum]), $signed(pmem_out[0*bw_psum +: bw_psum]));
+    	$display("         golden: %5d %5d %5d %5d %5d %5d %5d %5d",
+					result[row][0], result[row][1], result[row][2], result[row][3],
+					result[row][4], result[row][5], result[row][6], result[row][7]);
+    	row_err = 0;
+    	for (c = 0; c < col; c = c+1) begin
+      		if ($signed(pmem_out[c*bw_psum +: bw_psum]) !== result[row][golden_col[c]]) begin
+        		$display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c, $signed(pmem_out[c*bw_psum +: bw_psum]), result[row][golden_col[c]]);
+        		err = err + 1;
+        		row_err = row_err + 1;
+      		end
+    	end
+    	$display("       %s", (row_err == 0) ? "[OK]" : "[MISMATCH]");
+		
+		addr_ext = addr_ext+1;
+		@(negedge clk);  //mem read has 1 cyc latency
+  	end
 
 
-
-
-`ifdef LOAD_OTHER_NORM_FILE
-///// Kmem writing  /////
-
-$display("##### Kmem writing #####");
-
-  for (q=0; q<col; q=q+1) begin
-
-    #0.5 clk = 1'b0;  
-    kmem_wr = 1; if (q>0) qkmem_add = qkmem_add + 1; 
-    
-    mem_in[1*bw-1:0*bw] = N[q][7];
-    mem_in[2*bw-1:1*bw] = N[q][6];
-    mem_in[3*bw-1:2*bw] = N[q][5];
-    mem_in[4*bw-1:3*bw] = N[q][4];
-    mem_in[5*bw-1:4*bw] = N[q][3];
-    mem_in[6*bw-1:5*bw] = N[q][2];
-    mem_in[7*bw-1:6*bw] = N[q][1];
-    mem_in[8*bw-1:7*bw] = N[q][0];
-
-    #0.5 clk = 1'b1;  
-
-  end
-
-  #0.5 clk = 1'b0;  
-  kmem_wr = 0;  
-  qkmem_add = 0;
-  #0.5 clk = 1'b1;  
-///////////////////////////////////////////
-`endif
-
-
-for (q=0; q<2; q=q+1) begin
-    #0.5 clk = 1'b0;  
-    #0.5 clk = 1'b1;   
-  end
-
-
-
-
-/////  K data loading  /////
-$display("##### K data loading to processor #####");
-
-  for (q=0; q<col+1; q=q+1) begin
-    #0.5 clk = 1'b0;  
-    load = 1; 
-    if (q==1) kmem_rd = 1;
-    if (q>1) begin
-       qkmem_add = qkmem_add + 1;
-    end
-
-    #0.5 clk = 1'b1;  
-  end
-
-  #0.5 clk = 1'b0;  
-  kmem_rd = 0; qkmem_add = 0;
-  #0.5 clk = 1'b1;  
-
-  #0.5 clk = 1'b0;  
-  load = 0; 
-  #0.5 clk = 1'b1;  
-
-///////////////////////////////////////////
-
- for (q=0; q<10; q=q+1) begin
-    #0.5 clk = 1'b0;   
-    #0.5 clk = 1'b1;   
- end
-
-
-
-
-
-///// execution  /////
-$display("##### execute #####");
-
-  for (q=0; q<total_cycle; q=q+1) begin
-    #0.5 clk = 1'b0;  
-    execute = 1; 
-    qmem_rd = 1;
-
-    if (q>0) begin
-       qkmem_add = qkmem_add + 1;
-    end
-
-    #0.5 clk = 1'b1;  
-  end
-
-  #0.5 clk = 1'b0;  
-  qmem_rd = 0; qkmem_add = 0; execute = 0;
-  #0.5 clk = 1'b1;  
-
-  #0.5 clk = 1'b0;
-  #0.5 clk = 1'b1;
-  #0.5 clk = 1'b0;
-  #0.5 clk = 1'b1;
-
-
-///////////////////////////////////////////
-
- for (q=0; q<10; q=q+1) begin
-    #0.5 clk = 1'b0;   
-    #0.5 clk = 1'b1;   
- end
+	mem_cmd_ext = EXT_CMD_NO_OP;
+	$display("------------------------------------------------------------");
+	if (err == 0) begin
+		$display("  PASS  %0d rows x %0d cols  all match estimated result", total_cycle, col);
+		$display("------------------------------------------------------------");
+	end else begin
+		$display("  FAIL  %0d mismatches", err);
+		$display("------------------------------------------------------------");
+	end
+	$display("");
 
 
 
 
 
 
-// RTL column order: col c holds dot with K[7-c], so compare to result[t][7-c]
-    for (c = 0; c < col; c = c+1)
-      golden_col[c] = 7 - c;
-  $display("VN phase verification start (checking pmem content)\n");
-  $display("##### sample pmem content & compare to golden #####");
-  $display("  [row]  RTL   :    col0    col1    col2    col3    col4    col5    col6    col7");
-  $display("         golden:    ----    ----    ----    ----    ----    ----    ----    ----\n");
-  err = 0;
-  
-  #0.5 clk = 1'b0;pmem_rd = 1'b1; pmem_add=4'd0;
-  #0.5 clk = 1'b1;
-  for (q = 0; q < total_cycle; q = q+1) begin
-    #0.5 clk = 1'b0; pmem_add = pmem_add+1; // sample before posedge: pmem_out = row being read (result[q])
-    #0.5 clk = 1'b1; 
-    row = q;
-    $display("   [%0d]   RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", row,
-      $signed(pmem_out[7*bw_psum +: bw_psum]), $signed(pmem_out[6*bw_psum +: bw_psum]),
-      $signed(pmem_out[5*bw_psum +: bw_psum]), $signed(pmem_out[4*bw_psum +: bw_psum]),
-      $signed(pmem_out[3*bw_psum +: bw_psum]), $signed(pmem_out[2*bw_psum +: bw_psum]),
-      $signed(pmem_out[1*bw_psum +: bw_psum]), $signed(pmem_out[0*bw_psum +: bw_psum]));
-    $display("         golden: %7d %7d %7d %7d %7d %7d %7d %7d",
-      result[row][0], result[row][1], result[row][2], result[row][3],
-      result[row][4], result[row][5], result[row][6], result[row][7]);
-    row_err = 0;
-    for (c = 0; c < col; c = c+1) begin
-      if ($signed(pmem_out[c*bw_psum +: bw_psum]) !== result[row][golden_col[c]]) begin
-        $display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c, $signed(pmem_out[c*bw_psum +: bw_psum]), result[row][golden_col[c]]);
-        err = err + 1;
-        row_err = row_err + 1;
-      end
-    end
-    $display("       %s", (row_err == 0) ? "[OK]" : "[MISMATCH]");
-    $display("");
-    
-  end
-  #0.5 clk = 1'b0;
-  pmem_rd = 1'b0;
-  #0.5 clk = 1'b1;
 
-  $display("------------------------------------------------------------");
-  if (err == 0) begin
-    $display("  PASS  %0d rows x %0d cols  all match estimated result", total_cycle, col);
-    $display("------------------------------------------------------------");
-  end else begin
-    $display("  FAIL  %0d mismatches", err);
-    $display("------------------------------------------------------------");
-  end
-  $display("");
+
+
+	#10 $finish;
+
+end
 
 
 
 
 
 
-    #10 $finish;
-  end
+
+
+
+
+
+
+
+
+
+
+
+
+//================= Reusable Tasks ====================
+  task Reset2Cyc;
+	begin
+		@(negedge clk);
+		reset = 1;
+		repeat(2) @(negedge clk);
+		reset = 0;
+		@(negedge clk);
+	end
+  endtask
+
+  task Start1Cyc;
+	begin
+		@(negedge clk);
+		start = 1;
+		@(negedge clk);
+		start = 0;
+		@(negedge clk);
+	end
+  endtask
+
+  task CoreSetMode;
+  	input [2:0] mode;
+	begin
+		@(negedge clk);
+		set_mode = 1'b1;
+		mode_in = mode;
+		@(negedge clk);
+		set_mode = 1'b0;
+		mode_in = 3'b000;
+		@(negedge clk);
+	end
+  endtask
 
 endmodule
+
+
+
