@@ -16,7 +16,7 @@ module controller(clk, reset, start, mode_from_reg_map, status_to_reg_map, save_
 
     input             save_done;    // provided by SFP to indicate whether can send data to it.
 
-    output [7:0]     inst_ctrl;  // control bus to drive core.inst (replace external inst)
+    output [7:0]      inst_ctrl;  // control bus to drive core.inst (replace external inst)
     output [2:0]      mem_ext_ctrl_sel; // external memory selection
 
      

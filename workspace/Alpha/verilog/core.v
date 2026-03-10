@@ -1,7 +1,9 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
-module core (clk, sum_in, sum_out, mem_in, inst_ext,
-              out, reset, start, status);
+module core (clk, reset, set_mode, mode_in, start, 
+			mem_in, inst_ext,
+			sum_in, sum_out, 
+            out, status);
 
 parameter col = 8;
 parameter bw = 8;
@@ -21,7 +23,8 @@ input  clk;
 input  reset;
 input        start;
 output [2:0] status;  // {busy, qmem_locked, kmem_locked} from controller
-
+input 		set_mode;
+input [2:0] 	mode_in;
 
 
 
@@ -55,20 +58,16 @@ wire  [col-1:0] 		fifo_wr;
 wire  [bw_psum*col-1:0] fifo_out;
 
 // #####   Controller   ###########
-wire [2:0] mode_from_reg_map_fake = 3'b011;  // Fake mode until reg_map is integrated: {op_mode, sfp_write_to_kmem, sfp_write_to_pmem}, default QK+norm, sfp->kmem only
 wire [2:0] mem_ext_ctrl_sel;
 wire [7:0] inst_ctrl;
+reg  [2:0]	mode; // {op_mode, sfp_write_to_kmem, sfp_write_to_pmem}, default QK+norm, sfp->kmem only
 
 
 // ######    SFP    ###############
 wire  [bw*col-1:0] 	sfp_out;
 wire  [bw_psum*col-1:0] sfp_out_BW_extended;
 reg   [4:0]			sfp_counter, sfp_counter_nxt;
-
-
-
-wire   save_done;  // TODO: 
-
+wire   save_done;
 wire sfp_acc;                         // SFP accumulating for normalization
 wire sfp_div;                         // SFP dividing for normalization
 wire sfp_fifo_ext_rd;                 // SFP start to output FIFO -> sfp_sum_out -> other core, not used in single core
@@ -95,9 +94,9 @@ assign mac_exec  		= inst_ctrl[1];
 assign mac_load  		= inst_ctrl[0];
 
 wire op_mode, sfp_write_to_kmem, sfp_write_to_pmem;
-assign op_mode     			 = mode_from_reg_map_fake[2];
-assign sfp_write_to_kmem     = mode_from_reg_map_fake[1];
-assign sfp_write_to_pmem     = mode_from_reg_map_fake[0];
+assign op_mode     			 = mode[2];
+assign sfp_write_to_kmem     = mode[1];
+assign sfp_write_to_pmem     = mode[0];
 
 wire  [1:0]        mem_cmd_ext;
 wire  [3:0]        addr_ext;
@@ -265,13 +264,24 @@ always @(*) begin
 	end
 end
 
-
-
-
 assign sfp_fifo_ext_rd = 1'b0;    // unused in single core
 assign sfp_sum_in = {bw_psum+4{1'b0}}; // unused in single core
 assign sfp_acc = (sfp_counter==5'd1) || (sfp_counter==5'd2);
 assign sfp_div = (sfp_counter==5'd5) || (sfp_counter==5'd6);
+
+
+
+always @(posedge clk ) begin
+	if(reset)begin
+		mode <= 3'b100; //pure matrix mult, output to pmem
+	end	
+	else if(set_mode)begin
+		mode <= mode_in;
+	end
+	else begin
+		mode <= mode;
+	end
+end
 
 
 
@@ -280,7 +290,7 @@ controller controller_instance (
 	.clk(clk),
 	.reset(reset),
 	.start(start),
-	.mode_from_reg_map(mode_from_reg_map_fake),
+	.mode_from_reg_map(mode),
 	.status_to_reg_map(status),
 	.save_done(save_done),
 	.inst_ctrl(inst_ctrl),
@@ -357,16 +367,16 @@ sfp_row #(.col(col), .bw(bw), .bw_psum(bw_psum), .out_shift(sfp_out_shift)) sfp_
 //   end
 
   ////////// For printing purpose ////////////
-  always @(posedge clk) begin
-      if(result_wr && sfp_write_to_kmem)
-		 $display("Write to kmem: %7d %7d %7d %7d %7d %7d %7d %7d",
-		 	kmem_in[7*bw +: bw], kmem_in[6*bw +: bw], 
-			kmem_in[5*bw +: bw], kmem_in[4*bw +: bw], 
-			kmem_in[3*bw +: bw], kmem_in[2*bw +: bw], 
-			kmem_in[1*bw +: bw], kmem_in[0*bw +: bw]
-		 ); 
+//   always @(posedge clk) begin
+//       if(result_wr && sfp_write_to_kmem)
+// 		 $display("Write to kmem: %7d %7d %7d %7d %7d %7d %7d %7d",
+// 		 	kmem_in[7*bw +: bw], kmem_in[6*bw +: bw], 
+// 			kmem_in[5*bw +: bw], kmem_in[4*bw +: bw], 
+// 			kmem_in[3*bw +: bw], kmem_in[2*bw +: bw], 
+// 			kmem_in[1*bw +: bw], kmem_in[0*bw +: bw]
+// 		 ); 
 		 
-  end
+//   end
 
 	reg mac_load_D1, mac_exec_D1;
 	always @(posedge clk ) begin
@@ -374,6 +384,8 @@ sfp_row #(.col(col), .bw(bw), .bw_psum(bw_psum), .out_shift(sfp_out_shift)) sfp_
 		mac_exec_D1 <= mac_exec;
 	end
 
+
+	
   always @(posedge clk ) begin
 	if(reset)begin
 		result_addr <= 4'd0;
