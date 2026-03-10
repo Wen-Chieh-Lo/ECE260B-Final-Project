@@ -1,3 +1,7 @@
+// Unfortunately I realized this is over engineering. Please ignore this.
+// Instead, we use set_mode
+
+
 /* reg_map provides a control interface for the utilization of the core.
 * It has 3 registers:
 * 1. CTRL: control signals to start the operation and enable PMEM access
