@@ -1,0 +1,9 @@
+// --- Gate-level simulation: fullchip ---
+// TB (reuse sim testbench)
+./sim/tb/fullchip_tb.v
+
+// DUT: gate netlist
+./syn/gate/fullchip.out.v
+
+// Standard cell library (from course public netlist)
+/home/linux/ieng6/ECE260B_WI26_A00/public/course_contents/w5/full_flow/gate_sim/netlist/tcbn65gplus.v

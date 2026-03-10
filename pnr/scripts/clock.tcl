@@ -1,6 +1,10 @@
 # Clock tree synthesis 
 set_ccopt_property -update_io_latency false
-create_ccopt_clock_tree_spec -file $desdir/constraints/$design.ccopt
+if {[info exists constraint_dir]} {
+  create_ccopt_clock_tree_spec -file $constraint_dir/$design.ccopt
+} else {
+  create_ccopt_clock_tree_spec -file $desdir/constraints/$design.ccopt
+}
 ccopt_design
 
 # Use actual clock network

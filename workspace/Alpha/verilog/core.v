@@ -63,6 +63,7 @@ wire [7:0] inst_ctrl;
 wire  [bw*col-1:0] sfp_out;
 wire  sfp_processing;
 wire   save_done;  // TODO: 
+
 wire sfp_acc;                         // SFP accumulating for normalization
 wire sfp_div;                         // SFP dividing for normalization
 wire sfp_fifo_ext_rd;                 // SFP start to output FIFO -> sfp_sum_out -> other core, not used in single core
@@ -308,6 +309,7 @@ sfp_row #(.col(col), .bw(bw), .bw_psum(bw_psum), .out_shift(sfp_out_shift)) sfp_
 	.sum_out(sfp_sum_out),
 	.sfp_in(fifo_out),
 	.sfp_out(sfp_out)
+	.sfp_out_valid(sfp_out_valid)
 );
 
 
