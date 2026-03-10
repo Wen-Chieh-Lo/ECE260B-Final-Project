@@ -121,7 +121,44 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
   );
 
 
-  // divider instances use extended bw_psum+4 width and padded inputs
+  // divider instances: use combinational div by default, enable long-division with +define+SFP_LONGDIV
+`ifndef SFP_LONGDIV
+  // combinational division: use direct div, treat divider as always-done
+  div #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div0 (
+    .in({4'b0, abs[bw_psum*1-1 : bw_psum*0]}),
+    .divisor(sum_2core), .out(div_out0)
+  );
+  div #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div1 (
+    .in({4'b0, abs[bw_psum*2-1 : bw_psum*1]}),
+    .divisor(sum_2core), .out(div_out1)
+  );
+  div #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div2 (
+    .in({4'b0, abs[bw_psum*3-1 : bw_psum*2]}),
+    .divisor(sum_2core), .out(div_out2)
+  );
+  div #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div3 (
+    .in({4'b0, abs[bw_psum*4-1 : bw_psum*3]}),
+    .divisor(sum_2core), .out(div_out3)
+  );
+  div #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div4 (
+    .in({4'b0, abs[bw_psum*5-1 : bw_psum*4]}),
+    .divisor(sum_2core), .out(div_out4)
+  );
+  div #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div5 (
+    .in({4'b0, abs[bw_psum*6-1 : bw_psum*5]}),
+    .divisor(sum_2core), .out(div_out5)
+  );
+  div #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div6 (
+    .in({4'b0, abs[bw_psum*7-1 : bw_psum*6]}),
+    .divisor(sum_2core), .out(div_out6)
+  );
+  div #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div7 (
+    .in({4'b0, abs[bw_psum*8-1 : bw_psum*7]}),
+    .divisor(sum_2core), .out(div_out7)
+  );
+  assign div_done = 1'b1;
+`else
+  // multi-cycle long division (uses div_longdiv)
   div_longdiv #(.bw_psum(bw_psum+4), .out_shift(out_shift)) div0 (
     .clk(clk), .reset(reset), .start(div_start), .in({4'b0, abs[bw_psum*1-1 : bw_psum*0]}),
     .divisor(sum_2core), .out(div_out0), .done(div_done)
@@ -154,7 +191,7 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
     .clk(clk), .reset(reset), .start(div_start), .in({4'b0, abs[bw_psum*8-1 : bw_psum*7]}),
     .divisor(sum_2core), .out(div_out7), .done()
   );
-  
+`endif
   // next-state combinational logic
   always @(*) begin
     fifo_wr_nxt   = fifo_wr;
