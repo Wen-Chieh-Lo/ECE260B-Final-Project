@@ -70,8 +70,13 @@ module core_tb;
 	localparam CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM 	= 3'b011;
 
 	//============= DUT's Output  ===============//
-	wire [2:0] 							status;      // {busy, qmem_locked, kmem_locked} from controller
+	wire [3:0] 							status;      // {busy, qmem_locked, kmem_locked, pmem_locked} from controller
 	wire [bw_psum*col-1:0]	pmem_out;
+	wire busy, qmem_locked, kmem_locked, pmem_locked;
+	assign busy = status[3];
+	assign qmem_locked = status[2];
+	assign kmem_locked = status[1];
+	assign pmem_locked = status[0];
 
 	core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) core_instance (
 			.reset(reset),
@@ -92,7 +97,7 @@ initial begin
 	$dumpfile("sim/waveform/core.vcd");
 	$dumpvars(0, core_tb);
 	$display("");
-
+	
 //########################################################################
 //  				data.txt -> Integer Arrays: Q, K, V_T						  
 //########################################################################
@@ -122,6 +127,9 @@ initial begin
     end
 
 Reset2Cyc;
+$monitor ("time %6t    | start %b   | busy %b   | qmem_locked %b   | kmem_locked %b  | pmem_locked %b", 
+			  $time, 		 start, 	  busy, 	  qmem_locked, 		 kmem_locked, 	   pmem_locked);
+
 //########################################################################
 // Test 1: Matrix Multiplication		 				 				 
 // K -> KMEM  |  Result = Q * Transpose(K)
@@ -142,6 +150,7 @@ Reset2Cyc;
 CoreSetMode(CORE_MODE_MULT_save_to_PMEM);
 
 //============      	 Write to Core's KMEM    		==================
+	
 	@(negedge clk);
 	mem_cmd_ext = EXT_CMD_KMEM_WR;
 	addr_ext = 0;
@@ -189,7 +198,7 @@ CoreSetMode(CORE_MODE_MULT_save_to_PMEM);
 
 //============		  Start the core & wait for done	==================
 Start1Cyc;
-repeat(300) @(negedge clk);
+wait(!busy); @(negedge clk);
 
 //============		  Pretty Verification Banner :D 	==================
 	// RTL column order: col c holds dot with K[7-c], so compare to result[t][7-c]
@@ -337,7 +346,7 @@ CoreSetMode(CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM);
 
 //============		  Start the core & wait for done	==================
 Start1Cyc;
-repeat(300) @(negedge clk);
+wait(!busy); @(negedge clk);
 
 //============		  Pretty Verification Banner :D 	==================
 	// RTL column order: col c holds dot with K[7-c], so compare to result[t][7-c]
@@ -448,7 +457,7 @@ CoreSetMode(CORE_MODE_MULT_save_to_PMEM);
 
 //============		  Start the core & wait for done	==================
 Start1Cyc;
-repeat(300) @(negedge clk);
+wait(!busy); @(negedge clk);
 
 //============		  Pretty Verification Banner :D 	==================
 	// RTL column order: col c holds dot with K[7-c], so compare to result[t][7-c]
