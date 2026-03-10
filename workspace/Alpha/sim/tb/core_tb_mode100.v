@@ -1,4 +1,8 @@
-// Core Verification
+// Mac verification: TB + DUT (mac_array_top) in one file.
+// Phase 1 (QK product): Q/K files -> qmem/kmem write -> K load -> execute -> sample pmem out, compare to golden.
+// Phase 2 (Normalize ): sfu_row takes input from pmem, and store output into kmem. Golden is displayed by tb simultaneously.
+// Phase 3 (VN product): LOAD_OTHER_NORM_FILE decides whether we use TA's norm.txt. Other than that, the flow is identical to phase 1.   
+
 // `define LOAD_OTHER_NORM_FILE     // If you want to use TA's norm.txt 
 
 `timescale 1ns/1ps
@@ -8,6 +12,7 @@
 
 
 module core_tb;
+
   parameter total_cycle = 8;
   parameter bw = 8;
   parameter bw_psum = 2*bw+4;
@@ -144,30 +149,6 @@ module core_tb;
       // $display("prd @cycle%2d: %40h", t, temp16b);
     end
 
-    
-  // ----- Estimated: same as sfp_row (sum_abs = sum of |row|, divisor = sum_abs>>7, out[c] = signed(row[c])/divisor)
-    $display("##### Estimated normalization (sum_abs>>7, then signed divide) #####");
-    for (r = 0; r < total_cycle; r = r + 1) begin
-      sum_abs = 0;
-      for (c = 0; c < col; c = c + 1) begin
-        unsigned_val = result[r][c];
-        if (unsigned_val[bw_psum-1] == 1'b1)
-          unsigned_val = ~(unsigned_val-1'b1);
-        sum_abs = sum_abs + unsigned_val;
-      end
-      if (sum_abs == 0) sum_abs = 1;
-      for (c = 0; c < col; c = c + 1) begin
-        unsigned_val = result[r][c];
-        if (unsigned_val[bw_psum-1] == 1'b1)
-          unsigned_val = ~(unsigned_val-1'b1); 
-        estimated[r*col + c] = {unsigned_val, {sfp_out_shift{1'b0}}} / sum_abs;
-      end
-    end
-
-
-
-
-
 
     $display("QK Product Phase");
     mem_cmd_ext = EXT_CMD_QMEM_WR;
@@ -217,7 +198,7 @@ module core_tb;
     @(negedge clk); start = 1;
     @(negedge clk); start = 0;
         
-    repeat(300) @(negedge clk);
+    repeat(32) @(negedge clk);
 
 
 
@@ -226,10 +207,10 @@ mem_cmd_ext = EXT_CMD_PMEM_RD;
 // RTL column order: col c holds dot with K[7-c], so compare to result[t][7-c]
     for (c = 0; c < col; c = c+1)
       golden_col[c] = 7 - c;
-  $display("");
-  $display("##### sfp processing #####");
-  $display("estimated:        col0    col1    col2    col3    col4    col5    col6    col7 ");
-  $display("to kmem  :       63:56   55:48   47:40   39:32   31:24   23:16   15: 8    7: 0 ");
+  $display("QK phase verification start (checking pmem content)\n");
+  $display("##### sample pmem content & compare to golden #####");
+  $display("  [row]  RTL   :    col0    col1    col2    col3    col4    col5    col6    col7");
+  $display("         golden:    ----    ----    ----    ----    ----    ----    ----    ----\n");
   err = 0;
   
   @(negedge clk); addr_ext=4'd0;
@@ -241,17 +222,13 @@ mem_cmd_ext = EXT_CMD_PMEM_RD;
       $signed(pmem_out[5*bw_psum +: bw_psum]), $signed(pmem_out[4*bw_psum +: bw_psum]),
       $signed(pmem_out[3*bw_psum +: bw_psum]), $signed(pmem_out[2*bw_psum +: bw_psum]),
       $signed(pmem_out[1*bw_psum +: bw_psum]), $signed(pmem_out[0*bw_psum +: bw_psum]));
-
-      $display("         golden: %7d %7d %7d %7d %7d %7d %7d %7d", 
-                                estimated[row*col + 0], estimated[row*col + 1], 
-                                estimated[row*col + 2], estimated[row*col + 3], 
-                                estimated[row*col + 4], estimated[row*col + 5], 
-                                estimated[row*col + 6], estimated[row*col + 7]);
-
+    $display("         golden: %7d %7d %7d %7d %7d %7d %7d %7d",
+      result[row][0], result[row][1], result[row][2], result[row][3],
+      result[row][4], result[row][5], result[row][6], result[row][7]);
     row_err = 0;
     for (c = 0; c < col; c = c+1) begin
-      if ($signed(pmem_out[c*bw_psum +: bw_psum]) !== estimated[row*col + golden_col[c]]) begin
-        $display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c, $signed(pmem_out[c*bw_psum +: bw_psum]), estimated[row*col + golden_col[c]]);
+      if ($signed(pmem_out[c*bw_psum +: bw_psum]) !== result[row][golden_col[c]]) begin
+        $display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c, $signed(pmem_out[c*bw_psum +: bw_psum]), result[row][golden_col[c]]);
         err = err + 1;
         row_err = row_err + 1;
       end
@@ -272,12 +249,6 @@ mem_cmd_ext = EXT_CMD_PMEM_RD;
     $display("------------------------------------------------------------");
   end
   $display("");
-
-
-
-    
-
-    repeat(10) @(negedge clk);
 
 
     #10 $finish;

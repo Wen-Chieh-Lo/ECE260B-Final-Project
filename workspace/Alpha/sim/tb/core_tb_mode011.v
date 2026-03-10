@@ -1,4 +1,8 @@
-// Core Verification
+// Mac verification: TB + DUT (mac_array_top) in one file.
+// Phase 1 (QK product): Q/K files -> qmem/kmem write -> K load -> execute -> sample pmem out, compare to golden.
+// Phase 2 (Normalize ): sfu_row takes input from pmem, and store output into kmem. Golden is displayed by tb simultaneously.
+// Phase 3 (VN product): LOAD_OTHER_NORM_FILE decides whether we use TA's norm.txt. Other than that, the flow is identical to phase 1.   
+
 // `define LOAD_OTHER_NORM_FILE     // If you want to use TA's norm.txt 
 
 `timescale 1ns/1ps
@@ -8,6 +12,7 @@
 
 
 module core_tb;
+
   parameter total_cycle = 8;
   parameter bw = 8;
   parameter bw_psum = 2*bw+4;
