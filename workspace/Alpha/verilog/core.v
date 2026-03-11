@@ -22,7 +22,7 @@ input  [5:0]       inst_ext;
 input  clk;
 input  reset;
 input        start;
-output [2:0] status;  // {busy, qmem_locked, kmem_locked} from controller
+output [3:0] status;  // {busy, qmem_locked, kmem_locked, pmem_locked} from controller
 input 		set_mode;
 input [2:0] 	mode_in;
 
@@ -61,10 +61,12 @@ wire  [bw_psum*col-1:0] fifo_out;
 wire [2:0] mem_ext_ctrl_sel;
 wire [7:0] inst_ctrl;
 reg  [2:0]	mode; // {op_mode, sfp_write_to_kmem, sfp_write_to_pmem}, default QK+norm, sfp->kmem only
-
+wire 		busy;
+assign 		busy = status[3];
 
 // ######    SFP    ###############
 wire  [bw*col-1:0] 	sfp_out;
+wire   				sfp_out_valid;
 wire  [bw_psum*col-1:0] sfp_out_BW_extended;
 reg   [4:0]			sfp_counter, sfp_counter_nxt;
 wire   save_done;
@@ -80,15 +82,25 @@ reg  mac_load_D1, mac_exec_D1;
 
 
 // #####   Unconcatenate  ###########
+<<<<<<< HEAD
 wire 	 mac_load, mac_exec, qmem_rd_ctrler, kmem_rd_ctrler;
 assign mac_exec  		= inst_ctrl[1];
 assign mac_load  		= inst_ctrl[0];
 assign   mac_inst = {mac_exec, mac_load};
+=======
+>>>>>>> main
 
 wire     kmem_ext_wr_sel, qmem_ext_wr_sel, pmem_ext_rd_sel;
 assign   kmem_ext_wr_sel = mem_ext_ctrl_sel[2];
 assign   qmem_ext_wr_sel = mem_ext_ctrl_sel[1];
 assign   pmem_ext_rd_sel = mem_ext_ctrl_sel[0];
+<<<<<<< HEAD
+=======
+
+wire 	 mac_load, mac_exec, qmem_rd_ctrler, kmem_rd_ctrler;
+reg 	 mac_load_D1, mac_exec_D1;
+assign   mac_inst = {mac_exec, mac_load};
+>>>>>>> main
 wire  [3:0] qkmem_add_ctrler;
 assign qmem_rd_ctrler   = inst_ctrl[7];
 assign kmem_rd_ctrler   = inst_ctrl[6];
@@ -110,6 +122,7 @@ generate
 		assign sfp_out_BW_extended[i*bw_psum +: bw_psum] = {{(bw_psum-bw){1'b0}}, sfp_out[i*bw +: bw]};
 	end
 endgenerate
+
 
 
 
@@ -276,7 +289,7 @@ always @(posedge clk ) begin
 	if(reset)begin
 		mode <= 3'b100; //pure matrix mult, output to pmem
 	end	
-	else if(set_mode)begin
+	else if(set_mode && !busy)begin
 		mode <= mode_in;
 	end
 	else begin
@@ -291,8 +304,8 @@ controller controller_instance (
 	.clk(clk),
 	.reset(reset),
 	.start(start),
-	.mode_from_reg_map(mode),
-	.status_to_reg_map(status),
+	.mode(mode),
+	.status(status),
 	.save_done(save_done),
 	.inst_ctrl(inst_ctrl),
     .mem_ext_ctrl_sel(mem_ext_ctrl_sel)
@@ -379,6 +392,10 @@ sfp_row #(.col(col), .bw(bw), .bw_psum(bw_psum), .out_shift(sfp_out_shift)) sfp_
 		 
 //   end
 
+<<<<<<< HEAD
+=======
+	
+>>>>>>> main
 	always @(posedge clk ) begin
 		mac_load_D1 <= mac_load;
 		mac_exec_D1 <= mac_exec;

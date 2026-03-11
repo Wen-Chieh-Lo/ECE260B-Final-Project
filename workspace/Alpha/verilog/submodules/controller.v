@@ -5,14 +5,14 @@
 *   LSB: kmem_locked       (controller can't accept kmem write if kmem_locked=1) 
 */
 
-module controller(clk, reset, start, mode_from_reg_map, status_to_reg_map, save_done, inst_ctrl, mem_ext_ctrl_sel);
+module controller(clk, reset, start, mode, status, save_done, inst_ctrl, mem_ext_ctrl_sel);
 
 // ============== I/O ============== // 
     input             clk, reset;
     input             start;
     
-    input  [2:0]      mode_from_reg_map; //register map value
-    output [2:0]      status_to_reg_map; // {busy, qmem_locked, kmem_locked}
+    input  [2:0]      mode; //register map value
+    output [3:0]      status; // {busy, qmem_locked, kmem_locked, pmem_locked}
 
     input             save_done;    // provided by SFP to indicate whether can send data to it.
 
@@ -38,14 +38,28 @@ module controller(clk, reset, start, mode_from_reg_map, status_to_reg_map, save_
 
 
     // // ============== Wires & Regs ============== // 
-    // wire      busy, qmem_locked, kmem_locked;
-    wire      op_mode, sfp_write_to_kmem, sfp_write_to_pmem; // update from mode_from_reg_map when start&&!busy
-    assign    op_mode           = mode_from_reg_map[2];
-    assign    sfp_write_to_kmem = mode_from_reg_map[1];
-    assign    sfp_write_to_pmem = mode_from_reg_map[0];
+    wire      op_mode, sfp_write_to_kmem, sfp_write_to_pmem; // update from mode when start&&!busy
+    assign    op_mode           = mode[2];
+    assign    sfp_write_to_kmem = mode[1];
+    assign    sfp_write_to_pmem = mode[0];
 
     wire     kmem_ext_wr_sel, qmem_ext_wr_sel, pmem_ext_rd_sel;
     assign   mem_ext_ctrl_sel = {kmem_ext_wr_sel, qmem_ext_wr_sel, pmem_ext_rd_sel};
+
+    reg         busy;
+    wire        qmem_locked, kmem_locked, pmem_locked;
+    assign      status = {busy, qmem_locked, kmem_locked, pmem_locked};
+    assign      qmem_locked = ~qmem_ext_wr_sel;
+    assign      kmem_locked = ~kmem_ext_wr_sel;
+    assign      pmem_locked = ~pmem_ext_rd_sel;
+    
+    always @(posedge clk ) begin
+        if(reset)           busy <= 1'b0;
+        else if(start) 		busy <= 1'b1;
+        else if(save_done) 	busy <= 1'b0;
+        else 				busy <= busy;
+    end
+
 
 
     reg      [3:0] qkmem_rd_addr;
@@ -136,6 +150,7 @@ module controller(clk, reset, start, mode_from_reg_map, status_to_reg_map, save_
                 else begin
                     state_nxt = S_MAC_DONE;
                 end
+                mac_counter_nxt = 4'd0;
             end
 
             default: begin
@@ -145,19 +160,6 @@ module controller(clk, reset, start, mode_from_reg_map, status_to_reg_map, save_
             
         endcase
     end
-
-
-
-    // don't need reset here since reg_map has it already
-    // controller mode only updates when start and not busy, otherwise hold the value
-    // always @(posedge clk) begin 
-    //     if(start && !busy) begin
-    //         {op_mode, sfp_write_to_kmem, sfp_write_to_pmem} <= mode_from_reg_map; // update controller mode from reg_map shadow when start and not busy
-    //     end
-    //     else begin
-    //         {op_mode, sfp_write_to_kmem, sfp_write_to_pmem} <= {op_mode, sfp_write_to_kmem, sfp_write_to_pmem}; 
-    //     end
-    // end
 
 
 
