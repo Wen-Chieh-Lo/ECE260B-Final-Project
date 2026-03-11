@@ -60,6 +60,7 @@ TARGET_FILELIST_table := \
 	fullchip:filelist \
 	controller:filelist_controller \
 	core:filelist_core \
+	core_shell:filelist_core_shell \
 	mac:filelist_mac \
 	sfp_row:filelist_sfp_row \
 	sfp_row_dual:filelist_sfp_row_dual
@@ -69,6 +70,7 @@ TARGET_WAVEFORM_table := \
 	fullchip:fullchip.vcd \
 	controller:controller.vcd \
 	core:core.vcd \
+	core_shell:core.vcd \
 	mac:mac_array.vcd \
 	sfp_row:sfp_row.vcd \
 	sfp_row_dual:sfp_row_dualcore.vcd
@@ -80,7 +82,7 @@ TARGET_TOP_MODULE_table := \
 	mac:mac_array \
 	sfp_row:sfp_row
 
-SIM_TARGETS := fullchip controller core mac sfp_row sfp_row_dual
+SIM_TARGETS := fullchip controller core core_shell mac sfp_row sfp_row_dual
 SYN_TARGETS := sfp_row controller core mac
 
 $(foreach p,$(TARGET_FILELIST_table),$(eval $(firstword $(subst :, ,$(p))): FILELIST_NAME := $(word 2,$(subst :, ,$(p)))))
@@ -91,7 +93,7 @@ $(foreach p,$(TARGET_FILELIST_table),$(eval gls_$(firstword $(subst :, ,$(p))): 
 $(foreach p,$(TARGET_WAVEFORM_table),$(eval gls_$(firstword $(subst :, ,$(p))): WAVEFORM     := $(word 2,$(subst :, ,$(p)))))
 
 # ----- Phony declarations -----
-.PHONY: all clean help default sim syn gls sim-shell sim-i gls-i parse $(SIM_TARGETS) $(addprefix gls_,$(SIM_TARGETS))
+.PHONY: all clean help default sim syn gls sim-shell parse $(SIM_TARGETS) $(addprefix gls_,$(SIM_TARGETS))
 
 default: sim
 
@@ -116,6 +118,17 @@ all:
 
 # User defines: -DSFP_LONGDIV etc. for iverilog (from USER_DEFINE_TASK_VARS)
 IVERILOG_DEFINES = $(patsubst %,-D%,$(USER_DEFINES))
+
+# Optional compile-time overrides (make sim CYCLE=2 OUTPUT_DIR=sim/myout)
+ifneq ($(CYCLE),)
+  IVERILOG_DEFINES += -DCYCLE=$(CYCLE)
+endif
+ifneq ($(H_CYCLE),)
+  IVERILOG_DEFINES += -DH_CYCLE=$(H_CYCLE)
+endif
+ifneq ($(OUTPUT_DIR),)
+  IVERILOG_DEFINES += -DOUTPUT_DIR=\"$(OUTPUT_DIR)\"
+endif
 
 $(SIM_TARGETS):
 	@mkdir -p sim
@@ -143,15 +156,7 @@ syn:
 
 # ----- Interactive simulation shell (menu) -----
 sim-shell:
-	@bash sim/sim_shell.sh
-
-# ----- Interactive sim (stdin commands: qkp, norm, vp, reset, quit, help) -----
-sim-i:
-	@$(MAKE) sim TARGET=core USER_DEFINES="$(USER_DEFINES) SIM_INTERACTIVE"
-
-# ----- Interactive GLS (stdin commands: qkp, norm, vp, reset, quit, help) -----
-gls-i:
-	@$(MAKE) gls TARGET=core USER_DEFINES="$(USER_DEFINES) SIM_INTERACTIVE"
+	@./sim_shell.sh
 
 # ----- Utilities -----
 parse:  ## Parse syn/log/*.rep and print summary (uses shell script; no Python needed)
@@ -183,8 +188,6 @@ help:
 	@echo "  Applied to both sim (iverilog -D) and syn (DC -define)"
 	@echo ""
 	@echo "  make sim-shell  - Interactive sim menu (run sim, view waveform, clean)"
-	@echo "  make sim-i     - Interactive core sim (stdin: qkp, norm, vp, reset, quit)"
-	@echo "  make gls-i     - Interactive gate-level sim (stdin: qkp, norm, vp, reset, quit)"
 	@echo "  make parse  - Parse syn/log/*.rep summary (shell script, no Python)"
 	@echo ""
 	@echo "SystemVerilog: sim/gls use IVERILOG_SV=-g2012 by default. Set IVERILOG_SV= to disable."

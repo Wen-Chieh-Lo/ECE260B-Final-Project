@@ -1,0 +1,42 @@
+# =============================================================================
+#
+#   gls-in-n-out.mingu  —  Gate-Level Simulation Command Script
+#
+#   Same TB commands as in-n-out.mingu, but uses set_sim_stage gls for
+#   gate-level simulation (syn/gate netlist + PDK).
+#
+# =============================================================================
+#
+#   USAGE:  ./sim_shell.sh -f gls-in-n-out.mingu
+#   Same as in-n-out.mingu but set_sim_stage gls, set_output_dir gls/waveform
+#
+# =============================================================================
+
+set PATTERN sim/pattern
+set_output_dir gls/waveform
+set_sim_stage gls
+set_clock_period 1
+set_sim_define SFP_LONGDIV
+fix_set
+
+# Test 1: Q*K^T
+set_exec_target CORE_MODE_MULT_save_to_PMEM
+writeQ $PATTERN/qdata.txt
+writeK $PATTERN/kdata.txt
+simulate
+verifypmem
+
+# Test 2: Norm(Q*K^T)
+set_exec_target CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM
+writeQ $PATTERN/qdata.txt
+writeK $PATTERN/kdata.txt
+simulate
+verifypmem
+
+# Test 3: V*Norm^T (KMEM has norm from Test 2)
+set_exec_target CORE_MODE_MULT_save_to_PMEM
+writeQ $PATTERN/vdata.txt
+simulate
+verifypmem
+
+exit

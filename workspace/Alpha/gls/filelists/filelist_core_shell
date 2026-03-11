@@ -1,0 +1,9 @@
+// --- Gate-level simulation: core_shell (interactive) ---
+// TB (includes sim/tb/params.v, tb_utils.v)
+./sim/tb/core_shell_tb.v
+
+// DUT: gate netlist
+./syn/gate/core.out.v
+
+// Standard cell library
+/home/linux/ieng6/ECE260B_WI26_A00/public/course_contents/w5/full_flow/gate_sim/netlist/tcbn65gplus.v

@@ -1,6 +1,6 @@
 // --- Gate-level simulation: core ---
 // TB (includes sim/tb/params.svh, pattern_path.vh, tb_utils.sv)
-./gls/tb/core_tb.sv
+./gls/tb/core_tb.v
 
 // DUT: gate netlist
 ./syn/gate/core.out.v

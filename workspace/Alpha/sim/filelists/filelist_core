@@ -1,5 +1,5 @@
 // --- testbench ---
-./sim/tb/core_tb.sv
+./sim/tb/core_tb.v
 
 // --- top / core ---
 ./verilog/core.v

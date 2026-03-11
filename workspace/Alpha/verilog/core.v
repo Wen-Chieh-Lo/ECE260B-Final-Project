@@ -73,38 +73,28 @@ wire   save_done;
 wire sfp_acc;                         // SFP accumulating for normalization
 wire sfp_div;                         // SFP dividing for normalization
 wire sfp_fifo_ext_rd;                 // SFP start to output FIFO -> sfp_sum_out -> other core, not used in single core
-wire sfp_out_valid;                   // SFP output valid
 wire [bw_psum+3:0] sfp_sum_in;        // SFP sum input, is always 0 in single port
 wire [bw_psum+3:0] sfp_sum_out;       // SFP sum output, float in single core
 reg  result_wr;
 reg  [3:0] result_addr, result_addr_nxt;
-reg  mac_load_D1, mac_exec_D1;
 
 
 // #####   Unconcatenate  ###########
-<<<<<<< HEAD
-wire 	 mac_load, mac_exec, qmem_rd_ctrler, kmem_rd_ctrler;
-assign mac_exec  		= inst_ctrl[1];
-assign mac_load  		= inst_ctrl[0];
-assign   mac_inst = {mac_exec, mac_load};
-=======
->>>>>>> main
 
 wire     kmem_ext_wr_sel, qmem_ext_wr_sel, pmem_ext_rd_sel;
 assign   kmem_ext_wr_sel = mem_ext_ctrl_sel[2];
 assign   qmem_ext_wr_sel = mem_ext_ctrl_sel[1];
 assign   pmem_ext_rd_sel = mem_ext_ctrl_sel[0];
-<<<<<<< HEAD
-=======
 
 wire 	 mac_load, mac_exec, qmem_rd_ctrler, kmem_rd_ctrler;
 reg 	 mac_load_D1, mac_exec_D1;
 assign   mac_inst = {mac_exec, mac_load};
->>>>>>> main
 wire  [3:0] qkmem_add_ctrler;
 assign qmem_rd_ctrler   = inst_ctrl[7];
 assign kmem_rd_ctrler   = inst_ctrl[6];
 assign qkmem_add_ctrler = inst_ctrl[5:2];
+assign mac_exec  		= inst_ctrl[1];
+assign mac_load  		= inst_ctrl[0];
 
 wire op_mode, sfp_write_to_kmem, sfp_write_to_pmem;
 assign op_mode     			 = mode[2];
@@ -392,10 +382,7 @@ sfp_row #(.col(col), .bw(bw), .bw_psum(bw_psum), .out_shift(sfp_out_shift)) sfp_
 		 
 //   end
 
-<<<<<<< HEAD
-=======
 	
->>>>>>> main
 	always @(posedge clk ) begin
 		mac_load_D1 <= mac_load;
 		mac_exec_D1 <= mac_exec;
