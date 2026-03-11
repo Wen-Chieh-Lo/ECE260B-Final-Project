@@ -42,7 +42,7 @@ module core_tb;
 	integer sum       [total_cycle-1:0];
 	integer estimated [0:total_cycle*col-1];   // computed from mac_data (same formula as sfp_row)
 	integer          golden_col  [0:7];        // RTL col c -> golden result[t][golden_col[c]] (chain mapping)
-  reg              skip_norm_row [0:total_cycle-1]; // rows where Si < threshold and HW may skip normalization
+  	reg              skip_norm_row [0:total_cycle-1]; // rows where Si < threshold and HW may skip normalization
 
 
 
