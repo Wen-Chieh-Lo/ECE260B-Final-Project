@@ -6,6 +6,8 @@
 #         make syn  [TARGET=<name>] [SYN_EFFORT=<level>]  -- run synthesis (Design Compiler)
 #         make all  [TARGET=<name>] [SYN_EFFORT=<level>]  -- run sim + syn for one target
 #
+# SystemVerilog:  make sim uses -g2012 by default. Override with IVERILOG_SV= (empty to disable).
+#
 # Simulation targets (TARGET=):
 #   target        description              filelist (in sim/filelists/)
 #   ------------- -----------------------  --------------------------
@@ -42,6 +44,7 @@ SIM_FILELISTS_DIR := sim/filelists
 GLS_FILELISTS_DIR := gls/filelists
 SYN_FILELISTS_DIR := syn/filelists
 IVERILOG          := iverilog
+IVERILOG_SV       ?= -g2012
 VVP               := vvp
 OUT               := sim/compiled
 GLS_OUT      := gls/compiled
@@ -88,7 +91,7 @@ $(foreach p,$(TARGET_FILELIST_table),$(eval gls_$(firstword $(subst :, ,$(p))): 
 $(foreach p,$(TARGET_WAVEFORM_table),$(eval gls_$(firstword $(subst :, ,$(p))): WAVEFORM     := $(word 2,$(subst :, ,$(p)))))
 
 # ----- Phony declarations -----
-.PHONY: all clean help default sim syn gls parse $(SIM_TARGETS) $(addprefix gls_,$(SIM_TARGETS))
+.PHONY: all clean help default sim syn gls sim-shell sim-i parse $(SIM_TARGETS) $(addprefix gls_,$(SIM_TARGETS))
 
 default: sim
 
@@ -101,7 +104,7 @@ gls: gls_$(TARGET)
 
 $(addprefix gls_,$(SIM_TARGETS)):
 	@mkdir -p gls gls/waveform gls/pattern
-	$(IVERILOG) $(IVERILOG_DEFINES) -o $(GLS_OUT) -f $(GLS_FILELISTS_DIR)/$(FILELIST_NAME)
+	$(IVERILOG) $(IVERILOG_SV) $(IVERILOG_DEFINES) -o $(GLS_OUT) -f $(GLS_FILELISTS_DIR)/$(FILELIST_NAME)
 	$(VVP) $(GLS_OUT)
 	@echo ""
 	@echo ">>> Gate sim waveform: gls/waveform/$(WAVEFORM) <<<"
@@ -116,7 +119,7 @@ IVERILOG_DEFINES = $(patsubst %,-D%,$(USER_DEFINES))
 
 $(SIM_TARGETS):
 	@mkdir -p sim
-	$(IVERILOG) $(IVERILOG_DEFINES) -o $(OUT) -f $(SIM_FILELISTS_DIR)/$(FILELIST_NAME)
+	$(IVERILOG) $(IVERILOG_SV) $(IVERILOG_DEFINES) -o $(OUT) -f $(SIM_FILELISTS_DIR)/$(FILELIST_NAME)
 	$(VVP) $(OUT)
 	@echo ""
 	@echo ">>> Waveform: sim/waveform/$(WAVEFORM) (GTKWave or any VCD viewer) <<<"
@@ -137,6 +140,14 @@ SYN_EFFORT ?= high
 
 syn:
 	@cd $(SYNDIR) && dc_shell -f run_dc.tcl -x "set top_module $(TOP_MODULE); set rtlPath $(PROJ_ROOT); set filelist_path {$(SYN_FILELIST)}; set syn_effort $(SYN_EFFORT); set syn_defines {$(USER_DEFINES)}"
+
+# ----- Interactive simulation shell (menu) -----
+sim-shell:
+	@bash sim/sim_shell.sh
+
+# ----- Interactive sim (stdin commands: qkp, norm, vp, reset, quit, help) -----
+sim-i:
+	@$(MAKE) sim TARGET=core USER_DEFINES="$(USER_DEFINES) SIM_INTERACTIVE"
 
 # ----- Utilities -----
 parse:  ## Parse syn/log/*.rep and print summary (uses shell script; no Python needed)
@@ -167,6 +178,10 @@ help:
 	@echo "  Space-separated Verilog macros, e.g. SFP_LONGDIV LOAD_OTHER_NORM_FILE"
 	@echo "  Applied to both sim (iverilog -D) and syn (DC -define)"
 	@echo ""
+	@echo "  make sim-shell  - Interactive sim menu (run sim, view waveform, clean)"
+	@echo "  make sim-i     - Interactive core sim (stdin: qkp, norm, vp, reset, quit)"
 	@echo "  make parse  - Parse syn/log/*.rep summary (shell script, no Python)"
+	@echo ""
+	@echo "SystemVerilog: sim/gls use IVERILOG_SV=-g2012 by default. Set IVERILOG_SV= to disable."
 	@echo ""
 	@echo "Other: make clean"
