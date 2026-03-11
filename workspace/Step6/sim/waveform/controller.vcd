@@ -1,0 +1,920 @@
+$date
+	Mon Mar  9 02:34:24 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module controller_tb $end
+$var wire 3 ! controller_regmap_bus1 [2:0] $end
+$var wire 20 " inst_ctrl [19:0] $end
+$var wire 3 # controller_regmap_bus0 [2:0] $end
+$var reg 1 $ clk $end
+$var reg 1 % op_mode $end
+$var reg 1 & reg_map_addr $end
+$var reg 1 ' reg_map_cen $end
+$var reg 3 ( reg_map_data_in [2:0] $end
+$var reg 1 ) reg_map_wen $end
+$var reg 1 * reset $end
+$var reg 1 + sfp_done $end
+$var reg 1 , sfp_write_to_kmem $end
+$var reg 1 - sfp_write_to_pmem $end
+$var reg 1 . start $end
+$scope module controller_inst $end
+$var wire 1 $ clk $end
+$var wire 1 / kmem_ext_wr_sel $end
+$var wire 1 0 kmem_rd $end
+$var wire 3 1 mode_from_reg_map [2:0] $end
+$var wire 1 2 qmem_ext_wr_sel $end
+$var wire 1 3 qmem_rd $end
+$var wire 1 4 rd_mac_exec $end
+$var wire 1 5 rd_mac_load $end
+$var wire 1 * reset $end
+$var wire 1 + sfp_done $end
+$var wire 1 . start $end
+$var wire 3 6 status_to_reg_map [2:0] $end
+$var wire 1 7 sfp_write_to_pmem $end
+$var wire 1 8 sfp_write_to_kmem $end
+$var wire 1 9 pmem_ext_rd_sel $end
+$var wire 1 : op_mode $end
+$var wire 3 ; mem_ext_ctrl_sel [2:0] $end
+$var wire 2 < mac_inst [1:0] $end
+$var wire 20 = inst_ctrl [19:0] $end
+$var reg 1 > VN_mode $end
+$var reg 1 ? kmem_wr $end
+$var reg 4 @ mac_counter [3:0] $end
+$var reg 4 A mac_counter_nxt [3:0] $end
+$var reg 4 B pmem_add [3:0] $end
+$var reg 1 C pmem_rd $end
+$var reg 1 D pmem_wr $end
+$var reg 4 E qkmem_add [3:0] $end
+$var reg 1 F qmem_wr $end
+$var reg 1 G rd_mac_exec_D1 $end
+$var reg 1 H rd_mac_load_D1 $end
+$var reg 1 I sfp_acc $end
+$var reg 1 J sfp_div $end
+$var reg 4 K sfp_processed_cnt [3:0] $end
+$var reg 4 L sfp_processed_cnt_nxt [3:0] $end
+$var reg 1 M sfp_processing $end
+$var reg 2 N state [1:0] $end
+$var reg 2 O state_nxt [1:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+bx O
+bx N
+xM
+bx L
+bx K
+xJ
+xI
+xH
+xG
+xF
+bx E
+xD
+xC
+bx B
+bx A
+bx @
+x?
+x>
+bx =
+bx <
+bx ;
+x:
+x9
+x8
+x7
+bz 6
+x5
+x4
+x3
+x2
+bx 1
+x0
+x/
+0.
+x-
+x,
+0+
+0*
+x)
+bx (
+x'
+x&
+x%
+0$
+bx #
+bx "
+bz !
+$end
+#500
+1$
+#1000
+0$
+#1500
+1$
+#2000
+1*
+0$
+#2500
+b0 L
+b0 A
+b0 O
+b0 E
+b0 B
+1/
+12
+00
+05
+03
+04
+0G
+bx00000000000x0xxx "
+bx00000000000x0xxx =
+b0 <
+0H
+b0 K
+b0 @
+b111 ;
+19
+b0 N
+1$
+#3000
+0$
+#3500
+1$
+#4000
+0*
+0$
+#4500
+1$
+#5000
+b1 O
+07
+18
+0:
+1.
+0-
+1,
+b10 #
+b10 1
+0%
+0$
+#5500
+b1 A
+0/
+02
+bx00000000000x1xxx "
+bx00000000000x1xxx =
+10
+15
+b0 ;
+09
+b1 N
+1$
+#6000
+0.
+0$
+#6500
+b10 A
+b1 E
+bx00010000010x1xxx "
+bx00010000010x1xxx =
+b1 <
+1H
+b1 @
+1$
+#7000
+0$
+#7500
+b11 A
+bx00100000010x1xxx "
+bx00100000010x1xxx =
+b10 E
+b10 @
+1$
+#8000
+0$
+#8500
+b100 A
+bx00110000010x1xxx "
+bx00110000010x1xxx =
+b11 E
+b11 @
+1$
+#9000
+0$
+#9500
+b101 A
+bx01000000010x1xxx "
+bx01000000010x1xxx =
+b100 E
+b100 @
+1$
+#10000
+0$
+#10500
+b110 A
+bx01010000010x1xxx "
+bx01010000010x1xxx =
+b101 E
+b101 @
+1$
+#11000
+0$
+#11500
+b111 A
+bx01100000010x1xxx "
+bx01100000010x1xxx =
+b110 E
+b110 @
+1$
+#12000
+0$
+#12500
+b1000 A
+bx01110000010x1xxx "
+bx01110000010x1xxx =
+b111 E
+b111 @
+1$
+#13000
+0$
+#13500
+b0 A
+b10 O
+b1000 E
+bx10000000010x0xxx "
+bx10000000010x0xxx =
+00
+05
+b1000 @
+1$
+#14000
+0$
+#14500
+b1 A
+b0 E
+13
+14
+bx00000000001x0xxx "
+bx00000000001x0xxx =
+b0 <
+0H
+b0 @
+b10 N
+1$
+#15000
+0$
+#15500
+b10 A
+b1 E
+b1 @
+bx00010000101x0xxx "
+bx00010000101x0xxx =
+b10 <
+1G
+1$
+#16000
+0$
+#16500
+b11 A
+bx00100000101x0xxx "
+bx00100000101x0xxx =
+b10 E
+b10 @
+1$
+#17000
+0$
+#17500
+b100 A
+bx00110000101x0xxx "
+bx00110000101x0xxx =
+b11 E
+b11 @
+1$
+#18000
+0$
+#18500
+b101 A
+bx01000000101x0xxx "
+bx01000000101x0xxx =
+b100 E
+b100 @
+1$
+#19000
+0$
+#19500
+b110 A
+bx01010000101x0xxx "
+bx01010000101x0xxx =
+b101 E
+b101 @
+1$
+#20000
+0$
+#20500
+b111 A
+bx01100000101x0xxx "
+bx01100000101x0xxx =
+b110 E
+b110 @
+1$
+#21000
+0$
+#21500
+b1000 A
+bx01110000101x0xxx "
+bx01110000101x0xxx =
+b111 E
+b111 @
+1$
+#22000
+0$
+#22500
+b0 A
+b11 O
+b1000 E
+bx10000000100x0xxx "
+bx10000000100x0xxx =
+03
+04
+b1000 @
+1$
+#23000
+0$
+#23500
+b0 E
+b10 ;
+12
+b0 @
+b11 N
+bx00000000000x0xxx "
+bx00000000000x0xxx =
+b0 <
+0G
+1$
+#24000
+0$
+#24500
+1$
+#25000
+0$
+#25500
+1$
+#26000
+0$
+#26500
+1$
+#27000
+b1 L
+1+
+0$
+#27500
+b10 L
+b1 E
+bx00010001000x0xxx "
+bx00010001000x0xxx =
+b1 B
+b1 K
+1$
+#28000
+0$
+#28500
+b11 L
+b10 E
+bx00100010000x0xxx "
+bx00100010000x0xxx =
+b10 B
+b10 K
+1$
+#29000
+0$
+#29500
+b100 L
+b11 E
+bx00110011000x0xxx "
+bx00110011000x0xxx =
+b11 B
+b11 K
+1$
+#30000
+0$
+#30500
+b101 L
+b100 E
+bx01000100000x0xxx "
+bx01000100000x0xxx =
+b100 B
+b100 K
+1$
+#31000
+0$
+#31500
+b110 L
+b101 E
+bx01010101000x0xxx "
+bx01010101000x0xxx =
+b101 B
+b101 K
+1$
+#32000
+0$
+#32500
+b111 L
+b110 E
+bx01100110000x0xxx "
+bx01100110000x0xxx =
+b110 B
+b110 K
+1$
+#33000
+0$
+#33500
+b1000 L
+b111 E
+bx01110111000x0xxx "
+bx01110111000x0xxx =
+b111 B
+b111 K
+1$
+#34000
+0$
+#34500
+b0 O
+b1001 L
+b1000 E
+bx10001000000x0xxx "
+bx10001000000x0xxx =
+b1000 B
+b1000 K
+1$
+#35000
+b1000 L
+0+
+0$
+#35500
+bx00001000000x0xxx "
+bx00001000000x0xxx =
+b0 E
+1/
+b111 ;
+19
+b0 N
+1$
+#36000
+0$
+#36500
+1$
+#37000
+0$
+#37500
+1$
+#38000
+0$
+#38500
+1$
+#39000
+0$
+#39500
+1$
+#40000
+0$
+#40500
+1$
+#41000
+0$
+#41500
+1$
+#42000
+0$
+#42500
+1$
+#43000
+0$
+#43500
+1$
+#44000
+0$
+#44500
+1$
+#45000
+0$
+#45500
+1$
+#46000
+0$
+#46500
+1$
+#47000
+0$
+#47500
+1$
+#48000
+0$
+#48500
+1$
+#49000
+0$
+#49500
+1$
+#50000
+0$
+#50500
+1$
+#51000
+0$
+#51500
+1$
+#52000
+0$
+#52500
+1$
+#53000
+0$
+#53500
+1$
+#54000
+0$
+#54500
+1$
+#55000
+0$
+#55500
+1$
+#56000
+0$
+#56500
+1$
+#57000
+1*
+0$
+#57500
+b0 L
+bx00000000000x0xxx "
+bx00000000000x0xxx =
+b0 B
+b0 K
+1$
+#58000
+0$
+#58500
+1$
+#59000
+0*
+0$
+#59500
+1$
+#60000
+0$
+#60500
+1$
+#61000
+b100 (
+0&
+1)
+0'
+0$
+#61500
+1$
+#62000
+b1 O
+1.
+1'
+0$
+#62500
+b1 A
+0/
+02
+bx00000000000x1xxx "
+bx00000000000x1xxx =
+10
+15
+b0 ;
+09
+b1 N
+1$
+#63000
+0$
+#63500
+b10 A
+b1 E
+b1 @
+bx00010000010x1xxx "
+bx00010000010x1xxx =
+b1 <
+1H
+1$
+#64000
+0.
+0$
+#64500
+b11 A
+bx00100000010x1xxx "
+bx00100000010x1xxx =
+b10 E
+b10 @
+1$
+#65000
+0$
+#65500
+b100 A
+bx00110000010x1xxx "
+bx00110000010x1xxx =
+b11 E
+b11 @
+1$
+#66000
+0$
+#66500
+b101 A
+bx01000000010x1xxx "
+bx01000000010x1xxx =
+b100 E
+b100 @
+1$
+#67000
+0$
+#67500
+b110 A
+bx01010000010x1xxx "
+bx01010000010x1xxx =
+b101 E
+b101 @
+1$
+#68000
+0$
+#68500
+b111 A
+bx01100000010x1xxx "
+bx01100000010x1xxx =
+b110 E
+b110 @
+1$
+#69000
+0$
+#69500
+b1000 A
+bx01110000010x1xxx "
+bx01110000010x1xxx =
+b111 E
+b111 @
+1$
+#70000
+0$
+#70500
+b0 A
+b10 O
+b1000 E
+bx10000000010x0xxx "
+bx10000000010x0xxx =
+00
+05
+b1000 @
+1$
+#71000
+0$
+#71500
+b1 A
+b0 E
+13
+14
+b0 @
+b10 N
+bx00000000001x0xxx "
+bx00000000001x0xxx =
+b0 <
+0H
+1$
+#72000
+0$
+#72500
+b10 A
+b1 E
+bx00010000101x0xxx "
+bx00010000101x0xxx =
+b10 <
+1G
+b1 @
+1$
+#73000
+0$
+#73500
+b11 A
+bx00100000101x0xxx "
+bx00100000101x0xxx =
+b10 E
+b10 @
+1$
+#74000
+0$
+#74500
+b100 A
+bx00110000101x0xxx "
+bx00110000101x0xxx =
+b11 E
+b11 @
+1$
+#75000
+b1 L
+1+
+0$
+#75500
+b10 L
+b101 A
+b100 E
+bx01000001101x0xxx "
+bx01000001101x0xxx =
+b1 B
+b1 K
+b100 @
+1$
+#76000
+0$
+#76500
+b11 L
+b110 A
+b101 E
+bx01010010101x0xxx "
+bx01010010101x0xxx =
+b10 B
+b10 K
+b101 @
+1$
+#77000
+0$
+#77500
+b100 L
+b111 A
+b110 E
+bx01100011101x0xxx "
+bx01100011101x0xxx =
+b11 B
+b11 K
+b110 @
+1$
+#78000
+0$
+#78500
+b101 L
+b1000 A
+b111 E
+bx01110100101x0xxx "
+bx01110100101x0xxx =
+b100 B
+b100 K
+b111 @
+1$
+#79000
+0$
+#79500
+b110 L
+b0 A
+b11 O
+b1000 E
+b101 B
+bx10000101100x0xxx "
+bx10000101100x0xxx =
+03
+04
+b101 K
+b1000 @
+1$
+#80000
+0$
+#80500
+b111 L
+b110 E
+b110 B
+b10 ;
+12
+bx01100110000x0xxx "
+bx01100110000x0xxx =
+b0 <
+0G
+b110 K
+b0 @
+b11 N
+1$
+#81000
+0$
+#81500
+b1000 L
+b111 E
+bx01110111000x0xxx "
+bx01110111000x0xxx =
+b111 B
+b111 K
+1$
+#82000
+0$
+#82500
+b0 O
+b1001 L
+b1000 E
+bx10001000000x0xxx "
+bx10001000000x0xxx =
+b1000 B
+b1000 K
+1$
+#83000
+b1000 L
+0+
+0$
+#83500
+bx00001000000x0xxx "
+bx00001000000x0xxx =
+b0 E
+1/
+b111 ;
+19
+b0 N
+1$
+#84000
+0$
+#84500
+1$
+#85000
+0$
+#85500
+1$
+#86000
+0$
+#86500
+1$
+#87000
+0$
+#87500
+1$
+#88000
+0$
+#88500
+1$
+#89000
+0$
+#89500
+1$
+#90000
+0$
+#90500
+1$
+#91000
+0$
+#91500
+1$
+#92000
+0$
+#92500
+1$
+#93000
+0$
+#93500
+1$
+#94000
+0$
+#94500
+1$
+#95000
+0$
+#95500
+1$
+#96000
+0$
+#96500
+1$
+#97000
+0$
+#97500
+1$
+#98000
+0$
+#98500
+1$
+#99000
+0$
+#99500
+1$
+#100000
+0$
+#100500
+1$
+#101000
+0$
+#101500
+1$
+#102000
+0$
+#102500
+1$
+#103000
+0$
+#103500
+1$
+#104000
+0$
