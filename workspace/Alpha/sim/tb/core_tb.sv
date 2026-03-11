@@ -2,6 +2,7 @@
 
 `timescale 1ns/1ps
 `include "sim/tb/params.svh"
+`include "sim/tb/pattern_path.vh"
 
 module core_tb;
 	`include "sim/tb/tb_utils.sv"
@@ -67,8 +68,8 @@ module core_tb;
 	initial begin
 		// Set VCD waveform output file
 		DumpVCD("sim/waveform/core.vcd");
-		// Load Q, K, V_T test data from sim/pattern
-		LoadPatternData("sim/pattern");
+		// Load Q, K, V_T test data (path from pattern_path.vh)
+		LoadPatternData(`PATTERN_PATH);
 		// Reset core
 		Reset2Cyc;
 		// Precompute all golden: estimated2_t1, estimated1, estimated2

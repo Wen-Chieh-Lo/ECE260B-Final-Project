@@ -91,7 +91,7 @@ $(foreach p,$(TARGET_FILELIST_table),$(eval gls_$(firstword $(subst :, ,$(p))): 
 $(foreach p,$(TARGET_WAVEFORM_table),$(eval gls_$(firstword $(subst :, ,$(p))): WAVEFORM     := $(word 2,$(subst :, ,$(p)))))
 
 # ----- Phony declarations -----
-.PHONY: all clean help default sim syn gls sim-shell sim-i parse $(SIM_TARGETS) $(addprefix gls_,$(SIM_TARGETS))
+.PHONY: all clean help default sim syn gls sim-shell sim-i gls-i parse $(SIM_TARGETS) $(addprefix gls_,$(SIM_TARGETS))
 
 default: sim
 
@@ -149,6 +149,10 @@ sim-shell:
 sim-i:
 	@$(MAKE) sim TARGET=core USER_DEFINES="$(USER_DEFINES) SIM_INTERACTIVE"
 
+# ----- Interactive GLS (stdin commands: qkp, norm, vp, reset, quit, help) -----
+gls-i:
+	@$(MAKE) gls TARGET=core USER_DEFINES="$(USER_DEFINES) SIM_INTERACTIVE"
+
 # ----- Utilities -----
 parse:  ## Parse syn/log/*.rep and print summary (uses shell script; no Python needed)
 	@bash $(SYNDIR)/parse_reports.sh $(SYNDIR)/log
@@ -180,6 +184,7 @@ help:
 	@echo ""
 	@echo "  make sim-shell  - Interactive sim menu (run sim, view waveform, clean)"
 	@echo "  make sim-i     - Interactive core sim (stdin: qkp, norm, vp, reset, quit)"
+	@echo "  make gls-i     - Interactive gate-level sim (stdin: qkp, norm, vp, reset, quit)"
 	@echo "  make parse  - Parse syn/log/*.rep summary (shell script, no Python)"
 	@echo ""
 	@echo "SystemVerilog: sim/gls use IVERILOG_SV=-g2012 by default. Set IVERILOG_SV= to disable."

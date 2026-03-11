@@ -8,6 +8,24 @@
 PROJ_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJ_ROOT" || exit 1
 
+# Default pattern path
+DEFAULT_PATTERN="sim/pattern"
+PATTERN_PATH_FILE="sim/tb/pattern_path.vh"
+
+prompt_pattern_path() {
+	echo ""
+	read -rp "Pattern path [$DEFAULT_PATTERN]: " user_path
+	if [[ -n "$user_path" ]]; then
+		PATTERN_PATH="$user_path"
+	else
+		PATTERN_PATH="$DEFAULT_PATTERN"
+	fi
+	printf '`define PATTERN_PATH "%s"\n' "$PATTERN_PATH" > "$PATTERN_PATH_FILE"
+	echo ""
+	echo "  Using pattern: $PATTERN_PATH"
+	echo ""
+}
+
 # Waveform paths
 SIM_WAVE="sim/waveform"
 GLS_WAVE="gls/waveform"
@@ -42,6 +60,7 @@ print_menu() {
 	echo "  [8] View RTL waveform           - GTKWave (last sim target)"
 	echo "  [9] View GLS waveform           - GTKWave (gate-level)"
 	echo "  [i] Interactive core sim        - stdin commands (qkp, norm, vp, reset, quit)"
+	echo "  [g] Interactive GLS (gate-level) - stdin commands (qkp, norm, vp, reset, quit)"
 	echo "  [c] Clean compiled binaries"
 	echo "  [h] Help"
 	echo "  [q] Quit"
@@ -72,6 +91,16 @@ run_interactive() {
 	echo "    Commands: qkp, norm, vp, reset, quit, help"
 	echo ""
 	make sim-i
+	echo ""
+	read -rp "Press Enter to continue..."
+}
+
+run_gls_interactive() {
+	echo ""
+	echo ">>> Running: make gls-i (interactive gate-level sim)"
+	echo "    Commands: qkp, norm, vp, reset, quit, help"
+	echo ""
+	make gls-i
 	echo ""
 	read -rp "Press Enter to continue..."
 }
@@ -112,6 +141,9 @@ show_help() {
 	read -rp "Press Enter to continue..."
 }
 
+# Startup: prompt for pattern path
+prompt_pattern_path
+
 # Main loop
 LAST_TARGET="core"
 
@@ -132,6 +164,7 @@ while true; do
 		8) view_waveform "$SIM_WAVE/${WAVEFORMS[$LAST_TARGET]}" ;;
 		9) view_waveform "$GLS_WAVE/core.vcd" ;;
 		i) run_interactive ;;
+		g) run_gls_interactive ;;
 		c|clean) do_clean ;;
 		h|help) show_help ;;
 		q|quit|exit) echo ""; echo "Bye."; exit 0 ;;
