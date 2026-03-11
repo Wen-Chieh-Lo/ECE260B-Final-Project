@@ -150,6 +150,7 @@ module controller(clk, reset, start, mode, status, save_done, inst_ctrl, mem_ext
                 else begin
                     state_nxt = S_MAC_DONE;
                 end
+                mac_counter_nxt = 4'd0;
             end
 
             default: begin
