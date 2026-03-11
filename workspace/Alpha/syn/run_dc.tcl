@@ -125,7 +125,9 @@ if { $syn_effort == "low" } {
 } elseif { $syn_effort == "medium" } {
     compile -map_effort medium
 } else {
-    compile_ultra -retime -gate_clock -exact_map
+    # compile_ultra -retime -gate_clock -exact_map
+	compile_ultra -retime -gate_clock
+	compile_ultra -incremental -retime
 }
 
 # Write Out Design - Hierarchical
