@@ -131,7 +131,7 @@ ifneq ($(OUTPUT_DIR),)
 endif
 
 $(SIM_TARGETS):
-	@mkdir -p sim
+	@mkdir -p sim sim/waveform
 	$(IVERILOG) $(IVERILOG_SV) $(IVERILOG_DEFINES) -o $(OUT) -f $(SIM_FILELISTS_DIR)/$(FILELIST_NAME)
 	$(VVP) $(OUT)
 	@echo ""

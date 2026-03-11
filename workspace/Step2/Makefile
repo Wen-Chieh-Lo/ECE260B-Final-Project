@@ -111,7 +111,7 @@ all:
 IVERILOG_DEFINES = $(patsubst %,-D%,$(USER_DEFINES))
 
 $(SIM_TARGETS):
-	@mkdir -p sim
+	@mkdir -p sim sim/waveform
 	$(IVERILOG) $(IVERILOG_DEFINES) -o $(OUT) -f $(SIM_FILELISTS_DIR)/$(FILELIST_NAME)
 	$(VVP) $(OUT)
 	@echo ""
