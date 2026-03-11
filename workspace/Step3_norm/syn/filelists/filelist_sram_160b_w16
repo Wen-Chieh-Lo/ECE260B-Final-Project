@@ -1,0 +1,2 @@
+// SRAM 160b x 16 synthesis filelist
+./verilog/memory/sram_160b_w16.v

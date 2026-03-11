@@ -1,0 +1,119 @@
+{
+  "extensionVersion": "1.5.0",
+  "fileName": "/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/sim/waveform/sfp_row.vcd",
+  "markerTime": 105000,
+  "altMarkerTime": null,
+  "selectedSignal": {
+    "name": "sfp_row_tb.u_sfp.div0.rst_n",
+    "msb": -1,
+    "lsb": -1
+  },
+  "zoomRatio": 0.002158979894820243,
+  "scrollLeft": 0,
+  "displayedSignals": [
+    {
+      "dataType": "netlist-variable",
+      "netlistId": 76,
+      "name": "sfp_row_tb.u_sfp.div0.clk",
+      "numberFormat": "binary",
+      "colorIndex": 0,
+      "rowHeight": 1,
+      "verticalScale": 1,
+      "nameType": "fullPath",
+      "customName": "clk",
+      "renderType": "binary",
+      "valueLinkCommand": ""
+    },
+    {
+      "dataType": "netlist-variable",
+      "netlistId": 95,
+      "name": "sfp_row_tb.u_sfp.div0.state",
+      "numberFormat": "binary",
+      "colorIndex": 0,
+      "rowHeight": 1,
+      "verticalScale": 1,
+      "nameType": "fullPath",
+      "customName": "state",
+      "renderType": "binary",
+      "valueLinkCommand": ""
+    },
+    {
+      "dataType": "netlist-variable",
+      "netlistId": 79,
+      "name": "sfp_row_tb.u_sfp.div0.rst_n",
+      "numberFormat": "binary",
+      "colorIndex": 0,
+      "rowHeight": 1,
+      "verticalScale": 1,
+      "nameType": "fullPath",
+      "customName": "rst_n",
+      "renderType": "binary",
+      "valueLinkCommand": ""
+    },
+    {
+      "dataType": "netlist-variable",
+      "netlistId": 80,
+      "name": "sfp_row_tb.u_sfp.div0.start",
+      "numberFormat": "binary",
+      "colorIndex": 0,
+      "rowHeight": 1,
+      "verticalScale": 1,
+      "nameType": "fullPath",
+      "customName": "start",
+      "renderType": "binary",
+      "valueLinkCommand": ""
+    },
+    {
+      "dataType": "netlist-variable",
+      "netlistId": 77,
+      "name": "sfp_row_tb.u_sfp.div0.divisor",
+      "numberFormat": "hexadecimal",
+      "colorIndex": 0,
+      "rowHeight": 1,
+      "verticalScale": 1,
+      "nameType": "fullPath",
+      "customName": "divisor",
+      "renderType": "multiBit",
+      "valueLinkCommand": ""
+    },
+    {
+      "dataType": "netlist-variable",
+      "netlistId": 87,
+      "name": "sfp_row_tb.u_sfp.div0.done",
+      "numberFormat": "binary",
+      "colorIndex": 0,
+      "rowHeight": 1,
+      "verticalScale": 1,
+      "nameType": "fullPath",
+      "customName": "done",
+      "renderType": "binary",
+      "valueLinkCommand": ""
+    },
+    {
+      "dataType": "netlist-variable",
+      "netlistId": 84,
+      "name": "sfp_row_tb.u_sfp.div0.cntr_nxt",
+      "numberFormat": "hexadecimal",
+      "colorIndex": 0,
+      "rowHeight": 1,
+      "verticalScale": 1,
+      "nameType": "fullPath",
+      "customName": "cntr_nxt",
+      "renderType": "multiBit",
+      "valueLinkCommand": ""
+    },
+    {
+      "dataType": "netlist-variable",
+      "netlistId": 96,
+      "name": "sfp_row_tb.u_sfp.div0.state_nxt",
+      "numberFormat": "binary",
+      "colorIndex": 0,
+      "rowHeight": 1,
+      "verticalScale": 1,
+      "nameType": "fullPath",
+      "customName": "state_nxt",
+      "renderType": "binary",
+      "valueLinkCommand": ""
+    }
+  ]
+}

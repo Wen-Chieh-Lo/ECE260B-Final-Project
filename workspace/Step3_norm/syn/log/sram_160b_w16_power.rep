@@ -1,0 +1,92 @@
+Information: Propagating switching activity (low effort zero delay simulation). (PWR-6)
+Warning: There is no defined clock in the design. (PWR-80)
+Warning: Design has unannotated primary inputs. (PWR-414)
+Warning: Design has unannotated sequential cell outputs. (PWR-415)
+ 
+****************************************
+Report : power
+        -analysis_effort low
+Design : sram_160b_w16
+Version: K-2015.06-SP2
+Date   : Wed Mar 11 12:10:28 2026
+****************************************
+
+
+Library(s) Used:
+
+    tcbn65gpluswc (File: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db)
+
+
+Operating Conditions: WCCOM   Library: tcbn65gpluswc
+Wire Load Model Mode: segmented
+
+Design        Wire Load Model            Library
+------------------------------------------------
+sram_160b_w16          ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_0
+                       ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_2
+                       ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_4
+                       ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_6
+                       ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_8
+                       ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_10
+                       ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_12
+                       ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_14
+                       ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_16
+                       ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_18
+                       ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_20
+                       ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_22
+                       ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_24
+                       ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_25
+                       ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_27
+                       ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_29
+                       ZeroWireload      tcbn65gpluswc
+SNPS_CLOCK_GATE_HIGH_sram_160b_w16_31
+                       ZeroWireload      tcbn65gpluswc
+
+
+Global Operating Voltage = 0.9  
+Power-specific unit information :
+    Voltage Units = 1V
+    Capacitance Units = 1.000000pf
+    Time Units = 1ns
+    Dynamic Power Units = 1mW    (derived from V,C,T units)
+    Leakage Power Units = 1nW
+
+
+  Cell Internal Power  = 563.0472 uW   (97%)
+  Net Switching Power  =  15.5980 uW    (3%)
+                         ---------
+Total Dynamic Power    = 578.6452 uW  (100%)
+
+Cell Leakage Power     = 167.5735 uW
+
+Information: report_power power group summary does not include estimated clock tree power. (PWR-789)
+
+                 Internal         Switching           Leakage            Total
+Power Group      Power            Power               Power              Power   (   %    )  Attrs
+--------------------------------------------------------------------------------------------------
+io_pad             0.0000            0.0000            0.0000            0.0000  (   0.00%)
+memory             0.0000            0.0000            0.0000            0.0000  (   0.00%)
+black_box          0.0000            0.0000            0.0000            0.0000  (   0.00%)
+clock_network      0.0000            0.0000            0.0000            0.0000  (   0.00%)
+register           0.0000            0.0000            0.0000            0.0000  (   0.00%)
+sequential         0.5602        1.0321e-03        1.5039e+05            0.7117  (  95.37%)
+combinational  2.8004e-03        1.4566e-02        1.7184e+04        3.4550e-02  (   4.63%)
+--------------------------------------------------------------------------------------------------
+Total              0.5630 mW     1.5598e-02 mW     1.6757e+05 nW         0.7462 mW
+1
