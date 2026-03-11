@@ -125,6 +125,33 @@
 	end
   endtask
 
+  task PrintSummary;
+	begin
+		$display("");
+		$display("========== SIMULATION SUMMARY ==========");
+		$display("  Parameters: CYCLE=%0d  BW=%0d  PR=%0d  COL=%0d  TOTAL_CYCLE=%0d",
+			`CYCLE, `BW, `PR, `COL, `TOTAL_CYCLE);
+		$display("             OUTPUT_DIR=%s", `OUTPUT_DIR);
+		`ifdef SFP_LONGDIV
+		$display("             SFP_LONGDIV=yes");
+		`else
+		$display("             SFP_LONGDIV=no");
+		`endif
+		$display("  verifypmem calls: %0d", verify_count);
+		if (total_mismatches == 0)
+			$display("  Result: PASS (all verifypmem matched)");
+		else begin
+			$display("  Failed verifypmem:");
+			for (c = 0; c < verify_count; c++)
+				if (verify_err[c] > 0)
+					$display("    #%0d: %0d mismatches", c + 1, verify_err[c]);
+			$display("  Result: FAIL (%0d total mismatches in %0d verifypmem)", total_mismatches, verify_count);
+		end
+		$display("=========================================");
+		$display("");
+	end
+  endtask
+
   task Reset2Cyc;
 	begin
 		@(negedge clk);

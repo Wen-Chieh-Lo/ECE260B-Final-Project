@@ -74,14 +74,12 @@ module div_longdiv #(
   reg [bw_psum-1:0]    in_r;
   reg signed [bw_psum-1:0] divisor_r;
   
-  wire [W_DIVISOR:0]   remainder_shift;
   wire                 ge_divisor;
 
   reg [out_shift-1:0]  out_nxt;
   reg                  done_nxt;
 
-  assign remainder_shift = {remainder[W_DIVISOR-1:0], quotient[W_DIVIDEND-1]};
-  assign ge_divisor     = (remainder_shift >= {1'b0, divisor_fix});
+  assign ge_divisor     = (remainder >= divisor_fix);
 
   always @(posedge clk or posedge reset) begin
     if (reset) begin
@@ -106,7 +104,7 @@ module div_longdiv #(
     divisor_fix_nxt = divisor_fix;
 
     if (state == S_IDLE) begin
-      if (start_r) begin
+      if (start) begin
         if (divisor_r == 0) begin
           out_nxt = 0;
           done_nxt = 1'b1;
@@ -121,9 +119,9 @@ module div_longdiv #(
       end
     end else begin
       quotient_nxt   = {quotient[W_DIVIDEND-2:0], ge_divisor};
-      remainder_nxt  = ge_divisor ? (remainder_shift - {1'b0, divisor_fix}) : remainder_shift;
+      remainder_nxt  = ge_divisor ? {(remainder - divisor_fix), quotient[W_DIVIDEND-1]} : {remainder[W_DIVISOR-1:0], quotient[W_DIVIDEND-1]};
       cntr_nxt       = cntr - 1;
-      if (cntr == 1) begin
+      if (cntr == 0) begin
         out_nxt        = quotient_nxt[out_shift-1:0];
         done_nxt      = 1'b1;
         state_nxt     = S_IDLE;

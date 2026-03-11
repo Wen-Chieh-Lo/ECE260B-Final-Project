@@ -1,0 +1,46 @@
+# =============================================================================
+# ECE260B Final Project - Git Ignore
+# =============================================================================
+
+# ----- Waveform files -----
+*.vcd
+**/waveform/
+
+# ----- Simulation / GLS executables -----
+**/sim/compiled
+**/gls/compiled
+
+# ----- Synthesis outputs -----
+**/syn/work/
+**/syn/*.svf
+
+# ----- Design Compiler / Synopsys -----
+**/alib-*/
+**/command.log
+**/filenames.log
+
+# ----- Place-and-route (Innovus) -----
+**/*.enc.dat/
+**/pnr/**/*.enc
+**/innovus.log
+**/innovus.cmd
+
+# ----- Editor / OS -----
+.DS_Store
+*.swp
+*.swo
+*~
+Thumbs.db
+
+# ----- Python -----
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# ----- Misc -----
+*.bak
+*.tmp
+*.temp

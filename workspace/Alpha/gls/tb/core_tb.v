@@ -14,11 +14,7 @@ module core_tb;
 	parameter col = 8;
 	parameter sfp_out_shift = 7;
 	parameter sfp_acc_lat = 1;
-	`ifdef SFP_LONGDIV
-		parameter sfp_div_lat = 8;  // div_longdiv: 1 input reg + 6 iter + 1
-	`else
-		parameter sfp_div_lat = 0;
-	`endif
+
 
 	//================= integer / array storage =====================//
 	integer qkvn_file, qkvn_scan_file, captured_data;
