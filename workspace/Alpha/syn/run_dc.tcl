@@ -27,7 +27,7 @@ if { [file exists $filelist_full] } {
 }
 
 # Target library
-set target_library /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gplustc.db
+set target_library /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db
 set link_library $target_library
 set symbol_library {}
 set wire_load_mode enclosed
