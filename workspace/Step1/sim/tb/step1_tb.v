@@ -204,12 +204,174 @@ module step1_tb;
       $display("");
     end
     #0.5 clk = 1'b0;
+    pmem_add = 0; ofifo_rd = 0;
     pmem_rd = 1'b0;
     #0.5 clk = 1'b1;
 
     $display("------------------------------------------------------------");
     if (err == 0) begin
       $display("  PASS  %0d rows x %0d cols  all match QK product", total_cycle, col);
+      $display("------------------------------------------------------------");
+    end else begin
+      $display("  FAIL  %0d mismatches", err);
+      $display("------------------------------------------------------------");
+    end
+    $display("");
+    
+    reset = 1;
+    $display("##### V data txt reading #####");
+    qkvn_file = $fopen("sim/pattern/vdata.txt", "r");
+    for (q = 0; q < total_cycle; q = q+1)
+      for (j = 0; j < pr; j = j+1) begin
+        qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
+        Q[q][j] = captured_data;
+      end
+
+    for (q = 0; q < 2; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+
+    $display("##### Norm data txt reading #####");
+    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+    reset = 0;
+
+    qkvn_file = $fopen("sim/pattern/norm_out_q8.txt", "r");
+    for (q = 0; q < col; q = q+1)
+      for (j = 0; j < pr; j = j+1) begin
+        qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
+        K[q][j] = captured_data;
+      end
+
+    for (t = 0; t < total_cycle; t = t+1)
+      for (q = 0; q < col; q = q+1)
+        result[t][q] = 0;
+    for (t = 0; t < total_cycle; t = t+1) begin
+      for (q = 0; q < col; q = q+1) begin
+        for (k = 0; k < pr; k = k+1)
+          result[t][q] = result[t][q] + Q[t][k] * K[q][k];
+      end
+    end
+
+    $display("V Norm Product Phase");
+    $display("##### Vmem writing #####");
+    for (q = 0; q < total_cycle; q = q+1) begin
+      #0.5 clk = 1'b0;
+      qmem_wr = 1;
+      if (q > 0) qkmem_add = qkmem_add + 1;
+      mem_in[1*bw-1:0*bw] = Q[q][7];
+      mem_in[2*bw-1:1*bw] = Q[q][6];
+      mem_in[3*bw-1:2*bw] = Q[q][5];
+      mem_in[4*bw-1:3*bw] = Q[q][4];
+      mem_in[5*bw-1:4*bw] = Q[q][3];
+      mem_in[6*bw-1:5*bw] = Q[q][2];
+      mem_in[7*bw-1:6*bw] = Q[q][1];
+      mem_in[8*bw-1:7*bw] = Q[q][0];
+      #0.5 clk = 1'b1;
+    end
+    #0.5 clk = 1'b0;
+    qmem_wr = 0;
+    qkmem_add = 0;
+    #0.5 clk = 1'b1;
+
+    $display("##### Normmem writing #####");
+    for (q = 0; q < col; q = q+1) begin
+      #0.5 clk = 1'b0;
+      kmem_wr = 1;
+      if (q > 0) qkmem_add = qkmem_add + 1;
+      mem_in[1*bw-1:0*bw] = K[q][7];
+      mem_in[2*bw-1:1*bw] = K[q][6];
+      mem_in[3*bw-1:2*bw] = K[q][5];
+      mem_in[4*bw-1:3*bw] = K[q][4];
+      mem_in[5*bw-1:4*bw] = K[q][3];
+      mem_in[6*bw-1:5*bw] = K[q][2];
+      mem_in[7*bw-1:6*bw] = K[q][1];
+      mem_in[8*bw-1:7*bw] = K[q][0];
+      #0.5 clk = 1'b1;
+    end
+    #0.5 clk = 1'b0;
+    kmem_wr = 0;
+    qkmem_add = 0;
+    #0.5 clk = 1'b1;
+
+    for (q = 0; q < 2; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+
+    $display("##### Norm data loading to processor #####");
+    for (q = 0; q < col+1; q = q+1) begin
+      #0.5 clk = 1'b0;
+      load = 1;
+      if (q == 1) kmem_rd = 1;
+      if (q > 1) qkmem_add = qkmem_add + 1;
+      #0.5 clk = 1'b1;
+    end
+    #0.5 clk = 1'b0;
+    kmem_rd = 0;
+    qkmem_add = 0;
+    #0.5 clk = 1'b1;
+    #0.5 clk = 1'b0;
+    load = 0;
+    #0.5 clk = 1'b1;
+
+    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+
+    $display("##### execute #####");
+    for (q = 0; q < total_cycle; q = q+1) begin
+      #0.5 clk = 1'b0;
+      execute = 1;
+      qmem_rd = 1;
+      if (q > 0) qkmem_add = qkmem_add + 1;
+      #0.5 clk = 1'b1;
+    end
+    #0.5 clk = 1'b0;
+    qmem_rd = 0;
+    qkmem_add = 0;
+    execute = 0;
+    #0.5 clk = 1'b1;
+
+    #0.5 clk = 1'b0;
+    #0.5 clk = 1'b1;
+    #0.5 clk = 1'b0;
+    #0.5 clk = 1'b1;
+
+    for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+
+    for (c = 0; c < col; c = c+1)
+      golden_col[c] = 7 - c;
+    $display("VNorm phase verification (checking pmem content)\n");
+    $display("##### sample pmem content & compare to golden #####");
+    $display("  [row]  RTL   :    col0    col1    col2    col3    col4    col5    col6    col7");
+    $display("         golden:    ----    ----    ----    ----    ----    ----    ----    ----\n");
+    err = 0;
+
+    #0.5 clk = 1'b0; pmem_rd = 1'b1; pmem_add=4'd0;
+    #0.5 clk = 1'b1;
+    for (q = 0; q < total_cycle; q = q+1) begin
+      #0.5 clk = 1'b0; pmem_add = pmem_add+1; ofifo_rd = 1;
+      #0.5 clk = 1'b1;
+      row = q;
+      $display("   [%0d]   RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", row,
+        $signed(pmem_out[7*bw_psum +: bw_psum]), $signed(pmem_out[6*bw_psum +: bw_psum]),
+        $signed(pmem_out[5*bw_psum +: bw_psum]), $signed(pmem_out[4*bw_psum +: bw_psum]),
+        $signed(pmem_out[3*bw_psum +: bw_psum]), $signed(pmem_out[2*bw_psum +: bw_psum]),
+        $signed(pmem_out[1*bw_psum +: bw_psum]), $signed(pmem_out[0*bw_psum +: bw_psum]));
+      $display("         golden: %7d %7d %7d %7d %7d %7d %7d %7d",
+        result[row][0], result[row][1], result[row][2], result[row][3],
+        result[row][4], result[row][5], result[row][6], result[row][7]);
+      row_err = 0;
+      for (c = 0; c < col; c = c+1) begin
+        if ($signed(pmem_out[c*bw_psum +: bw_psum]) !== result[row][golden_col[c]]) begin
+          $display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c, $signed(pmem_out[c*bw_psum +: bw_psum]), result[row][golden_col[c]]);
+          err = err + 1;
+          row_err = row_err + 1;
+        end
+      end
+      $display("       %s", (row_err == 0) ? "[OK]" : "[MISMATCH]");
+      $display("");
+    end
+    #0.5 clk = 1'b0;
+    pmem_rd = 1'b0;
+    #0.5 clk = 1'b1;
+
+    $display("------------------------------------------------------------");
+    if (err == 0) begin
+      $display("  PASS  %0d rows x %0d cols  all match V Norm product", total_cycle, col);
       $display("------------------------------------------------------------");
     end else begin
       $display("  FAIL  %0d mismatches", err);
