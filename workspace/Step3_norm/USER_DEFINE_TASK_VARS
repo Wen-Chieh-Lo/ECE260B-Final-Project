@@ -18,7 +18,7 @@ TARGET = core
 #   medium - standard optimization (compile -map_effort medium); balanced speed/quality
 #   high   - full compile_ultra with timing high-effort script; slowest, for pre-PnR
 # Built-in default: high
-SYN_EFFORT = high
+SYN_EFFORT = low
 
 
 # Verilog preprocessor defines for simulation (iverilog -D) and synthesis (DC -define).

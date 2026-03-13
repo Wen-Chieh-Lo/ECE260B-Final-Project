@@ -12,7 +12,7 @@ module core_tb;
 
   parameter total_cycle = 8;
   parameter bw = 8;
-  parameter bw_psum = 2*bw+3;
+  parameter bw_psum = 2*bw+4;
   parameter pr = 8;
   parameter col = 8;
   parameter sfp_out_shift = 7;
@@ -57,8 +57,12 @@ module core_tb;
   reg [bw_psum*col-1:0] temp16b;
 
   wire [bw_psum*col-1:0] pmem_out;
+  wire [bw_psum+3:0] sum_in;
+  wire ext_fifo_wr, ext_fifo_rd;
+  wire [bw_psum+3:0] ext_fifo_in;
   integer golden_col [0:7];  // RTL col c -> golden result[t][golden_col[c]] (chain mapping)
 
+  assign sum_in = {(bw_psum+4){1'b0}};  // single core: no external sum
   assign inst[19] = VN_mode;
   assign inst[18] = sfp_div;            // set by tb so far. usage see sfp_row_tb.
   assign inst[17] = sfp_acc;            // set by tb so far. usage see sfp_row_tb.
@@ -77,10 +81,13 @@ module core_tb;
   core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) core_instance (
     .reset(reset),
     .clk(clk),
+    .sum_in(sum_in),
     .mem_in(mem_in),
     .inst(inst),
-    .sum_out(),
-    .out(pmem_out)
+    .out(pmem_out),
+    .ext_fifo_wr(ext_fifo_wr),
+    .ext_fifo_in(ext_fifo_in),
+    .ext_fifo_rd(ext_fifo_rd)
   );
 
   initial begin

@@ -5,6 +5,7 @@
 
 // -----------------------------------------------------------------------------
 // div: Direct division (combinational, uses / operator)
+// Output: lower out_shift bits of quotient (fractional part for softmax)
 // -----------------------------------------------------------------------------
 module div #(
   parameter bw_psum   = 19,
@@ -12,9 +13,11 @@ module div #(
 ) (
   input  [bw_psum-1:0] in,
   input  signed [bw_psum-1:0] divisor,
-  output [bw_psum-1:0] out
+  output [out_shift-1:0] out
 );
-  assign out = {in, {out_shift{1'b0}}} / divisor;
+  wire [bw_psum+out_shift-1:0] div_full;
+  assign div_full = {in, {out_shift{1'b0}}} / divisor;
+  assign out = div_full[out_shift-1:0];
 endmodule
 
 // -----------------------------------------------------------------------------
@@ -27,9 +30,11 @@ module div_lut #(
 ) (
   input  [bw_psum-1:0] in,
   input  signed [bw_psum-1:0] divisor,
-  output [bw_psum-1:0] out
+  output [out_shift-1:0] out
 );
-  assign out = {in, {out_shift{1'b0}}} / divisor;
+  wire [bw_psum+out_shift-1:0] div_full;
+  assign div_full = {in, {out_shift{1'b0}}} / divisor;
+  assign out = div_full[out_shift-1:0];
 endmodule
 
 
