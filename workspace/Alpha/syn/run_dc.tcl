@@ -27,7 +27,7 @@ if { [file exists $filelist_full] } {
 }
 
 # Target library
-set target_library /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db
+set target_library /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gplustc.db
 set link_library $target_library
 set symbol_library {}
 set wire_load_mode enclosed
@@ -76,7 +76,7 @@ elaborate $top_module -lib WORK -update
 current_design $top_module
 
 # Now that current_design is defined, apply design-level directives
-set_optimize_registers true
+set_optimize_registers false
 set_cost_priority -delay
 set_max_area 0
 
@@ -89,9 +89,9 @@ propagate_constraints
 
 current_design $top_module
 
-set_cost_priority {max_transition max_fanout max_delay max_capacitance}
+# set_cost_priority {max_transition max_fanout max_delay max_capacitance}
 set_fix_multiple_port_nets -all -buffer_constants
-set_fix_hold [all_clocks]
+# set_fix_hold [all_clocks]
 
 set_driving_cell -lib_cell BUFFD8 -pin Z [all_inputs]
 #set_load [get_attribute "$target_library/BUFFD8/A" fanout_load] [all_outputs]
@@ -126,8 +126,10 @@ if { $syn_effort == "low" } {
     compile -map_effort medium
 } else {
     # compile_ultra -retime -gate_clock -exact_map
-	compile_ultra -retime -gate_clock
-	compile_ultra -incremental -retime
+	ungroup -all -flatten
+	compile_ultra  -retime -gate_clock
+	set_fix_hold [all_clocks]
+	compile_ultra  -incremental -retime
 }
 
 # Write Out Design - Hierarchical
