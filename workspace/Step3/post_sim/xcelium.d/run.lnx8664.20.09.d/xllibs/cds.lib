@@ -1,0 +1,3 @@
+define sram_w16 ./sram_w16
+define core ./core
+define tcbn65gplus ./tcbn65gplus

@@ -1,3 +1,4 @@
+xrun -clean
 xrun \
 +gui \
 +access+rwc \
@@ -11,4 +12,5 @@ xrun \
 -nowarn CUVWSP \
 -v ./netlist/tcbn65gplus.v \
 -v ./netlist/core.pnr.v \
+-v ./netlist/sram_w16.pnr.v \
 ./netlist/step1_tb.v

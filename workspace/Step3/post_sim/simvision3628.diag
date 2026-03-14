@@ -1,0 +1,92 @@
+*** Message Type: info ***
+When: Sat Mar 14 02:43:31 PDT 2026
+SimVision started.
+Version: TOOL:  simvision(64)   20.09-s017
+User: c8chiu
+Host: ieng6-ece-02.ucsd.edu
+Platform: Linux/x86_64/3.10.0-1160.119.1.el7.x86_64
+Started: Sat Mar 14 02:43:31 PDT 2026
+Command: /software/ECE/XCELIUM-2009/tools.lnx86/simvision/bin/64bit/simvision.exe -connect dc:ieng6-ece-02.ucsd.edu:43665 -64BIT -nocopyright
+Work Directory: /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/workspace/Step3/post_sim
+ 
+*** Message Type: info ***
+When: Sat Mar 14 02:43:32 PDT 2026
+Create browser window: "Design Browser 1"
+ 
+*** Message Type: info ***
+When: Sat Mar 14 02:43:35 PDT 2026
+Create console window: "Console"
+ 
+*** Message Type: info ***
+When: Sat Mar 14 02:43:37 PDT 2026
+Connect to Simulator
+      Design: worklib.step1_tb:v
+   Languages: verilog
+   Simulator: XM-Sim
+     Version: TOOL: xmsim(64)       20.09-s017
+        User: c8chiu
+        Host: ieng6-ece-02.ucsd.edu
+Time Started: Sat Mar 14 02:43:30 PDT 2026
+  Process ID: 3570
+   Directory: /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/workspace/Step3/post_sim
+     Command: xrun +gui +access+rwc +xm64bit +xmstatus +xmtimescale+1ns/1ps +xmoveride_timescale +define+INITIALIZE_MEMORY -xminitialize rand_2state:1 +xmseq_udp_delay+20ps -nowarn CUVWSP -v ./netlist/tcbn65gplus.v -v ./netlist/core.pnr.v -v ./netlist/sram_w16.pnr.v ./netlist/step1_tb.v
+
+ 
+*** Message Type: info ***
+When: Sat Mar 14 02:43:37 PDT 2026
+Create utility window: "Properties"
+ 
+*** Message Type: info ***
+When: Sat Mar 14 02:44:10 PDT 2026
+Create waveform window: "Waveform 1"
+ 
+*** Message Type: info ***
+When: Sat Mar 14 02:46:14 PDT 2026
+Delete browser window: "Design Browser 1"
+ 
+*** Message Type: info ***
+When: Sat Mar 14 02:49:34 PDT 2026
+Exit XM-Sim: user
+      Design: worklib.step1_tb:v
+   Languages: verilog
+   Simulator: XM-Sim
+     Version: TOOL: xmsim(64)       20.09-s017
+        User: c8chiu
+        Host: ieng6-ece-02.ucsd.edu
+Time Started: Sat Mar 14 02:43:30 PDT 2026
+  Process ID: 3570
+   Directory: /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/workspace/Step3/post_sim
+     Command: xrun +gui +access+rwc +xm64bit +xmstatus +xmtimescale+1ns/1ps +xmoveride_timescale +define+INITIALIZE_MEMORY -xminitialize rand_2state:1 +xmseq_udp_delay+20ps -nowarn CUVWSP -v ./netlist/tcbn65gplus.v -v ./netlist/core.pnr.v -v ./netlist/sram_w16.pnr.v ./netlist/step1_tb.v
+
+ 
+*** Message Type: error ***
+When: Sat Mar 14 02:49:34 PDT 2026
+XM-Sim Crashed:
+      Design: worklib.step1_tb:v
+   Languages: verilog
+   Simulator: XM-Sim
+     Version: TOOL: xmsim(64)       20.09-s017
+        User: c8chiu
+        Host: ieng6-ece-02.ucsd.edu
+Time Started: Sat Mar 14 02:43:30 PDT 2026
+  Process ID: 3570
+   Directory: /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/workspace/Step3/post_sim
+     Command: xrun +gui +access+rwc +xm64bit +xmstatus +xmtimescale+1ns/1ps +xmoveride_timescale +define+INITIALIZE_MEMORY -xminitialize rand_2state:1 +xmseq_udp_delay+20ps -nowarn CUVWSP -v ./netlist/tcbn65gplus.v -v ./netlist/core.pnr.v -v ./netlist/sram_w16.pnr.v ./netlist/step1_tb.v
+      Design: worklib.step1_tb:v
+   Languages: verilog
+   Simulator: XM-Sim
+     Version: TOOL:        xmsim(64)       20.09-s017
+        User: c8chiu
+        Host: ieng6-ece-02.ucsd.edu
+Time Started: Sat Mar 14 02:43:30 PDT 2026
+  Process ID: 3570
+   Directory: /home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/workspace/Step3/post_sim
+     Command: xrun +gui +access+rwc +xm64bit +xmstatus +xmtimescale+1ns/1ps +xmoveride_timescale +define+INITIALIZE_MEMORY -xminitialize rand_2state:1 +xmseq_udp_delay+20ps -nowarn CUVWSP -v ./netlist/tcbn65gplus.v -v ./netlist/core.pnr.v -v ./netlist/sram_w16.pnr.v ./netlist/step1_tb.v
+
+Outstanding STRAP Requests:
+        strap::report enable out
+ 
+*** Message Type: info ***
+When: Sat Mar 14 02:49:34 PDT 2026
+SimVision Exit.
+ 

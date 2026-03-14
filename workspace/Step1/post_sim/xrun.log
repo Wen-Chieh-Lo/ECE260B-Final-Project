@@ -1,0 +1,22 @@
+xrun(64): 20.09-s017: (c) Copyright 1995-2021 Cadence Design Systems, Inc.
+TOOL:	xrun(64)	20.09-s017: Started on Mar 14, 2026 at 02:16:09 PDT
+xrun
+	+gui
+	+access+rwc
+	+xm64bit
+	+xmstatus
+	+xmtimescale+1ns/1ps
+	+xmoveride_timescale
+	+define+INITIALIZE_MEMORY
+	-xminitialize rand_2state:1
+	+xmseq_udp_delay+20ps
+	-nowarn CUVWSP
+	-v ./netlist/tcbn65gplus.v
+	-v ./netlist/core.pnr.v
+	./netlist/step1_tb.v
+
+   User defined plus("+") options:
+	+xmoveride_timescale
+
+xrun: *E,MKDIRP: Unable to create the subdirectory (temp) because the directory (./xcelium.d/run.lnx8664.20.09.d) does not have sufficient permission.
+TOOL:	xrun(64)	20.09-s017: Exiting on Mar 14, 2026 at 02:16:09 PDT  (total: 00:00:00)
