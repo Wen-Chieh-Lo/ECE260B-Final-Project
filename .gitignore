@@ -25,7 +25,14 @@ waveformw.vcd.json
 **/*.enc.dat/
 **/pnr/**/*.enc
 **/innovus.log
+**/innovus.log*
 **/innovus.cmd
+**/innovus.cmd*
+**/.timing_file_*.tif.gz
+**/.core*.rs.fp
+**/.core*.rs.fp.spr
+**/scheduling_file.cts.*
+**/model.asrt.*
 
 # ----- Editor / OS -----
 .DS_Store
