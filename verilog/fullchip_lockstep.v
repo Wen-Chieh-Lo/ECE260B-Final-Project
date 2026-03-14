@@ -1,6 +1,4 @@
-// Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
-// Please do not spread this code without permission 
-module fullchip (clk0, clk1, mem_in, inst, reset, out);
+module fullchip_lockstep (clk0, clk1, mem_in, inst, reset, out);
 
 parameter col = 8;
 parameter bw = 8;
@@ -10,8 +8,8 @@ parameter half_pr = 8;
 
 input  clk0, clk1; 
 input  [pr*bw-1:0] mem_in; 
-input  [39:0] inst; //[18:0]
-//input [19:0] inst;
+//input  [39:0] inst; //[18:0]
+input [19:0] inst;
 input  reset;
 
 output [bw_psum*col*2-1:0] out;
@@ -42,11 +40,8 @@ assign sfp_sum_in_1 = sum_out_0_1;
 assign core0_mem_in = mem_in[half_pr*bw-1:0];
 assign core1_mem_in = mem_in[pr*bw-1:half_pr*bw];
 
-assign inst0 = inst[19:0];
-assign inst1 = inst[39:20];
-
-//assign inst0 = inst;
-//assign inst1 = inst;
+assign inst0 = inst;
+assign inst1 = inst;
 
 assign out = {out_1, out_0};
 

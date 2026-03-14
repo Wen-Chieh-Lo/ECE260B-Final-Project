@@ -54,6 +54,7 @@ PROJ_ROOT := $(CURDIR)
 # target -> filelist filename (shared between sim and syn for filelist name lookup)
 TARGET_FILELIST_table := \
 	fullchip:filelist_fullchip \
+	fullchip_lockstep:filelist_fullchip_lockstep\
 	core:filelist_core \
 	mac:filelist_mac \
 	sfp_row:filelist_sfp_row \
@@ -62,6 +63,7 @@ TARGET_FILELIST_table := \
 # target -> waveform filename
 TARGET_WAVEFORM_table := \
 	fullchip:fullchip.vcd \
+	fullchip_lockstep:fullchip_lockstep.vcd \
 	core:core.vcd \
 	mac:mac_array.vcd \
 	sfp_row:sfp_row.vcd \
@@ -74,7 +76,7 @@ TARGET_TOP_MODULE_table := \
 	mac:mac_array \
 	sfp_row:sfp_row
 
-SIM_TARGETS := fullchip core mac sfp_row sfp_row_dual
+SIM_TARGETS := fullchip fullchip_lockstep core mac sfp_row sfp_row_dual
 SYN_TARGETS := fullchip sfp_row core mac
 
 $(foreach p,$(TARGET_FILELIST_table),$(eval $(firstword $(subst :, ,$(p))): FILELIST_NAME := $(word 2,$(subst :, ,$(p)))))
