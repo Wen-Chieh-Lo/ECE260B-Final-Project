@@ -33,7 +33,7 @@ module core_tb;
   integer sum [total_cycle-1:0];
   integer i, j, k, t, p, q, s, u, m, r, c;
 
-  integer estimated [0:total_cycle*col-1];   // scoreboard - computed from mac_data (same formula as sfp_row)
+  integer estimated [0:total_cycle*col-1];   // computed from mac_data (same formula as sfp_row)
   integer u0, u1, u2, u3, u4, u5, u6, u7;
   integer err_count;
   integer err, row_err, row;
@@ -56,11 +56,6 @@ module core_tb;
   reg [bw_psum+3:0] temp_sum;
   reg [bw_psum*col-1:0] temp16b;
 
-  reg  [bw_psum+3:0] sum_in;
-  wire               ext_fifo_wr;
-  wire [bw_psum+3:0] ext_fifo_in;
-  wire               ext_fifo_rd;
-
   wire [bw_psum*col-1:0] pmem_out;
   integer golden_col [0:7];  // RTL col c -> golden result[t][golden_col[c]] (chain mapping)
 
@@ -80,23 +75,22 @@ module core_tb;
   assign inst[0] = pmem_wr;
 
   core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) core_instance (
-    .reset(reset),
     .clk(clk),
-    .sum_in(sum_in),
+    .sum_in({(bw_psum+4){1'b0}}),
     .mem_in(mem_in),
-    .inst(inst),
     .out(pmem_out),
-    .ext_fifo_wr(ext_fifo_wr),
-    .ext_fifo_in(ext_fifo_in),
-    .ext_fifo_rd(ext_fifo_rd)
+    .inst(inst),
+    .reset(reset),
+    .ext_fifo_wr(),
+    .ext_fifo_in(),
+    .ext_fifo_rd()
   );
 
   initial begin
     $dumpfile("sim/waveform/core.vcd");
     $dumpvars(0, core_tb);
 
-    sum_in =0;
-    
+
     $display("##### Q data txt reading #####");
     qkvn_file = $fopen("sim/pattern/qdata.txt", "r");
     for (q = 0; q < total_cycle; q = q+1)
@@ -269,7 +263,7 @@ module core_tb;
   end
   $display("");
 
-  // ----- Estimated: same as sfp_row (sum_abs = sum of |row|, divisor = sum_abs>>7, out[c] = signed(row[c])/divisor) - scoreboard, golden generation
+  // ----- Estimated: same as sfp_row (sum_abs = sum of |row|, divisor = sum_abs>>7, out[c] = signed(row[c])/divisor)
     $display("##### Estimated normalization (sum_abs>>7, then signed divide) #####");
     for (r = 0; r < total_cycle; r = r + 1) begin
       sum_abs = 0;

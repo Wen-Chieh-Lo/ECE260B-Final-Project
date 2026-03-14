@@ -10,7 +10,7 @@ module sfp_row_tb;
   parameter ROWS = 8;
   parameter col = 8;
   parameter bw = 8;
-  parameter bw_psum = 2*bw+4;  // 20
+  parameter bw_psum = 2*bw+3;  // 20
   parameter out_shift = 7;
   parameter bw_out = out_shift + 1'b1;
   parameter sfp_acc_lat = 1;

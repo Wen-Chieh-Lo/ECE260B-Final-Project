@@ -8,7 +8,7 @@ module mac_array_top (clk, mem_in, inst, reset, out);
 
   parameter col = 8;
   parameter bw = 8;
-  parameter bw_psum = 2*bw+4;
+  parameter bw_psum = 2*bw+3;
   parameter pr = 8;
 
   input  clk;
