@@ -2,20 +2,21 @@
 *	Innovus 15.23-s045_1 (64bit) 04/22/2016 12:32 (Linux 2.6.18-194.el5)
 *	
 *
-* 	Date & Time:	2026-Mar-06 05:47:00 (2026-Mar-06 13:47:00 GMT)
+* 	Date & Time:	2026-Mar-15 16:12:29 (2026-Mar-15 23:12:29 GMT)
 *
 *----------------------------------------------------------------------------------------
 *
 *	Design: core
 *
 *	Liberty Libraries used: 
-*	        BC_VIEW: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lib/tcbn65gplusbc.lib
-*	        BC_VIEW: ../../sram_pnr/scripts/sram_w16_BC.lib
+*	        WC_VIEW: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lib/tcbn65gpluswc.lib
+*	        WC_VIEW: ../../sram_pnr_64b/scripts/sram_w16_WC.lib
+*	        WC_VIEW: ../../sram_pnr_160b/scripts/sram_160b_w16_WC.lib
 *
 *	Power Domain used: 
-*		Rail:        VDD 	Voltage:        1.1 
+*		Rail:        VDD 	Voltage:        0.9 
 *
-*       Power View : BC_VIEW
+*       Power View : WC_VIEW
 *
 *       User-Defined Activity : N.A.
 *
@@ -44,50 +45,50 @@
 
 Total Power 
 -----------------------------------------------------------------------------------------
-Total Internal Power:      140.09897125 	   56.9671%
-Total Switching Power:      81.64091835 	   33.1969%
-Total Leakage Power:        24.18963374 	    9.8360%
-Total Power:               245.92952332 
+Total Internal Power:      213.62217848 	   56.2714%
+Total Switching Power:     160.32381967 	   42.2318%
+Total Leakage Power:         5.68262993 	    1.4969%
+Total Power:               379.62862835 
 -----------------------------------------------------------------------------------------
 
 
 Group                           Internal   Switching     Leakage       Total  Percentage 
                                 Power      Power         Power         Power  (%)        
 -----------------------------------------------------------------------------------------
-Sequential                         52.58        2.38      0.8405        55.8       22.69 
-Macro                                  0      0.3335       19.68       20.02       8.139 
-IO                                     0           0           0           0           0 
-Combinational                      73.34       67.66       3.542       144.5       58.78 
-Clock (Combinational)              14.18       11.26      0.1245       25.56        10.4 
+Sequential                         35.58       1.661      0.2546        37.5       9.877 
+Macro                                  0       3.072        2.38       5.452       1.436 
+IO                                     0           0   1.444e-05   1.444e-05   3.804e-06 
+Combinational                      168.5       146.5       2.981         318       83.76 
+Clock (Combinational)              9.568       9.058     0.06656       18.69       4.924 
 Clock (Sequential)                     0           0           0           0           0 
 -----------------------------------------------------------------------------------------
-Total                              140.1       81.64       24.19       245.9         100 
+Total                              213.6       160.3       5.683       379.6         100 
 -----------------------------------------------------------------------------------------
 
 
 Rail                  Voltage   Internal   Switching     Leakage       Total  Percentage 
                                 Power      Power         Power         Power  (%)        
 -----------------------------------------------------------------------------------------
-VDD                       1.1      140.1       81.64       24.19       245.9         100 
+VDD                       0.9      213.6       160.3       5.683       379.6         100 
 
 
 Clock                           Internal   Switching     Leakage       Total  Percentage 
                                 Power      Power         Power         Power  (%)        
 -----------------------------------------------------------------------------------------
-clk                                14.18       11.26      0.1245       25.56        10.4 
+clk                                9.568       9.058     0.06656       18.69       4.924 
 -----------------------------------------------------------------------------------------
-Total (excluding duplicates)       14.18       11.26      0.1245       25.56        10.4 
+Total (excluding duplicates)       9.568       9.058     0.06656       18.69       4.924 
 -----------------------------------------------------------------------------------------
 
 
 -----------------------------------------------------------------------------------------
 *	Power Distribution Summary: 
-* 		Highest Average Power: ofifo_inst/FE_USKC8080_CTS_84 (CKBD16): 	    0.2383 
-* 		Highest Leakage Power: mac_array_instance/col_idx_8__mac_col_inst/mac_8in_instance/U32 (FA1D4): 	 0.0006264 
-* 		Total Cap: 	2.73157e-10 F
-* 		Total instances in design: 81507
+* 		Highest Average Power:         psum_mem_instance (sram_160b_w16): 	     2.794 
+* 		Highest Leakage Power: ofifo_inst/col_idx_5__fifo_instance/U525 (ND3D8): 	 0.0002819 
+* 		Total Cap: 	5.47323e-10 F
+* 		Total instances in design: 124681
 * 		Total instances in design with no power:     0
 *          Total instances in design with no activity:     0
-* 		Total Fillers and Decap: 44988
+* 		Total Fillers and Decap: 46598
 -----------------------------------------------------------------------------------------
 
