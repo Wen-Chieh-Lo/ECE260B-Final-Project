@@ -1,0 +1,5 @@
+1773373613 /home/linux/ieng6/ECE260B_WI26_A00/sabhonsle/ECE260BProject/ECE260B-Final-Project/workspace/Step3_norm/post_sim/netlist/tcbn65gplus.v
+1773632468 /home/linux/ieng6/ECE260B_WI26_A00/sabhonsle/ECE260BProject/ECE260B-Final-Project/workspace/Step3_norm/post_sim/netlist/core.pnr.v
+1773634017 /home/linux/ieng6/ECE260B_WI26_A00/sabhonsle/ECE260BProject/ECE260B-Final-Project/workspace/Step3_norm/post_sim/netlist/sram_w16.pnr.v
+1773634039 /home/linux/ieng6/ECE260B_WI26_A00/sabhonsle/ECE260BProject/ECE260B-Final-Project/workspace/Step3_norm/post_sim/netlist/sram_160b_w16.pnr.v
+1773636500 /home/linux/ieng6/ECE260B_WI26_A00/sabhonsle/ECE260BProject/ECE260B-Final-Project/workspace/Step3_norm/post_sim/netlist/core_tb.v

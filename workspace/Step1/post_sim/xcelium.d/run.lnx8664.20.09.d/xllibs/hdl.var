@@ -1,0 +1,8 @@
+define LIB_MAP ( $LIB_MAP \
+, ../../../netlist/core.pnr.v => core \
+, ../../../netlist/tcbn65gplus.v => tcbn65gplus \
+)
+define LIB_MAP ( $LIB_MAP \
+, ../../../netlist/core.pnr.v => core \
+, ../../../netlist/tcbn65gplus.v => tcbn65gplus \
+)

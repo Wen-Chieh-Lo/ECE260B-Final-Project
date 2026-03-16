@@ -1,0 +1,163 @@
+xrun(64): 20.09-s017: (c) Copyright 1995-2021 Cadence Design Systems, Inc.
+TOOL:	xrun(64)	20.09-s017: Started on Mar 15, 2026 at 22:14:16 PDT
+xrun
+	+gui
+	+access+rwc
+	+xm64bit
+	+xmstatus
+	+xmtimescale+1ns/1ps
+	+xmoveride_timescale
+	+define+INITIALIZE_MEMORY
+	-xminitialize 0
+	+xmseq_udp_delay+20ps
+	-nowarn CUVWSP
+	-v ./netlist/tcbn65gplus.v
+	-v ./netlist/core.pnr.v
+	-v ./netlist/sram_w16.pnr.v
+	-v ./netlist/sram_160b_w16.pnr.v
+	./netlist/core_tb.v
+
+   User defined plus("+") options:
+	+xmoveride_timescale
+
+
+-------------------------------------
+Relinquished control to SimVision...
+xcelium> 
+xcelium> source /software/ECE/XCELIUM-2009/tools/xcelium/files/xmsimrc
+xcelium> database -open waves -into waves.shm -default
+Created default SHM database waves
+xcelium> probe -create -shm core_tb.clk core_tb.err core_tb.estimated core_tb.execute core_tb.ext_fifo_in core_tb.ext_fifo_rd core_tb.ext_fifo_wr core_tb.inst core_tb.kmem_rd core_tb.kmem_wr core_tb.load core_tb.qkmem_add core_tb.qmem_rd core_tb.qmem_wr core_tb.reset core_tb.result core_tb.row_err core_tb.sfp_acc core_tb.sfp_div core_tb.sfp_processing core_tb.pmem_add core_tb.pmem_out core_tb.pmem_rd core_tb.pmem_wr
+Created probe 1
+xcelium> run
+##### Q data txt reading #####
+##### K data txt reading #####
+QK Product Phase
+##### Qmem writing #####
+##### Kmem writing #####
+##### K data loading to processor #####
+##### execute #####
+QK phase verification start (checking pmem content)
+
+##### sample pmem content & compare to golden #####
+  [row]  RTL   :    col0    col1    col2    col3    col4    col5    col6    col7
+         golden:    ----    ----    ----    ----    ----    ----    ----    ----
+
+   [0]   RTL   :      93     -20      -7      94     -48     -45     -63     -86
+         golden:      93     -20      -7      94     -48     -45     -63     -86
+             [OK]
+
+   [1]   RTL   :      52     -21     -73      24      -5     -33     -41     -23
+         golden:      52     -21     -73      24      -5     -33     -41     -23
+             [OK]
+
+   [2]   RTL   :      38      27      50      63     -28      21      -3     -55
+         golden:      38      27      50      63     -28      21      -3     -55
+             [OK]
+
+   [3]   RTL   :      33     -74      17     125     -37     -17     -27     -51
+         golden:      33     -74      17     125     -37     -17     -27     -51
+             [OK]
+
+   [4]   RTL   :      80     -10     -10      13    -138     -37     -90     -56
+         golden:      80     -10     -10      13    -138     -37     -90     -56
+             [OK]
+
+   [5]   RTL   :      42       1      26      68       7       7      -8     -45
+         golden:      42       1      26      68       7       7      -8     -45
+             [OK]
+
+   [6]   RTL   :     -19      48      99      -7      -1      23      46     -20
+         golden:     -19      48      99      -7      -1      23      46     -20
+             [OK]
+
+   [7]   RTL   :     -63      41     128     -46      -1      78      74      37
+         golden:     -63      41     128     -46      -1      78      74      37
+             [OK]
+
+------------------------------------------------------------
+  PASS  8 rows x 8 cols  all match estimated result
+------------------------------------------------------------
+
+##### Estimated normalization (sum_abs>>7, then signed divide) #####
+
+##### sfp processing #####
+estimated:        col0    col1    col2    col3    col4    col5    col6    col7 
+to kmem  :       63:56   55:48   47:40   39:32   31:24   23:16   15: 8    7: 0 
+
+estimated:          26       5       1      26      13      12      17      24 
+
+estimated:          24       9      34      11       2      15      19      10 
+
+estimated:          17      12      22      28      12       9       1      24 
+
+estimated:          11      24       5      41      12       5       9      17 
+
+estimated:          23       2       2       3      40      10      26      16 
+
+estimated:          26       0      16      42       4       4       5      28 
+
+estimated:           9      23      48       3       0      11      22       9 
+
+estimated:          17      11      35      12       0      21      20      10 
+------------------------------------------------------------
+Please check manually, since there's no output port for kmem.
+------------------------------------------------------------
+
+
+VN Product Phase
+##### V data txt reading #####
+##### norm data txt reading #####
+##### Qmem writing  #####
+##### K data loading to processor #####
+##### execute #####
+VN phase verification start (checking pmem content)
+
+##### sample pmem content & compare to golden #####
+  [row]  RTL   :    col0    col1    col2    col3    col4    col5    col6    col7
+         golden:    ----    ----    ----    ----    ----    ----    ----    ----
+
+   [0]   RTL   :     160    -103     155     232    -311     283    -242     -79
+         golden:     160    -103     155     232    -311     283    -242     -79
+             [OK]
+
+   [1]   RTL   :     238      85      98     127     334     179      54      75
+         golden:     238      85      98     127     334     179      54      75
+             [OK]
+
+   [2]   RTL   :    -214    -333    -334      46    -430    -300    -281    -253
+         golden:    -214    -333    -334      46    -430    -300    -281    -253
+             [OK]
+
+   [3]   RTL   :    -517    -433    -354    -314    -526    -524    -309    -381
+         golden:    -517    -433    -354    -314    -526    -524    -309    -381
+             [OK]
+
+   [4]   RTL   :    -311      40    -233    -253    -196    -396     298      68
+         golden:    -311      40    -233    -253    -196    -396     298      68
+             [OK]
+
+   [5]   RTL   :    -419    -414    -467    -366    -456    -465    -371    -432
+         golden:    -419    -414    -467    -366    -456    -465    -371    -432
+             [OK]
+
+   [6]   RTL   :    -154     -21     -47     -73     140    -267     187       3
+         golden:    -154     -21     -47     -73     140    -267     187       3
+             [OK]
+
+   [7]   RTL   :    -201      24     -35    -201    -351      42     -58     -38
+         golden:    -201      24     -35    -201    -351      42     -58     -38
+             [OK]
+
+------------------------------------------------------------
+  PASS  8 rows x 8 cols  all match estimated result
+------------------------------------------------------------
+
+Simulation complete via $finish(1) at time 272500 PS + 0
+./netlist/core_tb.v:603     #10 $finish;
+xcelium> ^C
+xcelium> exit
+xmsim: Memory Usage - Final: 233.8M, Peak: 251.3M, Peak virtual: 651.8M
+xmsim: Main Thread CPU Usage - 10.0s system + 9.0s user = 19.0s total
+xmsim: CPU Usage - 9.9s system + 8.7s user = 18.6s total (548.7s, 3.4% cpu)
+TOOL:	xrun(64)	20.09-s017: Exiting on Mar 15, 2026 at 22:23:25 PDT  (total: 00:09:09)
