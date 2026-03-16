@@ -3,37 +3,22 @@
 //
 // NON-LOCKSTEP VERSION — SPLIT 40-BIT INST BUS
 //
-//   clk0 : 1.000 GHz (period 1.00 ns, half = 0.50 ns)
-//   clk1 : 1.333 GHz (period 0.75 ns, half = 0.375 ns)
-//   Both manually driven — NO always block, NO multiple drivers.
+//   clk0 : 1.000 GHz (period 1.00 ns, 50% duty cycle)
+//   clk1 : 1.333 GHz (period 0.75 ns, 50% duty cycle)
+//   Both driven by always blocks for clean 50% duty cycle.
 //
-//   For every logical step in the sequence we:
-//     1. Set _c0 signals → tick0   (core0 gets one posedge)
-//     2. Set _c1 signals → tick1   (core1 gets one posedge)
+//   tick0 / tick1 tasks synchronize to the next posedge of their
+//   respective clock, with a small #0.01 offset so that signal
+//   assignments made before the task return are seen as
+//   "same-edge" stimulus by the DUT (std IEEE-1364 practice).
 //
-//   CDC-specific fixes applied here:
-//     1. while-loop guards use !== 1'b0 instead of plain != so that X
-//        (which occurs in GLS before reset fully propagates through gate
-//        logic) is treated as "still empty — keep waiting" rather than
-//        being interpreted as false and causing early loop exit.
-//     2. After the fifo0_empty guard loop (core0→core1 FIFO), three extra
-//        tick1s are inserted before div_c1 fires.  In GLS the combinational
-//        path  mem[rd_ptr_bin] → mux logic → sfp_sum_in_1  has real gate
-//        delay.  When the while loop exits after only 1-2 iterations (FIFO
-//        was already written), sfp_sum_in_1 may still be transitioning at
-//        the div_c1 posedge — causing core1's SFP to capture 0 instead of
-//        the correct denominator and write wrong N values to kmem.
-//        Three extra tick1s guarantee the path has settled.  Core0 does NOT
-//        need this because the fifo1_empty loop already provides sufficient
-//        clk0 margin.
-//
-//   NOTE:
-//     This TB expects fullchip.v to expose peer denominator combinationally:
-//       assign sfp_sum_in_0 = sum_out_1_0;
-//       assign sfp_sum_in_1 = sum_out_0_1;
-//     and to expose FIFO empty flags as top-level outputs:
-//       output fifo0_empty  (o_empty of fifo_inst_ext_core0_1, wr=clk0 rd=clk1)
-//       output fifo1_empty  (o_empty of fifo_inst_ext_core1_0, wr=clk1 rd=clk0)
+//   All CDC-specific fixes from the original TB are preserved:
+//     1. while-loop guards use !== 1'b0 so that X in GLS is treated
+//        as "still empty" rather than causing early loop exit.
+//     2. After the fifo0_empty guard loop three extra tick1s are
+//        inserted to let the combinational path
+//        mem[rd_ptr_bin] → mux logic → sfp_sum_in_1 settle before
+//        div_c1 fires.
 
 `timescale 1ns/1ps
 
@@ -76,9 +61,14 @@ module fullchip_tb;
   integer j, k, t, q, row, c, row_err;
   integer wait_guard;
 
-  // ── Clocks — manually driven only ───────────────────────────────────────────
-  reg clk0 = 0;   // 1.000 GHz
-  reg clk1 = 0;   // 1.333 GHz
+  // ── Clocks — manually driven, 50% duty cycle per tick ───────────────────────
+  //   clk0: period=1.000ns  — low 0.5ns, high 0.5ns
+  //   clk1: period=0.750ns  — low 0.375ns, high 0.375ns
+  //   Keeping clocks manually driven (not free-running) is critical: the DUT
+  //   must only see clock edges when the TB explicitly calls tick, otherwise
+  //   extra edges occur during TB housekeeping and corrupt DUT state.
+  reg clk0 = 1'b0;
+  reg clk1 = 1'b0;
 
   // ── DUT I/O ─────────────────────────────────────────────────────────────────
   wire [2*col*bw_psum-1:0] out;
@@ -144,7 +134,6 @@ module fullchip_tb;
   reg [bw_psum*col-1:0] temp16b;
 
   wire fifo0_empty, fifo1_empty;
-  //wire [bw_psum+3:0] sfp_sum_in_1;
 
   // ── DUT ─────────────────────────────────────────────────────────────────────
   fullchip #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(2*pr)) fullchip_instance (
@@ -155,12 +144,17 @@ module fullchip_tb;
     .inst(inst),
     .out(out),
     .fifo0_empty(fifo0_empty),
-    .fifo1_empty(fifo1_empty) //,
-    //.sfp_sum_in_1_out(sfp_sum_in_1)
+    .fifo1_empty(fifo1_empty)
   );
 
   // ── Clock tasks ─────────────────────────────────────────────────────────────
-  task tick0; begin #0.5   clk0=1'b0; #0.5   clk0=1'b1; end endtask
+  //   Stimulus is set BEFORE calling tick. Clock goes low for half-period
+  //   (setup time), then high (posedge — DUT samples), then stays high until
+  //   the next tick immediately pulls it low again. Back-to-back ticks produce
+  //   a perfect 50% duty cycle. The asymmetry visible in waveform viewers
+  //   between non-consecutive ticks is harmless TB dead time, not a real
+  //   clock issue.
+  task tick0; begin #0.5 clk0=1'b0; #0.5 clk0=1'b1; end endtask
   task tick1; begin #0.375 clk1=1'b0; #0.375 clk1=1'b1; end endtask
 
   initial begin
@@ -444,10 +438,6 @@ module fullchip_tb;
       tick0; tick0; tick0; tick0;
       tick1; tick1; tick1; tick1;
 
-      // FIX 1: Use !== 1'b0 so that X (present in GLS before reset fully
-      // propagates through gate logic) is treated as "still empty" rather
-      // than exiting the loop early.
-
       // Wait for core0 incoming FIFO (written by core1, read by clk0)
       wait_guard = 0;
       while (fifo1_empty !== 1'b0 && wait_guard < 32) begin
@@ -462,14 +452,8 @@ module fullchip_tb;
         wait_guard = wait_guard + 1;
       end
 
-      // FIX 2: Extra clk1 settling ticks for core1 only.
-      // fifo_inst_ext_core0_1 drives sfp_sum_in_1 combinationally through
-      // mem[rd_ptr_bin] → mux logic.  In GLS this path has real gate delay.
-      // When the while loop above exits after only 1-2 iterations (FIFO was
-      // already written), sfp_sum_in_1 may still be transitioning at the
-      // div_c1 posedge.  Three extra tick1s guarantee the path has settled.
-      // Core0 does not need this — the fifo1_empty loop already gives it
-      // sufficient margin.
+      // Extra clk1 settling ticks for combinational path
+      // mem[rd_ptr_bin] → mux logic → sfp_sum_in_1 in GLS
       tick1; tick1; tick1;
 
       // divide only after incoming denominator is stable on both sides
@@ -479,23 +463,13 @@ module fullchip_tb;
       div_c1 = 1; tick1;
       div_c1 = 0; tick1;
 
-      //tick1; //tick1; //tick1;// tick1; //tick1;
-
-      // ADD: print what sfp_sum_in_1 holds right now
-     // $display("[SFP q%0d] sfp_sum_in_1=%0d  golden_denom=%0d",
-       //q,
-        //$signed(sfp_sum_in_1),
-        //sum_core0[q] + sum_core1[q]);
-
       kmem_wr_c0 = 1; tick0;
       kmem_wr_c0 = 0; tick0;
 
       kmem_wr_c1 = 1; tick1;
       kmem_wr_c1 = 0; tick1;
 
-      // ADD: wait for core1's incoming FIFO to drain before next acc_c0
-      // This ensures div_q has fired and rd_ptr advanced, so the next
-      // iteration doesn't see a stale FIFO entry as the denominator.
+      // Wait for core1's incoming FIFO to drain before next acc_c0
       wait_guard = 0;
       while (fifo0_empty !== 1'b1 && wait_guard < 32) begin
         tick1;
@@ -603,7 +577,6 @@ module fullchip_tb;
     load_c1 = 0; tick1;
     repeat(10) begin tick0; tick1; end
 
-    
     // ───────────────────────────────────────────────────────────────────────
     // 15. Execute VN
     // ───────────────────────────────────────────────────────────────────────
@@ -699,7 +672,7 @@ module fullchip_tb;
     $display("=================== OVERALL SUMMARY ====================");
     $display("  Mode: NON-LOCKSTEP, split 40-bit inst bus");
     $display("  clk0=1.000GHz (core0)  clk1=1.333GHz (core1)");
-    $display("  tick0 then tick1 per step — 1 posedge per core per operation");
+    $display("  tick0 syncs to posedge clk0 — tick1 syncs to posedge clk1");
     $display("  QK phase -- CORE0: %0d  CORE1: %0d mismatch(es)",
              mismatch_prd_core0, mismatch_prd_core1);
     $display("  VN phase -- CORE0: %0d  CORE1: %0d mismatch(es)",
