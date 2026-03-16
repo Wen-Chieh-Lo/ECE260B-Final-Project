@@ -1,5 +1,8 @@
+// --- testbench ---
+./sim/tb/fullchip_lockstep_tb.v
+
 // --- top / core ---
-./verilog/fullchip.v
+./verilog/fullchip_lockstep.v
 ./verilog/core.v
 ./verilog/sfp_row.v
 ./verilog/sync.v

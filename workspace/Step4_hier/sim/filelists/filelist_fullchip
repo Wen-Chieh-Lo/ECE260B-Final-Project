@@ -1,3 +1,6 @@
+// --- testbench ---
+./sim/tb/fullchip_tb.v
+
 // --- top / core ---
 ./verilog/fullchip.v
 ./verilog/core.v

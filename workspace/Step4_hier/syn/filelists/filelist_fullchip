@@ -1,0 +1,5 @@
+// --- top / core ---
+./verilog/fullchip.v
+
+// --- memory / FIFO ---
+./verilog/memory/fifo_depth16_async.v
