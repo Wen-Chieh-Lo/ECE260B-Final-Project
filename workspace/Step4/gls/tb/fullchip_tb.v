@@ -11,15 +11,29 @@
 //     1. Set _c0 signals → tick0   (core0 gets one posedge)
 //     2. Set _c1 signals → tick1   (core1 gets one posedge)
 //
-//   CDC-specific fix in this TB:
-//     - During SFP, each core waits until its incoming async FIFO is non-empty
-//       before asserting div.
-//     - This avoids consuming the peer-core denominator too early.
+//   CDC-specific fixes applied here:
+//     1. while-loop guards use !== 1'b0 instead of plain != so that X
+//        (which occurs in GLS before reset fully propagates through gate
+//        logic) is treated as "still empty — keep waiting" rather than
+//        being interpreted as false and causing early loop exit.
+//     2. After the fifo0_empty guard loop (core0→core1 FIFO), three extra
+//        tick1s are inserted before div_c1 fires.  In GLS the combinational
+//        path  mem[rd_ptr_bin] → mux logic → sfp_sum_in_1  has real gate
+//        delay.  When the while loop exits after only 1-2 iterations (FIFO
+//        was already written), sfp_sum_in_1 may still be transitioning at
+//        the div_c1 posedge — causing core1's SFP to capture 0 instead of
+//        the correct denominator and write wrong N values to kmem.
+//        Three extra tick1s guarantee the path has settled.  Core0 does NOT
+//        need this because the fifo1_empty loop already provides sufficient
+//        clk0 margin.
 //
 //   NOTE:
-//     This TB expects fullchip.v to expose peer denominator combinationally as:
+//     This TB expects fullchip.v to expose peer denominator combinationally:
 //       assign sfp_sum_in_0 = sum_out_1_0;
 //       assign sfp_sum_in_1 = sum_out_0_1;
+//     and to expose FIFO empty flags as top-level outputs:
+//       output fifo0_empty  (o_empty of fifo_inst_ext_core0_1, wr=clk0 rd=clk1)
+//       output fifo1_empty  (o_empty of fifo_inst_ext_core1_0, wr=clk1 rd=clk0)
 
 `timescale 1ns/1ps
 
@@ -129,6 +143,9 @@ module fullchip_tb;
   reg [bw_psum-1:0]     temp5b;
   reg [bw_psum*col-1:0] temp16b;
 
+  wire fifo0_empty, fifo1_empty;
+  //wire [bw_psum+3:0] sfp_sum_in_1;
+
   // ── DUT ─────────────────────────────────────────────────────────────────────
   fullchip #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(2*pr)) fullchip_instance (
     .reset(reset),
@@ -136,7 +153,10 @@ module fullchip_tb;
     .clk1(clk1),
     .mem_in(mem_in),
     .inst(inst),
-    .out(out)
+    .out(out),
+    .fifo0_empty(fifo0_empty),
+    .fifo1_empty(fifo1_empty) //,
+    //.sfp_sum_in_1_out(sfp_sum_in_1)
   );
 
   // ── Clock tasks ─────────────────────────────────────────────────────────────
@@ -396,11 +416,6 @@ module fullchip_tb;
 
     // =========================================================================
     //  SFP PHASE
-    //
-    //  Fixes vs prior version:
-    //    1. After both cores finish acc, wait for both incoming FIFOs to become
-    //       non-empty in their destination domains.
-    //    2. Only then assert div on each core.
     // =========================================================================
     $display("##### SFP: normalize QK, write N to kmem #####");
     ofifo_rd_c0 = 1; pmem_rd_c0 = 1;
@@ -425,51 +440,68 @@ module fullchip_tb;
       acc_c1 = 1; tick1;
       acc_c1 = 0; tick1;
 
-      // coarse guard first
+      // coarse guard: give both FIFOs time to write and sync through gray CDC
       tick0; tick0; tick0; tick0;
       tick1; tick1; tick1; tick1;
 
-      // wait for core0 incoming FIFO (written by core1, read by clk0) to become non-empty
+      // FIX 1: Use !== 1'b0 so that X (present in GLS before reset fully
+      // propagates through gate logic) is treated as "still empty" rather
+      // than exiting the loop early.
+
+      // Wait for core0 incoming FIFO (written by core1, read by clk0)
       wait_guard = 0;
-      while (fullchip_instance.fifo_empty_1_0 && wait_guard < 32) begin
+      while (fifo1_empty !== 1'b0 && wait_guard < 32) begin
         tick0;
         wait_guard = wait_guard + 1;
       end
 
-      // wait for core1 incoming FIFO (written by core0, read by clk1) to become non-empty
+      // Wait for core1 incoming FIFO (written by core0, read by clk1)
       wait_guard = 0;
-      while (fullchip_instance.fifo_empty_0_1 && wait_guard < 32) begin
+      while (fifo0_empty !== 1'b0 && wait_guard < 32) begin
         tick1;
         wait_guard = wait_guard + 1;
       end
 
-      $display("[SFP q%0d] fifo_empty_1_0=%b fifo_empty_0_1=%b", q,
-        fullchip_instance.fifo_empty_1_0,
-        fullchip_instance.fifo_empty_0_1);
-      $display("[SFP q%0d] sfp_sum_in_0=%0d sfp_sum_in_1=%0d golden_denom=%0d", q,
-        $signed(fullchip_instance.sfp_sum_in_0),
-        $signed(fullchip_instance.sfp_sum_in_1),
-        sum_core0[q] + sum_core1[q]);
+      // FIX 2: Extra clk1 settling ticks for core1 only.
+      // fifo_inst_ext_core0_1 drives sfp_sum_in_1 combinationally through
+      // mem[rd_ptr_bin] → mux logic.  In GLS this path has real gate delay.
+      // When the while loop above exits after only 1-2 iterations (FIFO was
+      // already written), sfp_sum_in_1 may still be transitioning at the
+      // div_c1 posedge.  Three extra tick1s guarantee the path has settled.
+      // Core0 does not need this — the fifo1_empty loop already gives it
+      // sufficient margin.
+      tick1; tick1; tick1;
 
-      // divide only after incoming denominator is visible
+      // divide only after incoming denominator is stable on both sides
       div_c0 = 1; tick0;
       div_c0 = 0; tick0;
 
       div_c1 = 1; tick1;
       div_c1 = 0; tick1;
 
-      $display("SFP row%0d  N_est C0: %3d %3d %3d %3d %3d %3d %3d %3d", q,
-        N_est_core0[q][0], N_est_core0[q][1], N_est_core0[q][2], N_est_core0[q][3],
-        N_est_core0[q][4], N_est_core0[q][5], N_est_core0[q][6], N_est_core0[q][7]);
-      $display("SFP row%0d  N_est C1: %3d %3d %3d %3d %3d %3d %3d %3d", q,
-        N_est_core1[q][0], N_est_core1[q][1], N_est_core1[q][2], N_est_core1[q][3],
-        N_est_core1[q][4], N_est_core1[q][5], N_est_core1[q][6], N_est_core1[q][7]);
+      //tick1; //tick1; //tick1;// tick1; //tick1;
+
+      // ADD: print what sfp_sum_in_1 holds right now
+     // $display("[SFP q%0d] sfp_sum_in_1=%0d  golden_denom=%0d",
+       //q,
+        //$signed(sfp_sum_in_1),
+        //sum_core0[q] + sum_core1[q]);
 
       kmem_wr_c0 = 1; tick0;
       kmem_wr_c0 = 0; tick0;
 
       kmem_wr_c1 = 1; tick1;
       kmem_wr_c1 = 0; tick1;
+
+      // ADD: wait for core1's incoming FIFO to drain before next acc_c0
+      // This ensures div_q has fired and rd_ptr advanced, so the next
+      // iteration doesn't see a stale FIFO entry as the denominator.
+      wait_guard = 0;
+      while (fifo0_empty !== 1'b1 && wait_guard < 32) begin
+        tick1;
+        wait_guard = wait_guard + 1;
+      end
+
     end
 
     ofifo_rd_c0 = 0; pmem_rd_c0 = 0; acc_c0 = 0; div_c0 = 0;
@@ -571,6 +603,7 @@ module fullchip_tb;
     load_c1 = 0; tick1;
     repeat(10) begin tick0; tick1; end
 
+    
     // ───────────────────────────────────────────────────────────────────────
     // 15. Execute VN
     // ───────────────────────────────────────────────────────────────────────

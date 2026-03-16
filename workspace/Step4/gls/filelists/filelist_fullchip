@@ -1,23 +1,9 @@
-// --- testbench ---
-./sim/tb/fullchip_tb.v
+// --- Gate-level simulation: fullchip ---
+// TB
+./gls/tb/fullchip_tb.v
 
-// --- top / core ---
-./verilog/fullchip.v
-./verilog/core.v
-./verilog/sfp_row.v
-./verilog/sync.v
-./verilog/submodules/sum8.v
-./verilog/submodules/div.v
+// DUT: gate netlist
+./syn/gate/fullchip.out.v
 
-// --- MAC ---
-./verilog/mac/mac_col.v
-./verilog/mac/mac_8in.v
-./verilog/mac/mac_array.v
-// --- memory / FIFO ---
-./verilog/memory/sram_w16.v
-./verilog/ofifo.v
-./verilog/memory/fifo_depth16_async.v
-./verilog/memory/fifo_depth16.v
-./verilog/memory/fifo_mux_16_1.v
-./verilog/memory/fifo_mux_8_1.v
-./verilog/memory/fifo_mux_2_1.v
+// Standard cell library
+/home/linux/ieng6/ECE260B_WI26_A00/public/course_contents/w5/full_flow/gate_sim/netlist/tcbn65gplus.v
