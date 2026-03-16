@@ -188,17 +188,19 @@ module fullchip_tb;
 
     qk_file = $fopen("./sim/pattern/kdata_dual.txt", "r");
     if (qk_file == `NULL) begin $display("ERROR: cannot open kdata_dual.txt"); $finish; end
-    for (q = 0; q < 2*col; q = q+1)
+    for (q = 0; q < 2*col; q = q+1) begin
       for (j = 0; j < pr; j = j+1) begin
         qk_scan_file = $fscanf(qk_file, "%d\n", captured_data);
         K[q][j] = captured_data;
       end
+      tick0; tick1;
+    end
 
     // ───────────────────────────────────────────────────────────────────────
     // 3. Software golden: QK + L1 sums + estimated N
     // ───────────────────────────────────────────────────────────────────────
     $display("##### Estimated QK result CORE0 #####");
-    for (t = 0; t < total_cycle; t = t+1)
+    for (t = 0; t < total_cycle; t = t+1) begin
       for (q = 0; q < col; q = q+1) begin
         result[t][q] = 0;
         for (k = 0; k < pr; k = k+1)
@@ -206,6 +208,8 @@ module fullchip_tb;
         temp5b  = result[t][q];
         temp16b = {temp16b[bw_psum*col-bw_psum-1:0], temp5b};
       end
+      tick0; tick1;
+    end
     for (t = 0; t < total_cycle; t = t+1)
       $display("prd @cycle%2d: %40h", t, temp16b);
 
@@ -215,10 +219,11 @@ module fullchip_tb;
         abs_result[t][q] = (result[t][q] >= 0) ? result[t][q] : -result[t][q];
         sum_core0[t] = sum_core0[t] + abs_result[t][q];
       end
+      tick0; tick1;
     end
 
     $display("##### Estimated QK result CORE1 #####");
-    for (t = 0; t < total_cycle; t = t+1)
+    for (t = 0; t < total_cycle; t = t+1) begin
       for (q = col; q < 2*col; q = q+1) begin
         result[t][q] = 0;
         for (k = 0; k < pr; k = k+1)
@@ -226,6 +231,8 @@ module fullchip_tb;
         temp5b  = result[t][q];
         temp16b = {temp16b[bw_psum*col-bw_psum-1:0], temp5b};
       end
+      tick0; tick1;
+    end
     for (t = 0; t < total_cycle; t = t+1)
       $display("prd @cycle%2d: %40h", t, temp16b);
 
@@ -235,6 +242,7 @@ module fullchip_tb;
         abs_result[t][q] = (result[t][q] >= 0) ? result[t][q] : -result[t][q];
         sum_core1[t] = sum_core1[t] + abs_result[t][q];
       end
+      tick0; tick1;
     end
 
     $display("##### Estimated N (normalized QK) #####");
@@ -251,6 +259,7 @@ module fullchip_tb;
       $display("N_est C1 row%0d: %3d %3d %3d %3d %3d %3d %3d %3d", t,
         N_est_core1[t][0], N_est_core1[t][1], N_est_core1[t][2], N_est_core1[t][3],
         N_est_core1[t][4], N_est_core1[t][5], N_est_core1[t][6], N_est_core1[t][7]);
+      tick0; tick1;
     end
 
     // ───────────────────────────────────────────────────────────────────────
@@ -494,17 +503,19 @@ module fullchip_tb;
     $display("##### V data txt reading #####");
     qk_file = $fopen("./sim/pattern/vdata.txt", "r");
     if (qk_file == `NULL) begin $display("ERROR: cannot open vdata.txt"); $finish; end
-    for (q = 0; q < col; q = q+1)
+    for (q = 0; q < col; q = q+1) begin
       for (j = 0; j < pr; j = j+1) begin
         qk_scan_file = $fscanf(qk_file, "%d\n", captured_data);
         V_T[j][q] = captured_data;
       end
+      tick0; tick1;
+    end
 
     // ───────────────────────────────────────────────────────────────────────
     // 11. Software golden: VN
     // ───────────────────────────────────────────────────────────────────────
     $display("##### Estimated VN result #####");
-    for (t = 0; t < total_cycle; t = t+1)
+    for (t = 0; t < total_cycle; t = t+1) begin
       for (q = 0; q < col; q = q+1) begin
         vn_result_core0[t][q] = 0;
         vn_result_core1[t][q] = 0;
@@ -513,7 +524,6 @@ module fullchip_tb;
           vn_result_core1[t][q] = vn_result_core1[t][q] + V_T[t][k] * N_est_core1[q][k];
         end
       end
-    for (t = 0; t < total_cycle; t = t+1) begin
       $display("VN est C0 row%0d: %5d %5d %5d %5d %5d %5d %5d %5d", t,
         vn_result_core0[t][0], vn_result_core0[t][1],
         vn_result_core0[t][2], vn_result_core0[t][3],
@@ -524,6 +534,7 @@ module fullchip_tb;
         vn_result_core1[t][2], vn_result_core1[t][3],
         vn_result_core1[t][4], vn_result_core1[t][5],
         vn_result_core1[t][6], vn_result_core1[t][7]);
+      tick0; tick1;
     end
 
     // ───────────────────────────────────────────────────────────────────────
