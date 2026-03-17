@@ -5,38 +5,52 @@
 
 // -----------------------------------------------------------------------------
 // div: Direct division (combinational, uses / operator)
+// Interface unified with div_longdiv: clk, reset, start (ignored for combinational)
 // -----------------------------------------------------------------------------
 module div #(
   parameter bw_psum   = 19,
   parameter out_shift = 7
 ) (
-  input  [bw_psum-1:0] in,
-  input  signed [bw_psum-1:0] divisor,
-  output [out_shift-1:0] out,
-  output done
+  input                         clk,
+  input                         reset,
+  input                         start,
+  input      [bw_psum-1:0]      in,
+  input      signed [bw_psum-1:0] divisor,
+  output     [out_shift-1:0]    out,
+  output                        done,
+  output                        busy
 );
   wire [bw_psum+out_shift-1:0] full_quotient;
 
   assign full_quotient = {in, {out_shift{1'b0}}} / divisor;
   assign out           = full_quotient[out_shift-1:0];
-  assign done = 1'b1;
+  assign done          = 1'b1;    // combinational: output always valid
+  assign busy          = 1'b0;    // combinational: never busy
 endmodule
 
 // -----------------------------------------------------------------------------
 // div_lut: LUT stores reciprocal (1/divisor), multiply replaces divide
 // divisor < LUT_SIZE: LUT[i]=2^RECIP_BITS/i (exact). divisor >= LUT_SIZE: use scaled.
+// Interface unified with div/div_longdiv: clk, reset, start (ignored for combinational)
 // -----------------------------------------------------------------------------
 module div_lut #(
   parameter bw_psum   = 19,
   parameter out_shift = 7
 ) (
-  input  [bw_psum-1:0] in,
-  input  signed [bw_psum-1:0] divisor,
-  output [bw_psum-1:0] out,
-  output done
+  input                         clk,
+  input                         reset,
+  input                         start,
+  input      [bw_psum-1:0]      in,
+  input      signed [bw_psum-1:0] divisor,
+  output     [out_shift-1:0]    out,
+  output                        done,
+  output                        busy
 );
-  assign out = {in, {out_shift{1'b0}}} / divisor;
-  assign done = 1'b1;
+  wire [bw_psum+out_shift-1:0] full_quotient;
+  assign full_quotient = {in, {out_shift{1'b0}}} / divisor;
+  assign out           = full_quotient[out_shift-1:0];
+  assign done          = 1'b1;    // combinational: output always valid
+  assign busy          = 1'b0;    // combinational: never busy
 endmodule
 
 
@@ -53,8 +67,10 @@ module div_longdiv #(
   input      [bw_psum-1:0]      in,
   input      signed [bw_psum-1:0] divisor,
   output reg [out_shift-1:0]    out,
-  output reg                    done
+  output reg                    done,
+  output                        busy
 );
+  assign busy = (state == S_DIV);
   localparam integer W_DIVIDEND   = bw_psum + out_shift;
   localparam integer W_DIVISOR    = bw_psum;
   localparam integer W_ITER       = W_DIVIDEND - (W_DIVISOR + 1);

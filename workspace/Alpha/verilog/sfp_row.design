@@ -1,0 +1,178 @@
+# SFP Row Design Specification
+
+## Overview
+
+SFP (Softmax with Fixed-Point) row block: normalizes one row of MAC array outputs.
+- **acc**: accumulate row energy (sum of |sfp_in|)
+- **div**: divide each |sfp_in[c]| by row sum → normalized output
+
+Design assumes dual-core context; sum_in/sum_out for cross-core communication.
+- **Test scope**: Dual-core only; sum_in must always be driven (no single-core tests).
+
+---
+
+## Alpha Interface (New)
+
+### Ports
+
+| Port | Direction | Width | Description |
+|------|-----------|-------|-------------|
+| clk | input | 1 | Clock |
+| reset | input | 1 | Synchronous reset |
+| acc_start | input | 1 | Start accumulate (pulse 1 cycle) |
+| div_start | input | 1 | Start divide (pulse 1 cycle) |
+| acc_done | output | 1 | Accumulate complete |
+| div_done | output | 1 | Divide complete |
+| div_busy | output | 1 | Divider busy (gate div_start by !div_busy) |
+| sum_in | input | bw_psum+4 | Sum from other core (valid **next cycle** after div_start) |
+| sum_out | output | bw_psum+4 | Row sum output |
+| sfp_in | input | col*bw_psum | MAC row outputs (signed) |
+| sfp_div_out | output | col*bw_out | Normalized output (valid 1 cycle when div_done) |
+
+### Parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| col | 8 | Number of columns (stress test supports other values) |
+| bw | 8 | Input bit width (fixed for stress) |
+| bw_psum | 2*bw+4 | Psum width (20) |
+| out_shift | 7 | Output fractional bits |
+| bw_out | out_shift+1 | Output width per column (8) |
+| acc_latency | (TBD) | Cycles from acc_start to acc_done |
+| div_latency | (TBD) | Cycles from div_start to div_done |
+
+---
+
+## Timing Spec
+
+### sfp_in
+- **acc**: Drive sfp_in only on the same cycle as acc_start; hold for 1 cycle only.
+- **div**: Drive sfp_in only on the same cycle as div_start; hold for 1 cycle only.
+- Same row data for both acc and div of that row.
+
+### acc_start
+- **TB**: Pull high for 1 cycle; drive sfp_in with row data on same cycle.
+- **DUT**: Compute row energy Si = Σj |sfp_in[j]|; assert acc_done after acc_latency cycles.
+- **Rule**: acc_start can be back-to-back (no pipeline hazard).
+
+### div_start
+- **TB**: Pull high for 1 cycle; drive sfp_in with row data.
+- **sum_in**: TB drives on **next cycle** after div_start (TB assumption: external FIFO responds 1cyc later).
+- **DUT**: Read internal FIFO; combine with sum_in; divide; assert div_done after div_latency cycles.
+- **Rule**: div_start must be gated by !div_busy (no back-to-back).
+
+### fifo_ext_rd (TB assumption only)
+- Not a real port. TB assumes: when div_start, external FIFO is read; sum_in arrives **next cycle**.
+
+### div_busy
+- High after div_start, low before div_done (during div computation).
+
+### acc_done / div_done
+- Pulse 1 cycle only when complete.
+
+### sfp_div_out
+- Valid only when div_done is high (1 cycle).
+
+### Summary
+- acc, div 各拉一 cycle
+- acc_done, div_done 由 DUT 算完後拉高
+- acc_latency, div_latency 為參數
+
+---
+
+## Ordering & Interleaving
+
+- **Order**: acc must complete before div for a given row (acc → div).
+- **Interleaving**: acc row0 → div row0 → acc row1 → div row1... (interleaved per row).
+
+---
+
+## Algorithm
+
+### Row energy
+```
+Si = Σj |sfp_in[j]|   (sum of absolute values)
+```
+
+### Normalization (when Si ≥ threshold)
+```
+sfp_div_out[c] = truncate((|sfp_in[c]| << out_shift) / (Si_this_core + sum_in))
+```
+- Divisor = Si_this_core + sum_in (dual-core combined sum)
+- Rounding: truncate
+- sfp_div_out: signed, per column
+- Output valid 1 cycle when div_done
+
+### Sparsity gating (SFP_THRESHOLD)
+- When Si < SFP_THRESHOLD: output all zeros (skip normalization)
+- Define via `+define+SFP_THRESHOLD=<value>`; default 0 (no gating)
+
+### All-zero row
+- When sfp_in all zeros (Si = 0): output all zeros (unrelated to SFP_THRESHOLD)
+
+### Overflow
+- Si + sum_in overflow: don't care
+
+---
+
+## Step6 / Vanilla Interface (Reference)
+
+Legacy interface used in Step6 and sfp_row_old:
+
+| Port | Direction | Description |
+|------|-----------|-------------|
+| acc | input | Accumulate (level, not pulse) |
+| div | input | Divide (level, not pulse) |
+| fifo_ext_rd | input | External FIFO read |
+| sum_in, sum_out | - | Same |
+| sfp_in | input | Same |
+| sfp_out | output | Normalized output |
+| sfp_out_valid | output | Valid when div complete |
+
+Vanilla implementation remains in Alpha (sfp_row_old); TB is agnostic to implementation.
+
+---
+
+## Data Flow
+
+1. **acc phase**: sfp_in (1 cycle) → sum8 (|row|) → row energy Si → internal FIFO
+2. **div phase**: sfp_in (1 cycle) + Si from FIFO + sum_in (next cycle) → divider → sfp_div_out
+3. **fifo_ext_rd**: TB drives same cycle as div_start to read sum_out → feeds other core's sum_in
+
+---
+
+## Internal FIFO
+
+- **Depth**: 16 rows
+- **Order**: Strict FIFO (acc row0 sum → div row0; acc row1 sum → div row1)
+
+---
+
+## Testbench
+
+- **Data source**: All (sfp_in, sum_in, etc.) generated randomly by TB.
+- **Print before execute**: TB must print stimulus before applying.
+- **Row reuse**: TB stores row after acc, reuses for div (duplicate).
+- **Golden**: TB computes expected sfp_div_out; compare to DUT output.
+- **sum_in range**: Random 0 to 2^(bw_psum+3)-1.
+- **Pass/fail**: $display/$error and assertion both ok.
+- **Structure**: ST1–ST4 in same TB (run sequentially).
+- **Reset**: Don't test reset during acc/div.
+
+---
+
+## Stress Test Plan (Dual-Core Only)
+
+TB simulates dual-core by driving sum_in from golden (random); no second DUT instance.
+
+| # | Test | Purpose |
+|---|------|---------|
+| **ST1** | Normal (1 acc + 1 div) | Basic single-row dual-core |
+| **ST2** | Batch (8 acc + 8 div) | 8 acc back-to-back, then 8 div (wait div_busy between each) |
+| **ST3** | Interleaved | acc row0 → div row0 → acc row1 → div row1... |
+| **ST4** | 0 row | sfp_in all zeros → output all 0 |
+
+**Note**: No SFP_THRESHOLD stress test (use default 0).
+
+### TB
+- **sfp_row_tb.v**: ST1–ST4 run sequentially in one simulation.
