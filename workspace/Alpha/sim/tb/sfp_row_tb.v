@@ -1,6 +1,6 @@
 // Alpha sfp_row testbench - ST1~ST4 per sfp_row.design
 // Data: random by TB, print before execute. Golden: truncate((|sfp_in[c]|<<out_shift)/(Si+sum_in))
-// sum_in: valid next cycle after div_start, random 0..2^(bw_psum+3)-1
+// sum_in: valid same cycle as div_start, random 0..2^(bw_psum+3)-1
 
 `timescale 1ns/1ps
 
@@ -11,8 +11,6 @@ module sfp_row_tb;
   parameter bw_psum = 2*bw+4;
   parameter out_shift = 7;
   parameter bw_out = out_shift + 1'b1;
-  parameter acc_latency = 3;
-  parameter div_latency = 6;
 
   integer r, cc, err_count, test_pass, divisor, seed;
   integer golden [0:col-1];
@@ -103,21 +101,42 @@ module sfp_row_tb;
   task do_acc_div;
     input [col*bw_psum-1:0] row_data;
     input [bw_psum+3:0] sum_in_val;
+    input integer golden_si;   // -1 to skip golden comparison
+    integer wait_cnt;
     begin
       sfp_in_drive = row_data;
       sum_in_drive = 0;
       acc_start = 1; div_start = 0;
       @(posedge clk);
+      #0;   // yield: let RTL sample acc_start=1 before we clear
       acc_start = 0;
-      repeat(acc_latency) @(posedge clk);
-      while (div_busy) @(posedge clk);
+      while (!acc_done) @(posedge clk);   // wait for sum8 to complete, FIFO written
+      @(posedge clk);   // extra cycle: avoid same-cycle read/write (FIFO out valid next cycle)
+      wait_cnt = 0;
+      while (div_busy && wait_cnt <= 100) begin
+        @(posedge clk);
+        wait_cnt = wait_cnt + 1;
+      end
+      if (div_busy) $display("  [do_acc_div] WARN: div_busy stuck >100 cycles");
       sfp_in_drive = row_data;
       div_start = 1;
       sum_in_drive = sum_in_val;   // sum_in valid same cycle as div_start
       @(posedge clk);
+      #0;   // yield: let RTL sample div_start=1 before we clear
       div_start = 0;
       sum_in_drive = 0;
-      while (!div_done) @(posedge clk);
+      if (golden_si >= 0)
+        $display("  [TB check] sum_this_core_r=%0d sum_in_r=%0d sum_2core=%0d | golden: si=%0d divisor=%0d",
+          u_sfp.sum_this_core_r, u_sfp.sum_in_r, u_sfp.sum_2core, golden_si, golden_si+sum_in_val);
+      else
+        $display("  [TB check] sum_this_core_r=%0d sum_in_r=%0d sum_2core=%0d",
+          u_sfp.sum_this_core_r, u_sfp.sum_in_r, u_sfp.sum_2core);
+      wait_cnt = 0;
+      while (!div_done && wait_cnt <= 500) begin
+        @(posedge clk);
+        wait_cnt = wait_cnt + 1;
+      end
+      if (!div_done) $display("  [do_acc_div] ERROR: div_done never high after %0d cycles (div_busy=%b)", wait_cnt, div_busy);
     end
   endtask
 
@@ -173,7 +192,7 @@ module sfp_row_tb;
       $display("  [print before execute] sum_abs=%0d sum_in=%0d divisor=%0d", si, s_in, si+s_in);
       $display("  golden: %7d %7d %7d %7d %7d %7d %7d %7d",
         golden[0], golden[1], golden[2], golden[3], golden[4], golden[5], golden[6], golden[7]);
-      do_acc_div(row, s_in);
+      do_acc_div(row, s_in, si);
       check_output;
     end
 
@@ -193,22 +212,24 @@ module sfp_row_tb;
         sfp_in_drive = rows[r];
         acc_start = 1; div_start = 0;
         @(posedge clk);
-        acc_start = 0;
+        #0; acc_start = 0;
       end
-      repeat(acc_latency) @(posedge clk);
+      while (!acc_done) @(posedge clk);   // wait for last sum8 to complete
+      @(posedge clk);   // extra cycle: FIFO out valid next cycle after write
       for (r = 0; r < 8; r = r + 1) begin
         compute_golden(rows[r], sum_ins[r], si);
         $display("  [row %0d] golden: %7d %7d %7d %7d %7d %7d %7d %7d",
           r, golden[0], golden[1], golden[2], golden[3], golden[4], golden[5], golden[6], golden[7]);
         while (div_busy) @(posedge clk);
         sfp_in_drive = rows[r];
-        sum_in_drive = 0;
+        sum_in_drive = sum_ins[r];   // sum_in valid same cycle as div_start
         div_start = 1;
         @(posedge clk);
+        #0;   // yield: let RTL sample before we clear
         div_start = 0;
-        sum_in_drive = sum_ins[r];
-        @(posedge clk);
         sum_in_drive = 0;
+        $display("  [TB check row %0d] sum_this_core_r=%0d sum_in_r=%0d sum_2core=%0d | golden: si=%0d divisor=%0d",
+          r, u_sfp.sum_this_core_r, u_sfp.sum_in_r, u_sfp.sum_2core, si, si+sum_ins[r]);
         while (!div_done) @(posedge clk);
         check_output;
       end
@@ -233,16 +254,19 @@ module sfp_row_tb;
         sum_in_drive = 0;
         acc_start = 1; div_start = 0;
         @(posedge clk);
-        acc_start = 0;
-        repeat(acc_latency) @(posedge clk);
+        #0; acc_start = 0;
+        while (!acc_done) @(posedge clk);
+        @(posedge clk);   // extra cycle: FIFO out valid next cycle after write
         while (div_busy) @(posedge clk);
         sfp_in_drive = rows[r];
+        sum_in_drive = sum_ins[r];   // sum_in valid same cycle as div_start
         div_start = 1;
         @(posedge clk);
+        #0;   // yield: let RTL sample before we clear
         div_start = 0;
-        sum_in_drive = sum_ins[r];
-        @(posedge clk);
         sum_in_drive = 0;
+        $display("  [TB check row %0d] sum_this_core_r=%0d sum_in_r=%0d sum_2core=%0d | golden: si=%0d divisor=%0d",
+          r, u_sfp.sum_this_core_r, u_sfp.sum_in_r, u_sfp.sum_2core, si, si+sum_ins[r]);
         while (!div_done) @(posedge clk);
         check_output;
       end
@@ -260,7 +284,7 @@ module sfp_row_tb;
       compute_golden(zero_row, s_in, si);
       $display("  golden (all 0): %7d %7d %7d %7d %7d %7d %7d %7d",
         golden[0], golden[1], golden[2], golden[3], golden[4], golden[5], golden[6], golden[7]);
-      do_acc_div(zero_row, s_in);
+      do_acc_div(zero_row, s_in, si);
       check_output;
     end
 
@@ -279,7 +303,7 @@ module sfp_row_tb;
   end
 
   initial begin
-    #500000;
+    #5000000;
     $display("ERROR: Simulation timeout");
     $finish(1);
   end

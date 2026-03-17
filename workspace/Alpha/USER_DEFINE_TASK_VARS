@@ -10,7 +10,7 @@
 # sim / gls options: fullchip | core | mac | sfp_row | sfp_row_dual  (built-in default: fullchip)
 # syn options: core | sfp_row | mac                           (built-in default: core)
 # If TARGET is a sim-only value (e.g. fullchip), syn falls back to its built-in default.
-TARGET = core
+TARGET = sfp_row
 
 # Synthesis effort level (make syn / make all)
 # Options: low | medium | high
@@ -25,4 +25,4 @@ SYN_EFFORT = low
 # Verilog preprocessor defines for simulation (iverilog -D) and synthesis (DC -define).
 # Space-separated macro names, e.g.: SFP_LONGDIV SFP_MCP VANILLA
 # Leave blank for no extra defines.
-USER_DEFINES = SFP_MCP
+USER_DEFINES = SFP_LONGDIV
