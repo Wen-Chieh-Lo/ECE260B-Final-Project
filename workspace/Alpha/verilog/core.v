@@ -2,7 +2,7 @@
 // Please do not spread this code without permission 
 module core (clk, reset, set_mode, mode_in, start, 
 			mem_in, inst_ext,
-			sum_in, sum_out, 
+			sum_in, sum_in_valid, sum_out, 
             out, status);
 
 parameter col = 8;
@@ -14,6 +14,7 @@ localparam VEC_LEN      = 4'd8;
 
 
 input  [bw_psum+3:0] sum_in;
+input                sum_in_valid;
 output [bw_psum+3:0] sum_out;
 output [bw_psum*col-1:0] out;
 
@@ -52,8 +53,7 @@ wire  [bw_psum*col-1:0] pmem_out;
 wire  [1:0]				mac_inst;
 wire  [pr*bw-1:0]  		mac_in;
 wire  [bw_psum*col-1:0] array_out;
-wire 					fifo_valid;
-reg 					fifo_rd;
+wire 					ofifo_valid;
 wire  [col-1:0] 		fifo_wr;
 wire  [bw_psum*col-1:0] fifo_out;
 
@@ -63,20 +63,33 @@ wire [7:0] inst_ctrl;
 reg  [2:0]	mode; // {op_mode, sfp_write_to_kmem, sfp_write_to_pmem}, default QK+norm, sfp->kmem only
 wire 		busy;
 assign 		busy = status[3];
+wire  save_done;
 
 // ######    SFP    ###############
-wire  [bw*col-1:0] 	sfp_out;
-wire   				sfp_out_valid;
+wire acc_start, div_start;
+wire acc_done, div_done, div_busy;
+wire  [bw_psum+3:0] sfp_sum_in;
+wire  [bw_psum+3:0] sfp_sum_out;
+wire  [col*bw_psum-1:0] sfp_in;
+wire  [bw*col-1:0] 	sfp_div_out;
 wire  [bw_psum*col-1:0] sfp_out_BW_extended;
-reg   [4:0]			sfp_counter, sfp_counter_nxt;
-wire   save_done;
-wire sfp_acc;                         // SFP accumulating for normalization
-wire sfp_div;                         // SFP dividing for normalization
-wire sfp_fifo_ext_rd;                 // SFP start to output FIFO -> sfp_sum_out -> other core, not used in single core
-wire [bw_psum+3:0] sfp_sum_in;        // SFP sum input, is always 0 in single port
-wire [bw_psum+3:0] sfp_sum_out;       // SFP sum output, float in single core
-reg  result_wr;
+
+reg  [3:0] acc_done_cnt, div_done_cnt;
+reg        acc_all_done;
+reg        div_all_done;
 reg  [3:0] result_addr, result_addr_nxt;
+
+reg  [1:0] sfp_div_state, sfp_div_state_nxt; // for controlling PMEM rd/wr when SFP is involved. PMEM has 1 cyc read latency.
+localparam [1:0] S_PMEM_read_bubble = 2'b00; //Initial State
+localparam [1:0] S_divident_ready = 2'b01;
+localparam [1:0] S_wait_div_done = 2'b10;
+
+
+assign acc_start = (op_mode==OP_MODE_MULT_NORM) && !acc_all_done && ofifo_valid; // start acc when the first valid data comes in, and we haven't finished all acc
+assign div_start = !div_all_done && acc_all_done && !div_busy &&(sfp_div_state==S_divident_ready) && sum_in_valid;
+assign sum_out = sfp_sum_out;
+assign sfp_in = pmem_out;
+// start div when all acc are done, and we haven't finished all div
 
 
 // #####   Unconcatenate  ###########
@@ -109,7 +122,7 @@ assign mem_cmd_ext = inst_ext[1:0];
 genvar i;
 generate
 	for(i=0; i<col; i=i+1)begin
-		assign sfp_out_BW_extended[i*bw_psum +: bw_psum] = {{(bw_psum-bw){1'b0}}, sfp_out[i*bw +: bw]};
+		assign sfp_out_BW_extended[i*bw_psum +: bw_psum] = {{(bw_psum-bw){1'b0}}, sfp_div_out[i*bw +: bw]};
 	end
 endgenerate
 
@@ -138,7 +151,7 @@ localparam OP_MODE_MULT		 = 1'b1;
 // ########################################### //
 //             Memory Control Logic            //
 // ########################################### //
-// KMEM write: external or by SFP 
+// KMEM write: external or by SFP
 //      read : when mac load
 always @(*) begin
 	if(kmem_ext_wr_sel)begin
@@ -153,11 +166,11 @@ always @(*) begin
 		kmem_add = qkmem_add_ctrler;
 		kmem_in  = mem_in;             //Don't care
 	end
-	else if(op_mode==OP_MODE_MULT_NORM && sfp_write_to_kmem && result_wr) begin //SFP write
+	else if(op_mode==OP_MODE_MULT_NORM && sfp_write_to_kmem && div_done) begin //SFP div write if sfp_write_to_kmem is set, only for norm mode and when we have valid result to write
 		kmem_wr  = 1'b1;
 		kmem_rd  = 1'b0;
 		kmem_add = result_addr;
-		kmem_in  = sfp_out;
+		kmem_in  = sfp_div_out;
 	end
 	else begin
 		kmem_wr  = 1'b0;
@@ -186,34 +199,37 @@ always @(*) begin
 		qmem_add = addr_ext;        //Don't care
 	end
 end
-// PMEM write: sfp / fifo
-//      read : external
+// PMEM write: ofifo / sfp_div
+//      read : external / sfp_div
 always @(*) begin
 	if(pmem_ext_rd_sel)begin
 		pmem_rd  = pmem_rd_ext;
 		pmem_wr  = 1'b0;
 		pmem_add = addr_ext;
-		pmem_in  = fifo_out; 		//Don't Care
-	end
-	else if (op_mode==OP_MODE_MULT && result_wr) begin
+		pmem_in  = fifo_out; //Don't Care
+	end else if(!acc_all_done) begin // Mac result always goes to PMEM first, whether it's for norm or not. For norm, we will read it back and feed to SFP later.
 		pmem_rd  = 1'b0;
-		pmem_wr  = 1'b1;
-		pmem_add = result_addr;
+		pmem_wr  = ofifo_valid;
+		pmem_add = result_addr; // increment address when we have valid data from ofifo
 		pmem_in  = fifo_out;
-	end
-	else if(op_mode==OP_MODE_MULT_NORM && sfp_write_to_pmem && result_wr)begin
-		pmem_rd  = 1'b0;
-		pmem_wr  = 1'b1;
-		pmem_add = result_addr;
-		pmem_in  = sfp_out_BW_extended;
-
-
-	end
-	else begin     
-		pmem_rd  = 1'b0;
-		pmem_wr  = 1'b0;
-		pmem_add = result_addr;  //Don't care
-		pmem_in  = fifo_out;     //Don't care
+	end else begin // acc_all_done implies OP_Mode_MULT_NORM, and we are in div phase.
+		// read PMEM when !div_done, write to PMEM when div_done (if only sfp_write_to_pmem is set)
+		if(div_all_done)begin 
+			pmem_rd  = 1'b0;
+			pmem_wr  = 1'b0;
+			pmem_add = result_addr; //Don't care
+			pmem_in  = fifo_out;    //Don't care
+		end else if(!div_done)begin
+			pmem_rd  = 1'b1;
+			pmem_wr  = 1'b0;
+			pmem_add = result_addr; // increment address when div_done
+			pmem_in  = fifo_out;    //Don't care
+		end else begin
+			pmem_rd  = 1'b0;
+			pmem_wr  = sfp_write_to_pmem && div_done;
+			pmem_add = result_addr; // increment address when div_done
+			pmem_in  = sfp_out_BW_extended;
+		end
 	end
 end
 
@@ -226,25 +242,98 @@ assign out     = pmem_out;
 
 
 // ########################################### //
-//          SFP & result save logic            //
+// 	SFP related acc_done & div_done conuter    //
 // ########################################### //
-assign save_done = (result_addr==VEC_LEN);
-always @(*) begin
-	// fifo_rd:   pop the current fifo_out @next clk edge
-	// result_wr: write the current fifo_out to memory
-	if(op_mode==OP_MODE_MULT)begin
-		result_wr = fifo_valid;
-		fifo_rd = fifo_valid;
+always @(posedge clk) begin
+	if(reset || op_mode==OP_MODE_MULT) begin
+		acc_done_cnt <= 0;
+		acc_all_done <= 1'b0;
+	end else begin
+		if(acc_done) begin
+			acc_done_cnt <= acc_done_cnt + 1;
+			if(acc_done_cnt==VEC_LEN-1) begin
+				acc_all_done <= 1'b1;
+			end else begin
+				acc_all_done <= acc_all_done;
+			end
+		end else begin
+			acc_done_cnt <= acc_done_cnt;
+			acc_all_done <= acc_all_done;
+		end
+
 	end
-	else begin //OP_MODE_MULT_NORM
-		result_wr = sfp_out_valid;
-		fifo_rd = sfp_out_valid;
+
+	if(reset) begin
+		div_done_cnt <= 0;
+		div_all_done <= 1'b0;
+	end else begin
+		if(div_done) begin
+			div_done_cnt <= div_done_cnt + 1;
+			if(div_done_cnt==VEC_LEN-1) begin
+				div_all_done <= 1'b1;
+			end else begin
+				div_all_done <= div_all_done;
+			end
+		end else begin
+			div_done_cnt <= div_done_cnt;
+			div_all_done <= div_all_done;
+		end
 	end
 end
 
+
 always @(*) begin
-	if(result_wr)begin
-		result_addr_nxt = result_addr + 4'd1;
+	if(!acc_all_done)begin
+		sfp_div_state_nxt = S_PMEM_read_bubble; // stay in bubble state until all acc are done
+	end
+	else begin // acc_all_done. Start div and wait for div to be done
+		case(sfp_div_state)
+			S_PMEM_read_bubble: begin
+				sfp_div_state_nxt = S_divident_ready; // after one cycle bubble, we can start div
+			end
+			S_divident_ready: begin
+				if(div_start && div_done)begin
+					sfp_div_state_nxt = S_PMEM_read_bubble; // if div is done in the same cycle as start, we can jump to next bubble
+				end
+				else if(div_start && !div_done)begin
+					sfp_div_state_nxt = S_wait_div_done; // if div is not done in the same cycle as start, we need to wait for div to be done before starting next div, which means we need to insert bubble cycles in between
+				end
+				else begin
+					sfp_div_state_nxt = S_divident_ready; // if div is not started, stay in this state and wait for div to start
+				end
+			end
+			S_wait_div_done: begin
+				if(div_done)begin
+					sfp_div_state_nxt = S_PMEM_read_bubble; // if div is done, we can jump to next bubble
+				end
+				else begin
+					sfp_div_state_nxt = S_wait_div_done; // if div is not done, stay in this state and wait for div to be done
+				end
+			end
+			default: sfp_div_state_nxt = S_PMEM_read_bubble;
+		endcase
+	
+	end
+
+end
+
+
+
+
+
+// ########################################### //
+//          SFP & result save logic            //
+// ########################################### //
+assign save_done = (op_mode==OP_MODE_MULT) ? (result_addr==VEC_LEN) : (div_all_done && (result_addr==VEC_LEN));
+
+
+
+always @(*) begin
+	if(acc_all_done && (div_done_cnt==0) && !div_done)begin
+		result_addr_nxt = 4'd0; // this reg will be used for both acc and div result writing, so we need to reset it when we finish acc and start div
+	end
+	else if(ofifo_valid || div_done)begin
+		result_addr_nxt = result_addr + 4'd1; // increment address when we have valid data from ofifo or when we finish one div
 	end
 	else begin
 		result_addr_nxt = result_addr;
@@ -252,26 +341,9 @@ always @(*) begin
 end
 
 
- // Min interval that doesn't result in data/ctrl hazard
-`ifdef SFP_LONGDIV
-	localparam SFP_IN_INTERVAL = 5'd14;
-`elsif VANILLA
-	localparam SFP_IN_INTERVAL = 5'd7;
-`endif
-
-always @(*) begin
-	if(!fifo_valid || sfp_counter == SFP_IN_INTERVAL)begin
-		sfp_counter_nxt = 5'd0;
-	end
-	else begin
-		sfp_counter_nxt = sfp_counter + 5'd1;
-	end
-end
 
 assign sfp_fifo_ext_rd = 1'b0;    // unused in single core
 assign sfp_sum_in = {bw_psum+4{1'b0}}; // unused in single core
-assign sfp_acc = (sfp_counter==5'd1) || (sfp_counter==5'd2);
-assign sfp_div = (sfp_counter==5'd5) || (sfp_counter==5'd6);
 
 
 
@@ -315,8 +387,8 @@ ofifo #(.bw(bw_psum), .col(col))  ofifo_inst (
         .clk(clk),
         .in(array_out),
         .wr(fifo_wr),
-        .rd(fifo_rd),
-        .o_valid(fifo_valid),
+        .rd(ofifo_valid),
+        .o_valid(ofifo_valid),
         .out(fifo_out)
 );
 
@@ -352,35 +424,18 @@ sram_w16 #(.sram_bit(col*bw_psum)) psum_mem_instance (
 sfp_row #(.col(col), .bw(bw), .bw_psum(bw_psum), .out_shift(sfp_out_shift)) sfp_instance (
 	.clk(clk),
 	.reset(reset),
-	.acc(sfp_acc),
-	.div(sfp_div),
-	.fifo_ext_rd(sfp_fifo_ext_rd),
+	.acc_start(acc_start),
+	.acc_done(acc_done),
+	.div_start(div_start),
+	.div_done(div_done),
+	.div_busy(div_busy),
 	.sum_in(sfp_sum_in),
 	.sum_out(sfp_sum_out),
-	.sfp_in(fifo_out),
-	.sfp_out(sfp_out),
-	.sfp_out_valid(sfp_out_valid)
+	.sfp_in(sfp_in),
+	.sfp_div_out(sfp_div_out)
 );
 
 
-
-//   //////////// For printing purpose ////////////
-//   always @(posedge clk) begin
-//       if(pmem_wr)
-//          $display("Memory write to PSUM mem add %x %x ", pmem_add, pmem_in); 
-//   end
-
-  ////////// For printing purpose ////////////
-//   always @(posedge clk) begin
-//       if(result_wr && sfp_write_to_kmem)
-// 		 $display("Write to kmem: %7d %7d %7d %7d %7d %7d %7d %7d",
-// 		 	kmem_in[7*bw +: bw], kmem_in[6*bw +: bw], 
-// 			kmem_in[5*bw +: bw], kmem_in[4*bw +: bw], 
-// 			kmem_in[3*bw +: bw], kmem_in[2*bw +: bw], 
-// 			kmem_in[1*bw +: bw], kmem_in[0*bw +: bw]
-// 		 ); 
-		 
-//   end
 
 	
 	always @(posedge clk ) begin
@@ -393,11 +448,18 @@ sfp_row #(.col(col), .bw(bw), .bw_psum(bw_psum), .out_shift(sfp_out_shift)) sfp_
   always @(posedge clk ) begin
 	if(reset)begin
 		result_addr <= 4'd0;
-		sfp_counter <= 4'd0;
 	end
 	else begin
 		result_addr <= result_addr_nxt;
-		sfp_counter <= sfp_counter_nxt;
+	end
+  end
+
+  always @(posedge clk ) begin
+	if(reset)begin
+		sfp_div_state <= S_PMEM_read_bubble;
+	end
+	else begin
+		sfp_div_state <= sfp_div_state_nxt;
 	end
   end
 

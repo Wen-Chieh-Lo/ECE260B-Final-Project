@@ -3,7 +3,7 @@
 `timescale 1ns/1ps
 `define CYCLE 1
 `define H_CYCLE 0.5
-`define TIME_OUT 100000
+`define TIME_OUT 1000
 
 
 module core_tb;
@@ -38,6 +38,10 @@ module core_tb;
 
 	//================= timeout ======================//
 	initial #(`TIME_OUT) $finish;
+
+	//================= dual core =================//
+	reg sum_in_valid = 1'b1;
+	reg [bw_psum+3:0] sum_in = 0; // unused in this testbench since we are not testing accumulation, but core requires it to be connected
 
 	//============= Input to DUT  ===============//
 	reg               	reset = 1;
@@ -80,6 +84,8 @@ module core_tb;
 			.mode_in(mode_in),
 			.mem_in(mem_in),
 			.inst_ext(inst_ext),
+			.sum_in(sum_in),
+			.sum_in_valid(sum_in_valid),
 			.sum_out(),
 			.out(pmem_out),
 			.start(start),
