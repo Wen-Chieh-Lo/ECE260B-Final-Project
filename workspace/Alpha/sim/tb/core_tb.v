@@ -40,8 +40,8 @@ module core_tb;
 	initial #(`TIME_OUT) $finish;
 
 	//================= dual core =================//
-	reg sum_in_valid = 1'b1;
-	reg [bw_psum+3:0] sum_in = 0; // unused in this testbench since we are not testing accumulation, but core requires it to be connected
+	reg sum_in_valid = 1'b1;       
+	reg [bw_psum+3:0] sum_in = 0; // unused in this testbench since we are not testing dual core, but core requires it to be connected
 
 	//============= Input to DUT  ===============//
 	reg               	reset = 1;
@@ -86,7 +86,9 @@ module core_tb;
 			.inst_ext(inst_ext),
 			.sum_in(sum_in),
 			.sum_in_valid(sum_in_valid),
-			.sum_out(),
+			.sum_in_fifo_pop(), // unused in single core mode
+			.sum_out(),			// unused in single core mode
+			.sum_out_valid(),	// unused in single core mode
 			.out(pmem_out),
 			.start(start),
 			.status(status)
@@ -347,6 +349,12 @@ CoreSetMode(CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM);
 
 //============		  Start the core & wait for done	==================
 Start1Cyc;
+
+/* Test if sum_in_valid properly delays div.
+repeat(100) @(negedge clk);
+sum_in_valid = 1'b1;
+*/
+
 wait(!busy); @(negedge clk);
 
 //============		  Pretty Verification Banner :D 	==================

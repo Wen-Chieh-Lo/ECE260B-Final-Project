@@ -2,7 +2,7 @@
 // Please do not spread this code without permission 
 module core (clk, reset, set_mode, mode_in, start, 
 			mem_in, inst_ext,
-			sum_in, sum_in_valid, sum_out, 
+			sum_in, sum_in_valid, sum_in_fifo_pop, sum_out, sum_out_valid,
             out, status);
 
 parameter col = 8;
@@ -14,8 +14,10 @@ localparam VEC_LEN      = 4'd8;
 
 
 input  [bw_psum+3:0] sum_in;
-input                sum_in_valid;
+input                sum_in_valid;    //indicates sum_in is valid, which means we have valid dividend for div in norm mode.
+output				 sum_in_fifo_pop; //pop the fifo after we've used the sum_in. use div_start is fine.
 output [bw_psum+3:0] sum_out;
+output               sum_out_valid;   //writes ext async fifo
 output [bw_psum*col-1:0] out;
 
 input  [pr*bw-1:0] mem_in;
@@ -95,8 +97,12 @@ reg [3:0] div_done_cnt, div_done_cnt_nxt;
 // ##########
 assign acc_start = (postMAC_state==S_MULT_NORM_ACC) && ofifo_valid; // start acc when the first valid data comes in
 assign div_start = (postMAC_state==S_MULT_NORM_DIV) && (normDiv_substate==SUB_dividend_ready) && sum_in_valid; // start div when we are in div state, and we have valid sum_in from SFP, and we are ready for dividend (which means we have valid divisor and we have read the dividend from PMEM)
-assign sum_out = sfp_sum_out;
 assign sfp_in = pmem_out;
+
+assign sum_out = sfp_sum_out;
+assign sum_out_valid = acc_done;	
+assign sum_in_fifo_pop = div_start; // sum_in fifo can be popped next cycle when we start div
+
 
 
 

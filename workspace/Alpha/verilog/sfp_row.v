@@ -71,21 +71,25 @@ module sfp_row(clk, reset, acc_start, div_start, acc_done, div_done, div_busy, s
   end
 
 
-  // gen unique pattern for sfp_div_out to distinguish from sfp_out (which is the output of the row and will be fed into the next row).
-  // sfp_div_out is all 0 initially. Every time div_start is high, sfp_div_out will shift left by bw_out bits, just for data flow tracking purpose. In real implementation, sfp_div_out should be the output of the divider and should be valid when div_done is high.
-  reg [col*bw_out-1:0] sfp_div_out_reg;
-  assign sfp_div_out = sfp_div_out_reg;
+  // gen a counter that counts on acc_done or div_done forever.
+  reg [2:0] counter;
   always @(posedge clk or posedge reset) begin
     if (reset) begin
-      sfp_div_out_reg <= {col{ {(bw_out){1'b0}} }}; // all 1s on reset
-    end else if (div_start) begin
-      sfp_div_out_reg <= {sfp_div_out_reg[col*bw_out-bw_out-1:0], {(bw_out){1'b1}}}; // shift left by bw_out bits on div_start
-    end else begin
-      sfp_div_out_reg <= sfp_div_out_reg; // hold value otherwise
+      counter <= 0;
+    end else if (acc_done || div_done) begin
+      counter <= counter + 1;
+    end
+    else begin
+      counter <= counter;
     end
   end
 
-  
+
+  // gen unique pattern for sfp_div_out to distinguish from sfp_out (which is the output of the row and will be fed into the next row).
+  // sfp_div_out is all 0 initially. Every time div_start is high, sfp_div_out will shift left by bw_out bits, just for data flow tracking purpose. In real implementation, sfp_div_out should be the output of the divider and should be valid when div_done is high.
+
+  assign sfp_div_out = div_done? ( {{(col*bw_out){1'b1}}} << (counter * bw_out) ): { (col*bw_out){1'b0} }; // shift left by bw_out bits every time counter increments, just for data flow tracking purpose. In real implementation, this should be the output of the divider and should be valid when div_done is high.
+  assign sum_out = acc_done? ({bw_psum+4{1'b1}} <<< counter) : {bw_psum+4{1'b0}}; // shift left by 1 bit every time counter increments, just for data flow tracking purpose. In real implementation, this should be the output of the accumulator and should be valid when acc_done is high.
 
 
   // delay signals generation
