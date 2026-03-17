@@ -1,9 +1,10 @@
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
  
 ****************************************
 Report : area
 Design : fullchip
 Version: K-2015.06-SP2
-Date   : Sun Mar 15 17:14:58 2026
+Date   : Mon Mar 16 04:19:53 2026
 ****************************************
 
 Information: Updating design information... (UID-85)
@@ -11,30 +12,33 @@ Library(s) Used:
 
     tcbn65gpluswc (File: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db)
 
-Number of ports:                        40931
-Number of nets:                        137454
-Number of cells:                        92371
-Number of combinational cells:          72745
-Number of sequential cells:             19218
+Number of ports:                          603
+Number of nets:                          3356
+Number of cells:                         2694
+Number of combinational cells:           1794
+Number of sequential cells:               898
 Number of macros/black boxes:               0
-Number of buf/inv:                      11547
-Number of references:                       8
+Number of buf/inv:                        228
+Number of references:                       9
 
-Combinational area:             204801.121768
-Buf/Inv area:                    12699.000504
-Noncombinational area:          164350.080124
+Combinational area:               4714.920081
+Buf/Inv area:                      289.080010
+Noncombinational area:            7495.920212
 Macro/Black Box area:                0.000000
 Net Interconnect area:      undefined  (Wire load has zero net area)
 
-Total cell area:                369151.201892
+Total cell area:                 12210.840292
 Total area:                 undefined
+
+Information: This design contains black box (unknown) components. (RPT-8)
 1
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
  
 ****************************************
 Report : reference
 Design : fullchip
 Version: K-2015.06-SP2
-Date   : Sun Mar 15 17:15:02 2026
+Date   : Mon Mar 16 04:19:53 2026
 ****************************************
 
 Attributes:
@@ -50,20 +54,21 @@ Attributes:
 
 Reference          Library       Unit Area   Count    Total Area   Attributes
 -----------------------------------------------------------------------------
+AN2D2              tcbn65gpluswc
+                                  2.520000       1      2.520000  
 AO22D0             tcbn65gpluswc
                                   2.880000      48    138.240005  
 DFQD1              tcbn65gpluswc
                                   6.840000      48    328.320007  n
-INR2D1             tcbn65gpluswc
-                                  2.160000       2      4.320000  
-NR2D0              tcbn65gpluswc
+INR2D2             tcbn65gpluswc
+                                  2.880000       1      2.880000  
+INVD0              tcbn65gpluswc
+                                  1.080000       1      1.080000  
+NR2D1              tcbn65gpluswc
                                   1.440000       2      2.880000  
-core_col8_bw8_bw_psum20_pr8_0 178778.160837
-                                                 1  178778.160837 h, n
-core_col8_bw8_bw_psum20_pr8_1 178741.440833
-                                                 1  178741.440833 h, n
-fifo_depth16_async_bw24_0      5581.800105       1   5581.800105  h, n
-fifo_depth16_async_bw24_1      5576.040105       1   5576.040105  h, n
+core                              0.000000       2      0.000000  b
+fifo_depth16_async_bw24_0      5923.080137       1   5923.080137  h, n
+fifo_depth16_async_bw24_1      5811.840142       1   5811.840142  h, n
 -----------------------------------------------------------------------------
-Total 8 references                                  369151.201892
+Total 9 references                                  12210.840292
 1
