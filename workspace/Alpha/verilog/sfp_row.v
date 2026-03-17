@@ -107,11 +107,11 @@ module sfp_row(clk, reset, acc_start, div_start, acc_done, div_done, div_busy, s
 
   assign div_start_internal = div_start_D1;
 
-  // divider: +define+SFP_LONGDIV -> div_longdiv, +define+SFP_LUTDIV -> div_lut, else div
+  // divider: +define+SFP_LONGDIV -> div_longdiv, +define+SFP_MCP -> div_mcp, else div
   `ifdef SFP_LONGDIV
     `define SFP_DIV_MODULE div_longdiv
-  `elsif SFP_LUTDIV
-    `define SFP_DIV_MODULE div_lut
+  `elsif SFP_MCP
+    `define SFP_DIV_MODULE div_mcp
   `else
     `define SFP_DIV_MODULE div
   `endif
@@ -138,6 +138,9 @@ module sfp_row(clk, reset, acc_start, div_start, acc_done, div_done, div_busy, s
       if (div_done_w[0]) begin
         for (i = 0; i < col; i = i + 1)
           div_out_r[i] <= div_out[i];
+      end else begin
+        for (i = 0; i < col; i = i + 1)
+          div_out_r[i] <= div_out_r[i];
       end
     end
   end

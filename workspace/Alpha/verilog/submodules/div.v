@@ -1,6 +1,6 @@
 // =============================================================================
 // Divider modules for softmax: (in << out_shift) / divisor
-// Three implementations: div (direct), div_lut (LUT reciprocal), div_longdiv (sequential)
+// Three implementations: div (direct), div_mcp (MCP), div_longdiv (sequential)
 // =============================================================================
 
 // -----------------------------------------------------------------------------
@@ -29,11 +29,10 @@ module div #(
 endmodule
 
 // -----------------------------------------------------------------------------
-// div_lut: LUT stores reciprocal (1/divisor), multiply replaces divide
-// divisor < LUT_SIZE: LUT[i]=2^RECIP_BITS/i (exact). divisor >= LUT_SIZE: use scaled.
+// div_mcp: MCP-based divider (placeholder, same as div for now)
 // Interface unified with div/div_longdiv: clk, reset, start (ignored for combinational)
 // -----------------------------------------------------------------------------
-module div_lut #(
+module div_mcp #(
   parameter bw_psum   = 19,
   parameter out_shift = 7
 ) (
