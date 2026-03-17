@@ -222,9 +222,9 @@ always @(*) begin
 		pmem_add = ofifo_valid_cnt; 
 		pmem_in  = ofifo_out;
 	end else if(postMAC_state==S_MULT_NORM_DIV) begin 
-		if(sfp_write_to_pmem)begin // write to PMEM (if only sfp_write_to_pmem is set) 
+		if(div_done)begin // write to PMEM (if only sfp_write_to_pmem is set) 
 			pmem_rd  = 1'b0;
-			pmem_wr  = div_done;			
+			pmem_wr  = sfp_write_to_pmem;			
 			pmem_add = div_done_cnt; 
 			pmem_in  = sfp_out_BW_extended;
 		end else begin // we read
@@ -257,7 +257,7 @@ assign out     = pmem_out;
 always @(*) begin
 	case (postMAC_state)
 		S_MULT_ONLY: begin
-			if(ofifo_valid_cnt == VEC_LEN - 4'd1) begin
+			if((ofifo_valid_cnt == VEC_LEN - 4'd1) && ofifo_valid) begin
 				postMAC_state_nxt = S_DONE;
 			end
 			else begin //reinforce the init state of 2 op modes.
@@ -269,7 +269,7 @@ always @(*) begin
 			end
 		end
 		S_MULT_NORM_ACC: begin
-			if(acc_done_cnt == VEC_LEN - 4'd1) begin
+			if((acc_done_cnt == VEC_LEN - 4'd1) && acc_done) begin
 				postMAC_state_nxt = S_MULT_NORM_DIV;
 			end
 			else begin //reinforce the init state of 2 op modes.
@@ -281,7 +281,7 @@ always @(*) begin
 			end
 		end
 		S_MULT_NORM_DIV: begin
-			if(div_done_cnt == VEC_LEN - 4'd1) begin
+			if((div_done_cnt == VEC_LEN - 4'd1) && div_done) begin
 				postMAC_state_nxt = S_DONE;
 			end
 			else begin //reinforce the init state of 2 op modes.
