@@ -2,7 +2,7 @@
 ./sim/tb/fullchip_lockstep_tb.v
 
 // --- top / core ---
-./verilog/fullchip_lockstep.v
+./verilog/fullchip.v
 ./verilog/core.v
 ./verilog/sfp_row.v
 ./verilog/sync.v
