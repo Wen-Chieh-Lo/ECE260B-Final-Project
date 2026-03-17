@@ -1,0 +1,39 @@
+# Floorplan
+floorPlan -site core -s 3000 3000 20.0 20.0 20.0 20.0
+
+#timeDesign -preplace -prefix preplace
+
+globalNetConnect VDD -type pgpin -pin VDD -inst * -verbose
+globalNetConnect VSS -type pgpin -pin VSS -inst * -verbose
+
+addRing -spacing {top 2 bottom 2 left 2 right 2} -width {top 4 bottom 4 left 4 right 4}  -layer {top M1 bottom M1 left M2 right M2} -center 1 -type core_rings -nets {VSS  VDD}
+
+setAddStripeMode -break_at {block_ring}
+
+### Note: Change the number of strip  by looking at the layout #########
+#addStripe -nets {VDD VSS} -layer M4 -direction horizontal -width 2 -spacing 5 -number_of_sets 40 -start_from left -start 20 -stop 1180
+
+addStripe -skip_via_on_wire_shape Noshape -block_ring_top_layer_limit M1 -max_same_layer_jog_length 0.8 -padcore_ring_bottom_layer_limit M1 -number_of_sets 25 -ybottom_offset 5 -skip_via_on_pin Standardcell -stacked_via_top_layer M8 -padcore_ring_top_layer_limit M1 -spacing 4 -merge_stripes_value 0.1 -direction horizontal -layer M5 -block_ring_bottom_layer_limit M1 -ytop_offset 5 -width 1 -area {} -nets {VDD VSS} -stacked_via_bottom_layer M1
+
+setObjFPlanBox Instance core_instance_0 100 100 1300 1300
+setObjFPlanBox Instance core_instance_1 1500 100 2700 1300
+
+flipOrRotateObject -rotate R270 -name core_instance_0
+flipOrRotateObject -flip MX -name core_instance_1
+
+addHaloToBlock {3 3 3 3} core_instance_0
+addHaloToBlock {3 3 3 3} core_instance_1
+
+addRing -nets {VDD VSS} -type block_rings -around each_block -layer {top M1 bottom M1 left M2 right M2} -width {top 0.5 bottom 0.5 left 0.5 right 0.5} -spacing {top 0.5 bottom 0.5 left 0.5 right 0.5} 
+
+globalNetConnect VDD -type pgpin -pin VDD -sinst core_instance_0 -verbose -override
+globalNetConnect VSS -type pgpin -pin VSS -sinst core_instance_0 -verbose -override
+globalNetConnect VDD -type pgpin -pin VDD -sinst core_instance_1 -verbose -override
+globalNetConnect VSS -type pgpin -pin VSS -sinst core_instance_1 -verbose -override
+
+fit
+sroute
+
+verifyConnectivity
+
+
