@@ -97,7 +97,7 @@ reg [3:0] div_done_cnt, div_done_cnt_nxt;
 // ##########
 assign acc_start = (postMAC_state==S_MULT_NORM_ACC) && ofifo_valid; // start acc when the first valid data comes in
 assign div_start = (postMAC_state==S_MULT_NORM_DIV) && (normDiv_substate==SUB_dividend_ready) && sum_in_valid; // start div when we are in div state, and we have valid sum_in from SFP, and we are ready for dividend (which means we have valid divisor and we have read the dividend from PMEM)
-assign sfp_in = pmem_out;
+assign sfp_in = (postMAC_state==S_MULT_NORM_ACC)? ofifo_out : pmem_out; 
 
 assign sum_out = sfp_sum_out;
 assign sum_out_valid = acc_done;	
