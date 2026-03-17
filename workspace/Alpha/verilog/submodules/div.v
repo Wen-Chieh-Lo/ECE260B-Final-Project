@@ -67,9 +67,8 @@ module div_longdiv #(
   input      signed [bw_psum-1:0] divisor,
   output reg [out_shift-1:0]    out,
   output reg                    done,
-  output                        busy
+  output wire                   busy
 );
-  assign busy = (state == S_DIV);
   localparam integer W_DIVIDEND   = bw_psum + out_shift;
   localparam integer W_DIVISOR    = bw_psum;
   localparam integer W_ITER       = W_DIVIDEND - (W_DIVISOR + 1);
@@ -85,10 +84,6 @@ module div_longdiv #(
   reg [W_DIVIDEND-1:0] dividend, dividend_nxt;
   reg [W_DIVISOR-1:0]  divisor_fix, divisor_fix_nxt;
 
-  reg                  start_r;
-  reg [bw_psum-1:0]    in_r;
-  reg signed [bw_psum-1:0] divisor_r;
-  
   wire [W_DIVISOR:0]   remainder_shift;
   wire                 ge_divisor;
 
@@ -97,18 +92,7 @@ module div_longdiv #(
 
   assign remainder_shift = {remainder[W_DIVISOR-1:0], quotient[W_DIVIDEND-1]};
   assign ge_divisor     = (remainder_shift >= {1'b0, divisor_fix});
-
-  always @(posedge clk or posedge reset) begin
-    if (reset) begin
-      start_r   <= 0;
-      in_r      <= 0;
-      divisor_r <= 0;
-    end else begin
-      start_r   <= start;
-      in_r      <= in;
-      divisor_r <= divisor;
-    end
-  end
+  assign busy           = (state == S_DIV) || start;
 
   always @(*) begin
     quotient_nxt = quotient;
@@ -121,13 +105,13 @@ module div_longdiv #(
     divisor_fix_nxt = divisor_fix;
 
     if (state == S_IDLE) begin
-      if (start_r) begin
-        if (divisor_r == 0) begin
+      if (start) begin
+        if (divisor == 0) begin
           out_nxt = 0;
           done_nxt = 1'b1;
         end else begin
-          divisor_fix_nxt = divisor_r;
-          dividend_nxt  = {in_r, {out_shift{1'b0}}};
+          divisor_fix_nxt = divisor;
+          dividend_nxt  = {in, {out_shift{1'b0}}};
           quotient_nxt  = {dividend_nxt[W_ITER-1:0], {(W_DIVIDEND-W_ITER){1'b0}}};
           remainder_nxt = dividend_nxt[W_DIVIDEND-1:W_ITER];
           cntr_nxt      = W_ITER;
