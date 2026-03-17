@@ -24,7 +24,7 @@ module div #(
 
   assign full_quotient = {in, {out_shift{1'b0}}} / divisor;
   assign out           = full_quotient[out_shift-1:0];
-  assign done          = 1'b1;    // combinational: output always valid
+  assign done          = start;    // combinational: output always valid
   assign busy          = 1'b0;    // combinational: never busy
 endmodule
 
@@ -48,7 +48,7 @@ module div_mcp #(
   wire [bw_psum+out_shift-1:0] full_quotient;
   assign full_quotient = {in, {out_shift{1'b0}}} / divisor;
   assign out           = full_quotient[out_shift-1:0];
-  assign done          = 1'b1;    // combinational: output always valid
+  assign done          = start;    // combinational: output always valid
   assign busy          = 1'b0;    // combinational: never busy
 endmodule
 
