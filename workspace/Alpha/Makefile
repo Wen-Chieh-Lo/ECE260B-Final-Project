@@ -46,8 +46,8 @@ SYN_FILELISTS_DIR := syn/filelists
 IVERILOG          := iverilog
 IVERILOG_SV       ?= -g2012
 VVP               := vvp
-OUT               := sim/compiled
-GLS_OUT      := gls/compiled
+OUT_DIR           := sim/compiled
+GLS_OUT_DIR       := gls/compiled
 SYNDIR            := syn
 
 
@@ -105,9 +105,9 @@ sim: $(TARGET)
 gls: gls_$(TARGET)
 
 $(addprefix gls_,$(SIM_TARGETS)):
-	@mkdir -p gls gls/waveform gls/pattern
-	$(IVERILOG) $(IVERILOG_SV) $(IVERILOG_DEFINES) -o $(GLS_OUT) -f $(GLS_FILELISTS_DIR)/$(FILELIST_NAME)
-	$(VVP) $(GLS_OUT)
+	@mkdir -p gls gls/waveform gls/pattern $(GLS_OUT_DIR)
+	$(IVERILOG) $(IVERILOG_SV) $(IVERILOG_DEFINES) -o $(GLS_OUT_DIR)/$(patsubst gls_%,%,$@) -f $(GLS_FILELISTS_DIR)/$(FILELIST_NAME)
+	$(VVP) $(GLS_OUT_DIR)/$(patsubst gls_%,%,$@)
 	@echo ""
 	@echo ">>> Gate sim waveform: gls/waveform/$(WAVEFORM) <<<"
 
@@ -131,9 +131,9 @@ ifneq ($(OUTPUT_DIR),)
 endif
 
 $(SIM_TARGETS):
-	@mkdir -p sim sim/waveform
-	$(IVERILOG) $(IVERILOG_SV) $(IVERILOG_DEFINES) -o $(OUT) -f $(SIM_FILELISTS_DIR)/$(FILELIST_NAME)
-	$(VVP) $(OUT)
+	@mkdir -p sim sim/waveform $(OUT_DIR)
+	$(IVERILOG) $(IVERILOG_SV) $(IVERILOG_DEFINES) -o $(OUT_DIR)/$@ -f $(SIM_FILELISTS_DIR)/$(FILELIST_NAME)
+	$(VVP) $(OUT_DIR)/$@
 	@echo ""
 	@echo ">>> Waveform: sim/waveform/$(WAVEFORM) (GTKWave or any VCD viewer) <<<"
 
@@ -163,8 +163,8 @@ parse:  ## Parse syn/log/*.rep and print summary (uses shell script; no Python n
 	@bash $(SYNDIR)/parse_reports.sh $(SYNDIR)/log
 
 clean:
-	rm -f $(OUT) $(GLS_OUT)
-	@echo "Removed $(OUT) $(GLS_OUT)"
+	rm -f $(addprefix $(OUT_DIR)/,$(SIM_TARGETS)) $(addprefix $(GLS_OUT_DIR)/,$(SIM_TARGETS))
+	@echo "Removed $(OUT_DIR)/* $(GLS_OUT_DIR)/*"
 
 help:
 	@echo "Usage:  make sim [TARGET=<name>]"

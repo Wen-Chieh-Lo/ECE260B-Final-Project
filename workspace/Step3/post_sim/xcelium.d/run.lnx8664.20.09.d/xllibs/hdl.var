@@ -1,5 +1,0 @@
-define LIB_MAP ( $LIB_MAP \
-, ../../../netlist/sram_w16.pnr.v => sram_w16 \
-, ../../../netlist/core.pnr.v => core \
-, ../../../netlist/tcbn65gplus.v => tcbn65gplus \
-)

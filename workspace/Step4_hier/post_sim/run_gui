@@ -1,0 +1,20 @@
+xrun \
++gui \
++access+rwc \
++xm64bit \
++xmstatus \
++xmtimescale+1ns/1ps \
++xmoveride_timescale \
++define+INITIALIZE_MEMORY \
+-xminitialize 0 \
++xmseq_udp_delay+20ps \
+-nowarn CUVWSP \
+-v ./netlist/tcbn65gplus.v \
+-v ./netlist/core.pnr.v \
+-v ./netlist/sram_w16.pnr.v \
+-v ./netlist/sram_160b_w16.pnr.v \
+-v ./netlist/fullchip.pnr.v \
+./netlist/fullchip_tb.v
+
+
+

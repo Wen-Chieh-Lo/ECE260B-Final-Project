@@ -1,0 +1,98 @@
+*----------------------------------------------------------------------------------------
+*	Innovus 15.23-s045_1 (64bit) 04/22/2016 12:32 (Linux 2.6.18-194.el5)
+*	
+*
+* 	Date & Time:	2026-Mar-16 16:52:12 (2026-Mar-16 23:52:12 GMT)
+*
+*----------------------------------------------------------------------------------------
+*
+*	Design: core
+*
+*	Liberty Libraries used: 
+*	        WC_VIEW: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lib/tcbn65gpluswc.lib
+*	        WC_VIEW: ../../sram_pnr_64b/scripts/sram_w16_WC.lib
+*	        WC_VIEW: ../../sram_pnr_160b/scripts/sram_160b_w16_WC.lib
+*
+*	Power Domain used: 
+*		Rail:        VDD 	Voltage:        0.9 
+*
+*       Power View : WC_VIEW
+*
+*       User-Defined Activity : N.A.
+*
+*       Activity File: N.A.
+*
+*       Hierarchical Global Activity: N.A.
+*
+*       Global Activity: N.A.
+*
+*       Sequential Element Activity: 0.200000
+*
+*       Primary Input Activity: 0.200000
+*
+*       Default icg ratio: N.A.
+*
+*       Global Comb ClockGate Ratio: N.A.
+*
+*	Power Units = 1mW
+*
+*	Time Units = 1e-09 secs 
+*
+*       report_power -outfile ./timingReports/core_postCTS.power
+*
+-----------------------------------------------------------------------------------------
+
+
+Total Power 
+-----------------------------------------------------------------------------------------
+Total Internal Power:      221.46414559 	   53.4194%
+Total Switching Power:     189.60947798 	   45.7357%
+Total Leakage Power:         3.50255486 	    0.8449%
+Total Power:               414.57617885 
+-----------------------------------------------------------------------------------------
+
+
+Group                           Internal   Switching     Leakage       Total  Percentage 
+                                Power      Power         Power         Power  (%)        
+-----------------------------------------------------------------------------------------
+Sequential                         35.91       1.707      0.2687       37.88       9.138 
+Macro                                  0       3.215           0       3.215      0.7755 
+IO                                     0           0   1.444e-05   1.444e-05   3.483e-06 
+Combinational                      178.4       175.5       3.185       357.1       86.13 
+Clock (Combinational)              7.161        9.19     0.04926        16.4       3.956 
+Clock (Sequential)                     0           0           0           0           0 
+-----------------------------------------------------------------------------------------
+Total                              221.5       189.6       3.503       414.6         100 
+-----------------------------------------------------------------------------------------
+
+
+Rail                  Voltage   Internal   Switching     Leakage       Total  Percentage 
+                                Power      Power         Power         Power  (%)        
+-----------------------------------------------------------------------------------------
+VDD                       0.9      221.5       189.6       3.503       414.6         100 
+
+
+Clock                           Internal   Switching     Leakage       Total  Percentage 
+                                Power      Power         Power         Power  (%)        
+-----------------------------------------------------------------------------------------
+clk                                7.161        9.19     0.04926        16.4       3.956 
+-----------------------------------------------------------------------------------------
+Total (excluding duplicates)       7.161        9.19     0.04926        16.4       3.956 
+-----------------------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------------------
+*	Power Distribution Summary: 
+* 		Highest Average Power:         psum_mem_instance (sram_160b_w16): 	      3.03 
+* 		Highest Leakage Power: sfp_instance/fifo_inst_int/U530 (ND3D8): 	 0.0002819 
+* 		Total Cap: 	6.44464e-10 F
+* 		Total instances in design: 83046
+* 		Total instances in design with no power:     0
+*          Total instances in design with no activity:     0
+* 		Total Fillers and Decap:     0
+-----------------------------------------------------------------------------------------
+
+Total leakage power = 3.50255 mW
+ Cell usage statistics:  
+ Library tcbn65gpluswc , 83043 cells ( 100.000000%) , 3.50255 mW ( 100.000000%  ) 
+ 
