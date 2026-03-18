@@ -22,15 +22,15 @@ waveformw.vcd.json
 **/filenames.log
 
 # ----- Place-and-route (Innovus) -----
-**/*.enc.dat/
-**/pnr/**/*.enc
+#**/*.enc.dat/
+#**/pnr/**/*.enc
 **/innovus.log
 **/innovus.log*
 **/innovus.cmd
 **/innovus.cmd*
 **/.timing_file_*.tif.gz
-**/.core*.rs.fp
-**/.core*.rs.fp.spr
+#**/.core*.rs.fp
+#**/.core*.rs.fp.spr
 **/scheduling_file.cts.*
 **/model.asrt.*
 
@@ -54,17 +54,17 @@ venv/
 *.tmp
 *.temp
 *.gds2
-*.sdf
+#*.sdf
 *.gds2
-*.sdf
-*.def
+#*.sdf
+#*.def
 *.gds2
-*.sdf
-*.def
+#*.sdf
+#*.def
 *.gds2
-*.sdf
-*.def
+#*.sdf
+#*.def
 *.gds2
 *.gds2
-*.sdf
-*.def
+#*.sdf
+#*.def
