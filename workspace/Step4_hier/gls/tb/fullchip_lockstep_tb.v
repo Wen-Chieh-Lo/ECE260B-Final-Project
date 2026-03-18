@@ -136,7 +136,9 @@ module fullchip_tb;
     .clk1(clk),
     .mem_in(mem_in),
     .inst(inst),
-    .out(out)
+    .out(out),
+    .fifo0_empty(),
+    .fifo1_empty()
   );
 
   // ── Clock task — 1.0 GHz, 50% duty cycle ─────────────────────────────────────

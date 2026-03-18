@@ -1,0 +1,219 @@
+iverilog  -o gls/compiled -f gls/filelists/filelist_fullchip_lockstep
+vvp gls/compiled
+VCD info: dumpfile fullchip_tb.vcd opened for output.
+##### Q data txt reading #####
+##### K data txt reading #####
+##### Estimated QK result CORE0 #####
+prd @cycle 0: fffc10002e00029000020008000057fffd2fffcd
+prd @cycle 1: fffc10002e00029000020008000057fffd2fffcd
+prd @cycle 2: fffc10002e00029000020008000057fffd2fffcd
+prd @cycle 3: fffc10002e00029000020008000057fffd2fffcd
+prd @cycle 4: fffc10002e00029000020008000057fffd2fffcd
+prd @cycle 5: fffc10002e00029000020008000057fffd2fffcd
+prd @cycle 6: fffc10002e00029000020008000057fffd2fffcd
+prd @cycle 7: fffc10002e00029000020008000057fffd2fffcd
+##### Estimated QK result CORE1 #####
+prd @cycle 0: fffff000560004e0007f0004a0001000025fffea
+prd @cycle 1: fffff000560004e0007f0004a0001000025fffea
+prd @cycle 2: fffff000560004e0007f0004a0001000025fffea
+prd @cycle 3: fffff000560004e0007f0004a0001000025fffea
+prd @cycle 4: fffff000560004e0007f0004a0001000025fffea
+prd @cycle 5: fffff000560004e0007f0004a0001000025fffea
+prd @cycle 6: fffff000560004e0007f0004a0001000025fffea
+prd @cycle 7: fffff000560004e0007f0004a0001000025fffea
+##### Estimated N (normalized QK) #####
+N_est C0 row0:  12  10   2   5   0  12  12   7
+N_est C1 row0:   6   6   6   5   8   4  11  11
+N_est C0 row1:  10   4   4  10  14  13   4   4
+N_est C1 row1:   1  14   6   9   8   3   4  10
+N_est C0 row2:   5  13   4  10   7  14   9   0
+N_est C1 row2:   4   7   3   6   0  13   8  16
+N_est C0 row3:   3   6   7  16   1   6  11  24
+N_est C1 row3:   3  13   1   3   2  11   4   9
+N_est C0 row4:  11   3   1   8   1   1   1  11
+N_est C1 row4:  20  11   5  10  13  11   8   5
+N_est C0 row5:   7  17   0   8   4  17  12   3
+N_est C1 row5:   1   2   1  15   1  16   8  10
+N_est C0 row6:   4  22  10   0  22   4   1  10
+N_est C1 row6:   0   4   5   7  10   8   4   9
+N_est C0 row7:   8   6   5   0  18  12   6   7
+N_est C1 row7:   0  12  11  17  10   2   5   3
+##### Qmem writing #####
+##### Kmem writing #####
+##### K loading to MAC array #####
+##### QK execute #####
+##### ofifo -> pmem (QK) #####
+
+========== HW vs EST: QK Dot Product Comparison ==========
+  [0] CORE0  RTL   :      93     -76     -20     -43      -7     -92      94      51
+       CORE0  golden:      93     -76     -20     -43      -7     -92      94      51
+       CORE0 --> PASS
+  [0] CORE1  RTL   :     -48     -49     -45     -43     -63     -33     -86     -86
+       CORE1  golden:     -48     -49     -45     -43     -63     -33     -86     -86
+       CORE1 --> PASS
+  --
+  [1] CORE0  RTL   :      52     -24     -21     -49     -73     -67      24     -24
+       CORE0  golden:      52     -24     -21     -49     -73     -67      24     -24
+       CORE0 --> PASS
+  [1] CORE1  RTL   :      -5     -71     -33     -48     -41     -19     -23     -52
+       CORE1  golden:      -5     -71     -33     -48     -41     -19     -23     -52
+       CORE1 --> PASS
+  --
+  [2] CORE0  RTL   :      38     -84      27     -65      50     -93      63       3
+       CORE0  golden:      38     -84      27     -65      50     -93      63       3
+       CORE0 --> PASS
+  [2] CORE1  RTL   :     -28     -49      21     -43      -3     -85     -55    -105
+       CORE1  golden:     -28     -49      21     -43      -3     -85     -55    -105
+       CORE1 --> PASS
+  --
+  [3] CORE0  RTL   :      33      71     -74     168      17      71     125     258
+       CORE0  golden:      33      71     -74     168      17      71     125     258
+       CORE0 --> PASS
+  [3] CORE1  RTL   :     -37     143     -17      34     -27     120     -51      95
+       CORE1  golden:     -37     143     -17      34     -27     120     -51      95
+       CORE1 --> PASS
+  --
+  [4] CORE0  RTL   :      80      22     -10     -60     -10      -8      13      78
+       CORE0  golden:      80      22     -10     -60     -10      -8      13      78
+       CORE0 --> PASS
+  [4] CORE1  RTL   :    -138     -80     -37      75     -90      81     -56     -35
+       CORE1  golden:    -138     -80     -37      75     -90      81     -56     -35
+       CORE1 --> PASS
+  --
+  [5] CORE0  RTL   :      42     -97       1     -45      26     -98      68      18
+       CORE0  golden:      42     -97       1     -45      26     -98      68      18
+       CORE0 --> PASS
+  [5] CORE1  RTL   :       7     -16       7     -88      -8     -92     -45     -61
+       CORE1  golden:       7     -16       7     -88      -8     -92     -45     -61
+       CORE1 --> PASS
+  --
+  [6] CORE0  RTL   :     -19     -99      48       1      99      19      -7      48
+       CORE0  golden:     -19     -99      48       1      99      19      -7      48
+       CORE0 --> PASS
+  [6] CORE1  RTL   :      -1      22      23     -34      46     -40     -20      44
+       CORE1  golden:      -1      22      23     -34      46     -40     -20      44
+       CORE1 --> PASS
+  --
+  [7] CORE0  RTL   :     -63      46      41       2     128      87     -46     -51
+       CORE0  golden:     -63      46      41       2     128      87     -46     -51
+       CORE0 --> PASS
+  [7] CORE1  RTL   :      -1      86      78     127      74      16      37     -22
+       CORE1  golden:      -1      86      78     127      74      16      37     -22
+       CORE1 --> PASS
+  --
+  CORE0 QK mismatches: 0
+  CORE1 QK mismatches: 0
+ 3383257390714782257158370098402521320470879229850570643001971588156
+===========================================================
+
+##### SFP: normalize QK, write N to kmem #####
+SFP row0  N_est C0:  12  10   2   5   0  12  12   7
+SFP row0  N_est C1:   6   6   6   5   8   4  11  11
+SFP row1  N_est C0:  10   4   4  10  14  13   4   4
+SFP row1  N_est C1:   1  14   6   9   8   3   4  10
+SFP row2  N_est C0:   5  13   4  10   7  14   9   0
+SFP row2  N_est C1:   4   7   3   6   0  13   8  16
+SFP row3  N_est C0:   3   6   7  16   1   6  11  24
+SFP row3  N_est C1:   3  13   1   3   2  11   4   9
+SFP row4  N_est C0:  11   3   1   8   1   1   1  11
+SFP row4  N_est C1:  20  11   5  10  13  11   8   5
+SFP row5  N_est C0:   7  17   0   8   4  17  12   3
+SFP row5  N_est C1:   1   2   1  15   1  16   8  10
+SFP row6  N_est C0:   4  22  10   0  22   4   1  10
+SFP row6  N_est C1:   0   4   5   7  10   8   4   9
+SFP row7  N_est C0:   8   6   5   0  18  12   6   7
+SFP row7  N_est C1:   0  12  11  17  10   2   5   3
+##### V data txt reading #####
+##### Estimated VN result #####
+VN est C0 row0:    73    -6    12   145   120    75   -93   -92
+VN est C1 row0:   -40    33   133   108     7   137    -5   -34
+VN est C0 row1:    56    48    18   176    50    27    35    76
+VN est C1 row1:   123    56    88    17    50    84    77    46
+VN est C0 row2:   -14  -129    49   -92  -109    92  -214  -205
+VN est C1 row2:  -120   -47   -54     1  -158    41   -94   -12
+VN est C0 row3:  -192  -163  -106  -269  -158  -124   -80  -155
+VN est C1 row3:  -206   -99  -162   -63  -251  -148  -108  -110
+VN est C0 row4:   -10  -142   -24  -107  -105    -3    16   -67
+VN est C1 row4:   -28   -24   -49    -2  -112  -128   -76   -48
+VN est C0 row5:  -156  -258  -192  -248  -113  -179  -233  -249
+VN est C1 row5:  -183  -164  -190  -128  -266  -215  -197  -200
+VN est C0 row6:   -39     3    26   -39   -74    12   227   101
+VN est C1 row6:    42    73   -18    30   -16   -71    52    59
+VN est C0 row7:  -127   -77  -134  -209   -14  -199  -182  -149
+VN est C1 row7:  -151  -144  -182  -153   -68  -158  -134   -80
+##### Reset for VN phase #####
+##### Qmem writing (V) #####
+##### N loading to MAC array (VN) #####
+##### VN execute #####
+##### ofifo -> pmem (VN) #####
+
+========== HW vs EST: VN Dot Product Comparison ==========
+  [0] CORE0  RTL   :      73      -6      12     145     120      75     -93     -92
+       CORE0  golden:      73      -6      12     145     120      75     -93     -92
+       CORE0 --> PASS
+  [0] CORE1  RTL   :     -40      33     133     108       7     137      -5     -34
+       CORE1  golden:     -40      33     133     108       7     137      -5     -34
+       CORE1 --> PASS
+  --
+  [1] CORE0  RTL   :      56      48      18     176      50      27      35      76
+       CORE0  golden:      56      48      18     176      50      27      35      76
+       CORE0 --> PASS
+  [1] CORE1  RTL   :     123      56      88      17      50      84      77      46
+       CORE1  golden:     123      56      88      17      50      84      77      46
+       CORE1 --> PASS
+  --
+  [2] CORE0  RTL   :     -14    -129      49     -92    -109      92    -214    -205
+       CORE0  golden:     -14    -129      49     -92    -109      92    -214    -205
+       CORE0 --> PASS
+  [2] CORE1  RTL   :    -120     -47     -54       1    -158      41     -94     -12
+       CORE1  golden:    -120     -47     -54       1    -158      41     -94     -12
+       CORE1 --> PASS
+  --
+  [3] CORE0  RTL   :    -192    -163    -106    -269    -158    -124     -80    -155
+       CORE0  golden:    -192    -163    -106    -269    -158    -124     -80    -155
+       CORE0 --> PASS
+  [3] CORE1  RTL   :    -206     -99    -162     -63    -251    -148    -108    -110
+       CORE1  golden:    -206     -99    -162     -63    -251    -148    -108    -110
+       CORE1 --> PASS
+  --
+  [4] CORE0  RTL   :     -10    -142     -24    -107    -105      -3      16     -67
+       CORE0  golden:     -10    -142     -24    -107    -105      -3      16     -67
+       CORE0 --> PASS
+  [4] CORE1  RTL   :     -28     -24     -49      -2    -112    -128     -76     -48
+       CORE1  golden:     -28     -24     -49      -2    -112    -128     -76     -48
+       CORE1 --> PASS
+  --
+  [5] CORE0  RTL   :    -156    -258    -192    -248    -113    -179    -233    -249
+       CORE0  golden:    -156    -258    -192    -248    -113    -179    -233    -249
+       CORE0 --> PASS
+  [5] CORE1  RTL   :    -183    -164    -190    -128    -266    -215    -197    -200
+       CORE1  golden:    -183    -164    -190    -128    -266    -215    -197    -200
+       CORE1 --> PASS
+  --
+  [6] CORE0  RTL   :     -39       3      26     -39     -74      12     227     101
+       CORE0  golden:     -39       3      26     -39     -74      12     227     101
+       CORE0 --> PASS
+  [6] CORE1  RTL   :      42      73     -18      30     -16     -71      52      59
+       CORE1  golden:      42      73     -18      30     -16     -71      52      59
+       CORE1 --> PASS
+  --
+  [7] CORE0  RTL   :    -127     -77    -134    -209     -14    -199    -182    -149
+       CORE0  golden:    -127     -77    -134    -209     -14    -199    -182    -149
+       CORE0 --> PASS
+  [7] CORE1  RTL   :    -151    -144    -182    -153     -68    -158    -134     -80
+       CORE1  golden:    -151    -144    -182    -153     -68    -158    -134     -80
+       CORE1 --> PASS
+  --
+  CORE0 VN mismatches: 0
+  CORE1 VN mismatches: 0
+ 3383257390714784132264970793950965375798519604841684861563424226364
+===========================================================
+
+=================== OVERALL SUMMARY ====================
+  Mode: LOCKSTEP (clk0 = clk1 = 1.0 GHz, 50% duty cycle)
+  QK phase -- CORE0: 0  CORE1: 0 mismatch(es)
+  VN phase -- CORE0: 0  CORE1: 0 mismatch(es)
+  >>> ALL TESTS PASSED <<<
+=========================================================
+
+>>> Gate sim waveform: gls/waveform/fullchip_lockstep.vcd <<<
