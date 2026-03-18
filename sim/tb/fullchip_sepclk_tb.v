@@ -473,6 +473,8 @@ module fullchip_sepclk_tb;
     $display("");
 
     vn_done_c0_flag = 1;
+    // Keep clk0 toggling until $finish (in case C1 finishes later)
+    while (1) tick0;
   end
 
   // ========== Initial 3: clk1 domain (waits for reset deassert) ==========
@@ -692,6 +694,8 @@ module fullchip_sepclk_tb;
     $display("");
 
     vn_done_c1_flag = 1;
+    // Keep clk1 toggling until $finish (in case C0 finishes later)
+    while (1) tick1;
   end
 
 endmodule
