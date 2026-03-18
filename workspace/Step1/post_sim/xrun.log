@@ -1,5 +1,5 @@
 xrun(64): 20.09-s017: (c) Copyright 1995-2021 Cadence Design Systems, Inc.
-TOOL:	xrun(64)	20.09-s017: Started on Mar 15, 2026 at 22:34:59 PDT
+TOOL:	xrun(64)	20.09-s017: Started on Mar 18, 2026 at 01:22:20 PDT
 xrun
 	+gui
 	+access+rwc
@@ -18,36 +18,6 @@ xrun
    User defined plus("+") options:
 	+xmoveride_timescale
 
-Recompiling... reason: file './netlist/step1_tb.v' is newer than expected.
-	expected: Sun Mar 15 22:21:31 2026
-	actual:   Sun Mar 15 22:34:18 2026
-xmvlog: Memory Usage - Current physical: 23.0M, Current virtual: 94.3M
-xmvlog: CPU Usage - 0.0s system + 1.7s user = 1.7s total (1.7s, 98.0% cpu)
-xmelab: *N,INFSUD: -NOSPECIFY is automatically used with -SEQ_UDP_DELAY.
-		Caching library 'worklib' ....... Done
-		Caching library 'core' ....... Done
-		Caching library 'tcbn65gplus' ....... Done
-	Elaborating the design hierarchy:
-	Top level design units:
-		step1_tb
-	Building instance overlay tables: .................... Done
-	Building instance specific data structures.
-	Loading native compiled code:     .................... Done
-	Design hierarchy summary:
-		                   Instances  Unique
-		Modules:               36978     406
-		UDPs:                  15982       3
-		Primitives:            71860       9
-		Registers:              5804      48
-		Scalar wires:          10979       -
-		Expanded wires:           72       3
-		Initial blocks:           13      13
-		Cont. assignments:        10      16
-		Pseudo assignments:        3       3
-		Simulation timescale:    1ps
-	Writing initial simulation snapshot: worklib.step1_tb:v
-xmelab: Memory Usage - Final: 62.0M, Peak: 67.6M, Peak virtual: 192.3M
-xmelab: CPU Usage - 0.1s system + 3.6s user = 3.7s total (3.8s, 96.2% cpu)
 xrun: *W,HSTRYERR: Syntax error while parsing the history database: ./xcelium.d/history. Disabling xrun history.
 
 -------------------------------------
@@ -56,7 +26,7 @@ xcelium>
 xcelium> source /software/ECE/XCELIUM-2009/tools/xcelium/files/xmsimrc
 xcelium> database -open waves -into waves.shm -default
 Created default SHM database waves
-xcelium> probe -create -shm step1_tb.clk step1_tb.reset step1_tb.inst step1_tb.qmem_wr step1_tb.kmem_wr step1_tb.qkmem_add step1_tb.load step1_tb.kmem_rd step1_tb.execute step1_tb.qmem_rd step1_tb.pmem_wr step1_tb.pmem_rd step1_tb.pmem_add step1_tb.pmem_out step1_tb.step1_instance.array_out step1_tb.step1_instance.fifo_wr
+xcelium> probe -create -shm step1_tb.clk step1_tb.reset step1_tb.inst step1_tb.qmem_wr step1_tb.kmem_wr step1_tb.qkmem_add step1_tb.load step1_tb.kmem_rd step1_tb.execute step1_tb.qmem_rd step1_tb.pmem_wr step1_tb.pmem_rd step1_tb.pmem_add step1_tb.pmem_out step1_tb.step1_instance.fifo_wr step1_tb.step1_instance.array_out
 Created probe 1
 xcelium> run
 ##### Q data txt reading #####
@@ -104,4 +74,9 @@ PASS: all 8 x 8 results correct
 --------------------------------------------
 Simulation complete via $finish(1) at time 111 NS + 0
 ./netlist/step1_tb.v:238     #10 $finish;
-xcelium> 
+xcelium> ^C
+xcelium> exit
+xmsim: Memory Usage - Final: 135.4M, Peak: 145.9M, Peak virtual: 546.4M
+xmsim: Main Thread CPU Usage - 13.6s system + 8.8s user = 22.3s total
+xmsim: CPU Usage - 13.5s system + 8.5s user = 21.9s total (806.6s, 2.7% cpu)
+TOOL:	xrun(64)	20.09-s017: Exiting on Mar 18, 2026 at 01:35:47 PDT  (total: 00:13:27)

@@ -1,0 +1,16 @@
+//
+// File created by:  xrun
+// Do not modify this file
+//
+-VFILE
+./netlist/tcbn65gplus.v
+-VFILE
+./netlist/core.pnr.v
+-VFILE
+./netlist/sram_w16.pnr.v
+-VFILE
+./netlist/sram_160b_w16.pnr.v
+-VFILE
+./netlist/fullchip.pnr.v
+-DEFINE
+INITIALIZE_MEMORY
