@@ -20,7 +20,7 @@ rand_2state:1
 +EMGRLOG
 xrun.log
 -XLSTIME
-1773639299
+1773822140
 -XLKEEP
 -XLMODE
 ./xcelium.d/run.lnx8664.20.09.d
@@ -34,4 +34,4 @@ xrun
 -XLVERSION
 "TOOL:	xrun(64)	20.09-s017"
 -XLNAME
-./xcelium.d/run.lnx8664.20.09.d/ieng6-ece-01.ucsd.edu_6120
+./xcelium.d/run.lnx8664.20.09.d/ieng6-ece-01.ucsd.edu_32432
