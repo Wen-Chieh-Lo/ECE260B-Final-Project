@@ -5,7 +5,7 @@
 *   LSB: kmem_locked       (controller can't accept kmem write if kmem_locked=1) 
 */
 
-module controller(clk, reset, start, mode, status, save_done, inst_ctrl, mem_ext_ctrl_sel);
+module controller(clk, reset, start, mode, status, core_done, inst_ctrl, mem_ext_ctrl_sel);
 
 // ============== I/O ============== // 
     input             clk, reset;
@@ -14,7 +14,7 @@ module controller(clk, reset, start, mode, status, save_done, inst_ctrl, mem_ext
     input  [2:0]      mode; //register map value
     output [3:0]      status; // {busy, qmem_locked, kmem_locked, pmem_locked}
 
-    input             save_done;    // provided by SFP to indicate whether can send data to it.
+    input             core_done;    // provided by SFP to indicate whether can send data to it.
 
     output [7:0]      inst_ctrl;  // control bus to drive core.inst (replace external inst)
     output [2:0]      mem_ext_ctrl_sel; // external memory selection
@@ -56,7 +56,7 @@ module controller(clk, reset, start, mode, status, save_done, inst_ctrl, mem_ext
     always @(posedge clk ) begin
         if(reset)           busy <= 1'b0;
         else if(start) 		busy <= 1'b1;
-        else if(save_done) 	busy <= 1'b0;
+        else if(core_done) 	busy <= 1'b0;
         else 				busy <= busy;
     end
 
@@ -144,7 +144,7 @@ module controller(clk, reset, start, mode, status, save_done, inst_ctrl, mem_ext
             end
 
             S_MAC_DONE: begin
-                if(save_done) begin
+                if(core_done) begin
                     state_nxt = S_MAC_IDLE;
                 end
                 else begin

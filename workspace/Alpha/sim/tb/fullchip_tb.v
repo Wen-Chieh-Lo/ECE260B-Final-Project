@@ -6,7 +6,7 @@
 `define TIME_OUT 1000
 
 
-module core_tb;
+module fullchip_tb;
 	parameter total_cycle = 8;
 	parameter bw = 8;
 	parameter bw_psum = 2*bw+4;
@@ -44,14 +44,15 @@ module core_tb;
 	reg [bw_psum+3:0] sum_in = 0; // unused in this testbench since we are not testing dual core, but core requires it to be connected
 
 	//============= Input to DUT  ===============//
-	reg               	reset = 1;
-	reg        			start = 0;
-	reg  [pr*bw-1:0]  	mem_in;
-	reg  [1:0]        	mem_cmd_ext = 2'd0;
-  	reg  [3:0]        	addr_ext = 4'd0;
+	reg               	reset0 = 1, reset1 = 1;
+	reg        			start0 = 0, start1 = 0;
+	reg  [pr*bw-1:0]  	mem_in0, 	mem_in1;
+	reg  [1:0]        	mem_cmd_ext0 = 2'd0, mem_cmd_ext1 = 2'd0; 
+  	reg  [3:0]        	addr_ext0 = 4'd0, addr_ext1 = 4'd0; 
 
-	wire [5:0]       	inst_ext;
-	assign inst_ext = {addr_ext, mem_cmd_ext};
+	wire [5:0]       	inst_ext0, inst_ext1;
+	assign inst_ext0 = {mem_cmd_ext0, addr_ext0};
+	assign inst_ext1 = {mem_cmd_ext1, addr_ext1};
 
 	// 00: No Op, 01: kmem wr, 10: qmem wr, 11: pmem rd
 	localparam EXT_CMD_NO_OP   = 2'b00;
@@ -60,8 +61,8 @@ module core_tb;
 	localparam EXT_CMD_PMEM_RD = 2'b11;
 
  
-	reg 		set_mode;
-	reg [2:0]   mode_in;
+	reg 		set_mode0 = 0, set_mode1 = 0;
+	reg [2:0]   mode_in0, mode_in1;
 	// Mode setting.
 	localparam CORE_MODE_MULT_save_to_PMEM					= 3'b100;
 	localparam CORE_MODE_MULT_NORM_save_to_PMEM 			= 3'b001;
@@ -69,38 +70,38 @@ module core_tb;
 	localparam CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM 	= 3'b011;
 
 	//============= DUT's Output  ===============//
-	wire [3:0] 							status;      // {busy, qmem_locked, kmem_locked, pmem_locked} from controller
-	wire [bw_psum*col-1:0]	pmem_out;
-	wire busy, qmem_locked, kmem_locked, pmem_locked;
-	assign busy = status[3];
-	assign qmem_locked = status[2];
-	assign kmem_locked = status[1];
-	assign pmem_locked = status[0];
+	wire [3:0] 	status0, status1;      // {busy, qmem_locked, kmem_locked, pmem_locked} from controller
+	wire [bw_psum*col-1:0]	pmem_out0, pmem_out1;
+	wire busy0, busy1, qmem_locked0, qmem_locked1, kmem_locked0, kmem_locked1, pmem_locked0, pmem_locked1;
+	assign busy0 = status0[3];
+	assign qmem_locked0 = status0[2];
+	assign kmem_locked0 = status0[1];
+	assign pmem_locked0 = status0[0];
+	assign busy1 = status1[3];
+	assign qmem_locked1 = status1[2];
+	assign kmem_locked1 = status1[1];
+	assign pmem_locked1 = status1[0];
 
-	core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) core_instance (
-			.reset(reset),
-			.clk(clk),
-			.set_mode(set_mode),
-			.mode_in(mode_in),
-			.mem_in(mem_in),
-			.inst_ext(inst_ext),
-			.sum_in(sum_in),
-			.sum_in_valid(sum_in_valid),
-			.sum_in_fifo_pop(), // unused in single core mode
-			.sum_out(),			// unused in single core mode
-			.sum_out_valid(),	// unused in single core mode
-			.out(pmem_out),
-			.start(start),
-			.status(status)
+
+	fullchip #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(2*pr)) fullchip_instance(
+		.reset0(reset0), 		.reset1(reset1), 	
+		.clk0(clk), 			.clk1(clk), 	
+		.start0(start0), 		.start1(start1),
+		.set_mode0(set_mode0), 	.set_mode1(set_mode1),
+		.mode_in0(mode_in0), 	.mode_in1(mode_in1),
+		.mem_in0(mem_in0), 		.mem_in1(mem_in1), 
+		.inst_ext0(inst_ext0), 	.inst_ext1(inst_ext1),
+		.out0(pmem_out0), 		.out1(pmem_out1),	
+		.status0(status0), 		.status1(status1)
 	);
 
 	
 	
 initial begin
-	$dumpfile("sim/waveform/core.vcd");
-	$dumpvars(0, core_tb);
+	$dumpfile("sim/waveform/fullchip.vcd");
+	$dumpvars(0, fullchip_tb);
 	$display("");
-	
+/*
 //########################################################################
 //  				data.txt -> Integer Arrays: Q, K, V_T						  
 //########################################################################
@@ -350,10 +351,7 @@ CoreSetMode(CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM);
 //============		  Start the core & wait for done	==================
 Start1Cyc;
 
-/* Test if sum_in_valid properly delays div.
-repeat(100) @(negedge clk);
-sum_in_valid = 1'b1;
-*/
+
 
 wait(!busy); @(negedge clk);
 
@@ -525,7 +523,8 @@ wait(!busy); @(negedge clk);
 		$display("------------------------------------------------------------");
 	end
 	$display("");
-
+	
+*/
 
 
 
@@ -556,37 +555,37 @@ end
 
 
 //================= Reusable Tasks ====================
-  task Reset2Cyc;
-	begin
-		@(negedge clk);
-		reset = 1;
-		repeat(2) @(negedge clk);
-		reset = 0;
-		@(negedge clk);
-	end
-  endtask
+//   task Reset2Cyc;
+// 	begin
+// 		@(negedge clk);
+// 		reset = 1;
+// 		repeat(2) @(negedge clk);
+// 		reset = 0;
+// 		@(negedge clk);
+// 	end
+//   endtask
 
-  task Start1Cyc;
-	begin
-		@(negedge clk);
-		start = 1;
-		@(negedge clk);
-		start = 0;
-		@(negedge clk);
-	end
-  endtask
+//   task Start1Cyc;
+// 	begin
+// 		@(negedge clk);
+// 		start = 1;
+// 		@(negedge clk);
+// 		start = 0;
+// 		@(negedge clk);
+// 	end
+//   endtask
 
-  task CoreSetMode;
-  	input [2:0] mode;
-	begin
-		@(negedge clk);
-		set_mode = 1'b1;
-		mode_in = mode;
-		@(negedge clk);
-		set_mode = 1'b0;
-		mode_in = 3'b000;
-		@(negedge clk);
-	end
-  endtask
+//   task CoreSetMode;
+//   	input [2:0] mode;
+// 	begin
+// 		@(negedge clk);
+// 		set_mode = 1'b1;
+// 		mode_in = mode;
+// 		@(negedge clk);
+// 		set_mode = 1'b0;
+// 		mode_in = 3'b000;
+// 		@(negedge clk);
+// 	end
+//   endtask
 
 endmodule
