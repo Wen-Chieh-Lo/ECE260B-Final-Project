@@ -9,12 +9,12 @@
 ##**/waveform/
 
 # ----- Simulation / GLS executables -----
-**/sim/compiled
-**/gls/compiled
+#**/sim/compiled
+#**/gls/compiled
 
 # ----- Synthesis outputs -----
-**/syn/work/
-**/syn/*.svf
+#**/syn/work/
+#**/syn/*.svf
 
 # ----- Design Compiler / Synopsys -----
 **/alib-*/
@@ -29,8 +29,8 @@
 **/innovus.cmd
 **/innovus.cmd*
 **/.timing_file_*.tif.gz
-**/.core*.rs.fp
-**/.core*.rs.fp.spr
+#**/.core*.rs.fp
+#**/.core*.rs.fp.spr
 **/scheduling_file.cts.*
 **/model.asrt.*
 
