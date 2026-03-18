@@ -3,10 +3,10 @@
 # =============================================================================
 
 # ----- Waveform files -----
-*.vcd
-*.vcd.json
-waveformw.vcd.json
-**/waveform/
+#*.vcd
+#*.vcd.json
+#waveformw.vcd.json
+##**/waveform/
 
 # ----- Simulation / GLS executables -----
 **/sim/compiled
@@ -29,8 +29,8 @@ waveformw.vcd.json
 **/innovus.cmd
 **/innovus.cmd*
 **/.timing_file_*.tif.gz
-#**/.core*.rs.fp
-#**/.core*.rs.fp.spr
+**/.core*.rs.fp
+**/.core*.rs.fp.spr
 **/scheduling_file.cts.*
 **/model.asrt.*
 
