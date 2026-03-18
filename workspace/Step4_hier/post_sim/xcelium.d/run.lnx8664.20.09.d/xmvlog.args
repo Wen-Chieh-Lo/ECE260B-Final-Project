@@ -20,7 +20,7 @@ CUVWSP
 ./netlist/sram_160b_w16.pnr.v
 -VFILE
 ./netlist/fullchip.pnr.v
-./netlist/fullchip_tb.v
+./netlist/fullchip_lockstep_tb.v
 -CDSLIB
 ./xcelium.d/run.lnx8664.20.09.d/cdsrun.lib
 -HDLVAR
