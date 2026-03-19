@@ -1,2 +1,0 @@
-// SRAM-only synthesis filelist for hierarchy PnR
-./verilog/memory/sram_w16.v

@@ -44,6 +44,7 @@ waveformw.vcd.json
 # ----- PnR report files (generated) -----
 **/pnr/**/*.conn.rpt.old
 **/pnr/**/*.geom.rpt.old
+*.def
 
 # ----- Timing reports (Innovus) -----
 **/timingReports/*.gz
