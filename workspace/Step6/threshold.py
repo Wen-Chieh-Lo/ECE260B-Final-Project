@@ -56,7 +56,7 @@ actual_sparsity = np.mean(all_Si < threshold_int)
 
 print(f"\nTarget sparsity  : {TARGET_SPARSITY*100:.0f}%")
 print(f"Threshold (float): {threshold_float:.2f}")
-print(f"Threshold (int)  : {threshold_int}  ← use this in the hardware register")
+print(f"Threshold (int)  : {threshold_int}  , using this in the hardware register")
 print(f"Actual sparsity  : {actual_sparsity*100:.2f}%")
 print(f"Si range         : [{all_Si.min():.0f}, {all_Si.max():.0f}]")
 print(f"Si mean / std    : {all_Si.mean():.1f} / {all_Si.std():.1f}")
