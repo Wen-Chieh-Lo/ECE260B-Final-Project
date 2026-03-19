@@ -3,7 +3,7 @@
 Report : area
 Design : core
 Version: K-2015.06-SP2
-Date   : Fri Mar 13 14:54:40 2026
+Date   : Thu Mar 19 04:22:06 2026
 ****************************************
 
 Information: Updating design information... (UID-85)
@@ -12,22 +12,22 @@ Library(s) Used:
 
     tcbn65gpluswc (File: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db)
 
-Number of ports:                         1285
-Number of nets:                         44275
-Number of cells:                        41869
-Number of combinational cells:          30574
-Number of sequential cells:             11046
+Number of ports:                        29335
+Number of nets:                         92375
+Number of cells:                        58306
+Number of combinational cells:          46460
+Number of sequential cells:             11499
 Number of macros/black boxes:               0
-Number of buf/inv:                       4546
-Number of references:                     442
+Number of buf/inv:                      11577
+Number of references:                      53
 
-Combinational area:              77556.240571
-Buf/Inv area:                     5212.080202
-Noncombinational area:           78489.001395
+Combinational area:             157413.600747
+Buf/Inv area:                    15375.240530
+Noncombinational area:          102787.918538
 Macro/Black Box area:                0.000000
 Net Interconnect area:      undefined  (Wire load has zero net area)
 
-Total cell area:                156045.241966
+Total cell area:                260201.519285
 Total area:                 undefined
 1
  
@@ -35,7 +35,7 @@ Total area:                 undefined
 Report : reference
 Design : core
 Version: K-2015.06-SP2
-Date   : Fri Mar 13 14:54:42 2026
+Date   : Thu Mar 19 04:22:09 2026
 ****************************************
 
 Attributes:
@@ -52,640 +52,107 @@ Attributes:
 Reference          Library       Unit Area   Count    Total Area   Attributes
 -----------------------------------------------------------------------------
 AN2D0              tcbn65gpluswc
-                                  2.160000      19     41.040002  
-AN2D1              tcbn65gpluswc
-                                  2.160000     127    274.320011  
+                                  2.160000       1      2.160000  
 AN2D2              tcbn65gpluswc
-                                  2.520000       7     17.640000  
-AN2D4              tcbn65gpluswc
-                                  4.320000       2      8.640000  
+                                  2.520000       2      5.040000  
 AN2XD1             tcbn65gpluswc
-                                  2.160000      35     75.600003  
-AN3D0              tcbn65gpluswc
-                                  2.520000      11     27.720000  
-AN3D1              tcbn65gpluswc
-                                  2.520000       1      2.520000  
-AN3XD1             tcbn65gpluswc
-                                  2.520000       3      7.560000  
-AN4D0              tcbn65gpluswc
-                                  2.880000      51    146.880006  
-AN4D1              tcbn65gpluswc
-                                  2.880000       1      2.880000  
+                                  2.160000       3      6.480000  
 AN4XD1             tcbn65gpluswc
-                                  2.880000       3      8.640000  
-AO21D0             tcbn65gpluswc
-                                  2.520000     235    592.199996  
-AO21D1             tcbn65gpluswc
-                                  2.520000      13     32.760000  
+                                  2.880000       1      2.880000  
 AO22D0             tcbn65gpluswc
-                                  2.880000     128    368.640015  
-AO22D1             tcbn65gpluswc
-                                  3.240000       2      6.480000  
-AO31D0             tcbn65gpluswc
-                                  2.880000       6     17.280001  
-AO31D1             tcbn65gpluswc
-                                  2.880000       2      5.760000  
-AO211D0            tcbn65gpluswc
-                                  2.880000      24     69.120003  
-AO211D1            tcbn65gpluswc
-                                  2.880000       7     20.160001  
+                                  2.880000      64    184.320007  
 AO221D0            tcbn65gpluswc
                                   3.600000       1      3.600000  
-AOI21D0            tcbn65gpluswc
-                                  2.160000     632   1365.120054  
 AOI21D1            tcbn65gpluswc
-                                  2.160000     568   1226.880049  
-AOI21D2            tcbn65gpluswc
-                                  3.240000      31    100.440000  
-AOI22D0            tcbn65gpluswc
-                                  2.520000    3230   8139.599938  
-AOI22D1            tcbn65gpluswc
-                                  2.520000     109    274.679998  
-AOI22D2            tcbn65gpluswc
-                                  4.320000       6     25.920001  
-AOI31D0            tcbn65gpluswc
-                                  2.520000      22     55.440000  
-AOI31D1            tcbn65gpluswc
-                                  2.520000      15     37.800000  
-AOI32D0            tcbn65gpluswc
-                                  2.880000       4     11.520000  
-AOI32D1            tcbn65gpluswc
-                                  2.880000       5     14.400001  
-AOI211D0           tcbn65gpluswc
-                                  2.520000      51    128.519999  
-AOI211D1           tcbn65gpluswc
-                                  2.520000       9     22.680000  
-AOI211XD0          tcbn65gpluswc
-                                  2.520000       9     22.680000  
-AOI221D0           tcbn65gpluswc
-                                  2.880000      31     89.280004  
-AOI221D1           tcbn65gpluswc
-                                  3.240000       1      3.240000  
-AOI222D0           tcbn65gpluswc
-                                  3.600000       1      3.600000  
-BUFFD0             tcbn65gpluswc
-                                  1.440000       1      1.440000  
+                                  2.160000       1      2.160000  
 BUFFD1             tcbn65gpluswc
-                                  1.440000      20     28.800001  
+                                  1.440000       1      1.440000  
 BUFFD2             tcbn65gpluswc
-                                  2.160000      64    138.240005  
-BUFFD3             tcbn65gpluswc
-                                  2.520000      10     25.200000  
+                                  2.160000      12     25.920001  
 BUFFD4             tcbn65gpluswc
-                                  3.240000       5     16.200000  
+                                  3.240000       3      9.720000  
 BUFFD6             tcbn65gpluswc
-                                  4.320000       1      4.320000  
-BUFFD8             tcbn65gpluswc
-                                  5.760000       1      5.760000  
+                                  4.320000       5     21.600001  
 BUFFD12            tcbn65gpluswc
                                   7.920000       1      7.920000  
-CKAN2D0            tcbn65gpluswc
-                                  2.160000     567   1224.720049  
-CKAN2D1            tcbn65gpluswc
-                                  2.160000      61    131.760005  
+BUFFD16            tcbn65gpluswc
+                                 10.440000       2     20.879999  
 CKBD1              tcbn65gpluswc
-                                  1.440000      11     15.840001  
+                                  1.440000       7     10.080000  
 CKBD2              tcbn65gpluswc
-                                  2.160000      35     75.600003  
-CKBD3              tcbn65gpluswc
-                                  2.520000       1      2.520000  
+                                  2.160000       1      2.160000  
 CKBD4              tcbn65gpluswc
-                                  3.240000      18     58.320000  
-CKMUX2D1           tcbn65gpluswc
-                                  3.600000       5     18.000000  
+                                  3.240000       5     16.200000  
 CKND0              tcbn65gpluswc
-                                  1.080000    2939   3174.120126  
+                                  1.080000       1      1.080000  
 CKND1              tcbn65gpluswc
-                                  1.080000     113    122.040005  
-CKND2              tcbn65gpluswc
-                                  1.440000     128    184.320007  
-CKND2D0            tcbn65gpluswc
-                                  1.440000    3407   4906.080195  
+                                  1.080000     416    449.280018  
 CKND2D1            tcbn65gpluswc
-                                  1.440000     779   1121.760045  
-CKND2D2            tcbn65gpluswc
-                                  2.520000      74    186.479999  
-CKND2D3            tcbn65gpluswc
-                                  3.240000      14     45.360000  
-CKND2D4            tcbn65gpluswc
-                                  4.320000       1      4.320000  
-CKND3              tcbn65gpluswc
-                                  2.160000       6     12.960001  
-CKND4              tcbn65gpluswc
-                                  2.520000       3      7.560000  
-CKXOR2D0           tcbn65gpluswc
-                                  3.600000     604   2174.399942  
+                                  1.440000       1      1.440000  
 CKXOR2D1           tcbn65gpluswc
-                                  3.600000     449   1616.399957  
-CKXOR2D4           tcbn65gpluswc
-                                  7.560000       3     22.680000  
-CMPE42D1           tcbn65gpluswc
-                                 16.559999      21    347.759989  r
-DFCND1             tcbn65gpluswc
-                                  8.640000       1      8.640000  n
-DFCNQD1            tcbn65gpluswc
-                                  7.920000    2440  19324.800186  n
-DFCNQD2            tcbn65gpluswc
-                                  9.000000      32    288.000000  n
-DFCNQD4            tcbn65gpluswc
-                                 10.080000      53    534.239996  n
-DFCSNQD2           tcbn65gpluswc
-                                 10.440000       1     10.440000  n
-DFCSNQD4           tcbn65gpluswc
-                                 11.520000       2     23.040001  n
+                                  3.600000       7     25.199999  
 DFD1               tcbn65gpluswc
-                                  7.200000      55    395.999990  n
-DFKCNQD1           tcbn65gpluswc
-                                  7.200000       1      7.200000  n
+                                  7.200000      11     79.199998  n
 DFQD1              tcbn65gpluswc
-                                  6.840000    8122  55554.481239  n
-DFQD2              tcbn65gpluswc
-                                  7.200000      18    129.599997  n
+                                  6.840000       6     41.040001  n
 DFQD4              tcbn65gpluswc
-                                  8.280000      41    339.479989  n
-DFSNQD1            tcbn65gpluswc
-                                  8.280000      28    231.839993  n
-DFSNQD2            tcbn65gpluswc
-                                  9.000000       2     18.000000  n
-DFSNQD4            tcbn65gpluswc
-                                  9.720000       1      9.720000  n
-FA1D0              tcbn65gpluswc
-                                  9.000000     724   6516.000000  r
-FA1D1              tcbn65gpluswc
-                                 10.080000     608   6128.639954  r
-FA1D2              tcbn65gpluswc
-                                 10.440000       1     10.440000  r
-FICIND1            tcbn65gpluswc
-                                 10.440000      11    114.839995  r
-FICIND2            tcbn65gpluswc
-                                 12.240000       5     61.199999  r
-HA1D0              tcbn65gpluswc
-                                  5.760000     128    737.280029  r
-HA1D1              tcbn65gpluswc
-                                  6.120000      62    379.439993  r
-HA1D2              tcbn65gpluswc
-                                  6.840000       2     13.680000  r
-IAO21D0            tcbn65gpluswc
-                                  2.520000       6     15.120000  
-IAO21D1            tcbn65gpluswc
-                                  2.520000       3      7.560000  
+                                  8.280000       2     16.559999  n
+EDFKCNQD4          tcbn65gpluswc
+                                 11.160000       2     22.320000  n
 IND2D0             tcbn65gpluswc
-                                  2.160000     293    632.880025  
-IND2D1             tcbn65gpluswc
-                                  2.160000      35     75.600003  
-IND2D2             tcbn65gpluswc
-                                  2.880000      12     34.560001  
-IND2D4             tcbn65gpluswc
-                                  5.760000       1      5.760000  
-IND3D0             tcbn65gpluswc
-                                  2.520000       8     20.160000  
-IND3D1             tcbn65gpluswc
-                                  2.520000       6     15.120000  
-IND4D0             tcbn65gpluswc
-                                  2.880000      11     31.680001  
-IND4D1             tcbn65gpluswc
-                                  2.880000       2      5.760000  
+                                  2.160000       1      2.160000  
 INR2D0             tcbn65gpluswc
-                                  2.160000     180    388.800015  
+                                  2.160000      12     25.920001  
 INR2D1             tcbn65gpluswc
-                                  2.160000      35     75.600003  
-INR2D2             tcbn65gpluswc
-                                  2.880000       1      2.880000  
-INR2XD0            tcbn65gpluswc
-                                  2.160000      84    181.440007  
-INR2XD1            tcbn65gpluswc
-                                  2.880000       1      2.880000  
-INR3D0             tcbn65gpluswc
-                                  2.520000      11     27.720000  
-INR3D1             tcbn65gpluswc
-                                  3.600000       1      3.600000  
-INR4D0             tcbn65gpluswc
-                                  2.880000       2      5.760000  
-INVD0              tcbn65gpluswc
-                                  1.080000     718    775.440031  
+                                  2.160000       2      4.320000  
 INVD1              tcbn65gpluswc
-                                  1.080000     386    416.880017  
+                                  1.080000      58     62.640002  
 INVD2              tcbn65gpluswc
-                                  1.440000      68     97.920004  
-INVD3              tcbn65gpluswc
-                                  2.160000      10     21.600001  
-INVD4              tcbn65gpluswc
-                                  2.520000       5     12.600000  
+                                  1.440000       1      1.440000  
 INVD6              tcbn65gpluswc
                                   3.240000       2      6.480000  
-IOA21D0            tcbn65gpluswc
-                                  2.520000     212    534.239996  
-IOA21D1            tcbn65gpluswc
-                                  2.520000       9     22.680000  
-IOA21D2            tcbn65gpluswc
-                                  3.240000       1      3.240000  
-IOA22D2            tcbn65gpluswc
-                                  3.960000       1      3.960000  
-MAOI22D0           tcbn65gpluswc
-                                  2.880000      13     37.440001  
-MAOI22D1           tcbn65gpluswc
-                                  2.880000       9     25.920001  
-MAOI222D0          tcbn65gpluswc
-                                  2.880000      81    233.280009  
-MAOI222D1          tcbn65gpluswc
-                                  2.880000      15     43.200002  
-MOAI22D0           tcbn65gpluswc
-                                  2.880000      32     92.160004  
-MOAI22D1           tcbn65gpluswc
-                                  2.880000      11     31.680001  
-MUX2D0             tcbn65gpluswc
-                                  3.240000     228    738.720002  
 MUX2ND0            tcbn65gpluswc
-                                  2.880000      84    241.920010  
-MUX2ND1            tcbn65gpluswc
-                                  4.320000       1      4.320000  
-MUX2ND2            tcbn65gpluswc
-                                  4.680000       2      9.360000  
-ND2D0              tcbn65gpluswc
-                                  1.440000     174    250.560010  
+                                  2.880000     177    509.760020  
 ND2D1              tcbn65gpluswc
-                                  1.440000     654    941.760037  
-ND2D2              tcbn65gpluswc
-                                  2.520000     175    440.999997  
-ND2D3              tcbn65gpluswc
-                                  3.240000      37    119.880000  
-ND2D4              tcbn65gpluswc
-                                  4.320000      16     69.120003  
-ND2D8              tcbn65gpluswc
-                                  7.920000       1      7.920000  
-ND3D0              tcbn65gpluswc
-                                  2.160000     167    360.720014  
+                                  1.440000      11     15.840001  
 ND3D1              tcbn65gpluswc
-                                  2.160000      97    209.520008  
-ND3D2              tcbn65gpluswc
-                                  3.240000      11     35.640000  
-ND4D0              tcbn65gpluswc
-                                  2.520000     526   1325.519990  
+                                  2.160000       4      8.640000  
 ND4D1              tcbn65gpluswc
-                                  2.520000      43    108.359999  
+                                  2.520000       4     10.080000  
 NR2D0              tcbn65gpluswc
-                                  1.440000    1137   1637.280065  
+                                  1.440000       1      1.440000  
 NR2D1              tcbn65gpluswc
-                                  1.440000     567    816.480032  
-NR2D2              tcbn65gpluswc
-                                  2.520000      79    199.079998  
-NR2D3              tcbn65gpluswc
-                                  3.240000       8     25.920000  
-NR2D4              tcbn65gpluswc
-                                  4.320000       2      8.640000  
-NR2D8              tcbn65gpluswc
-                                  7.920000       1      7.920000  
+                                  1.440000       1      1.440000  
 NR2XD0             tcbn65gpluswc
-                                  1.440000     505    727.200029  
-NR2XD1             tcbn65gpluswc
-                                  2.520000     184    463.679996  
-NR2XD2             tcbn65gpluswc
-                                  4.320000      10     43.200002  
-NR2XD3             tcbn65gpluswc
-                                  6.120000       5     30.599999  
-NR3D0              tcbn65gpluswc
-                                  2.160000      58    125.280005  
-NR3D1              tcbn65gpluswc
-                                  3.240000      12     38.880000  
-NR4D0              tcbn65gpluswc
-                                  2.520000      32     80.639999  
-OA21D0             tcbn65gpluswc
-                                  2.520000      33     83.159999  
-OA21D1             tcbn65gpluswc
-                                  2.520000      36     90.719999  
-OA22D0             tcbn65gpluswc
-                                  2.880000       8     23.040001  
+                                  1.440000     122    175.680007  
 OA22D1             tcbn65gpluswc
-                                  3.240000       2      6.480000  
-OA31D0             tcbn65gpluswc
-                                  2.880000       4     11.520000  
+                                  3.240000       1      3.240000  
 OA31D1             tcbn65gpluswc
                                   2.880000       1      2.880000  
-OA211D0            tcbn65gpluswc
-                                  2.880000      11     31.680001  
-OA211D1            tcbn65gpluswc
-                                  2.880000       2      5.760000  
-OAI21D0            tcbn65gpluswc
-                                  2.160000     638   1378.080055  
 OAI21D1            tcbn65gpluswc
-                                  2.160000     551   1190.160047  
-OAI21D2            tcbn65gpluswc
-                                  3.240000      41    132.840000  
-OAI21D4            tcbn65gpluswc
-                                  6.480000       1      6.480000  
-OAI22D0            tcbn65gpluswc
-                                  2.520000     865   2179.799984  
+                                  2.160000       2      4.320000  
 OAI22D1            tcbn65gpluswc
-                                  2.520000    1059   2668.679980  
-OAI22D2            tcbn65gpluswc
-                                  4.320000     126    544.320022  
-OAI22D4            tcbn65gpluswc
-                                  9.000000       1      9.000000  
-OAI31D0            tcbn65gpluswc
-                                  2.520000      46    115.919999  
+                                  2.520000     112    282.239998  
 OAI31D1            tcbn65gpluswc
-                                  2.520000      18     45.360000  
-OAI32D0            tcbn65gpluswc
-                                  2.880000       3      8.640000  
-OAI211D0           tcbn65gpluswc
-                                  2.520000      29     73.079999  
-OAI211D1           tcbn65gpluswc
-                                  2.520000      38     95.759999  
-OAI211D2           tcbn65gpluswc
-                                  4.320000      15     64.800003  
-OAI221D0           tcbn65gpluswc
-                                  2.880000       2      5.760000  
-OAI222D0           tcbn65gpluswc
-                                  3.240000       1      3.240000  
-OR2D0              tcbn65gpluswc
-                                  2.160000     460    993.600039  
-OR2D1              tcbn65gpluswc
-                                  2.160000     151    326.160013  
-OR2XD1             tcbn65gpluswc
-                                  2.160000       5     10.800000  
-OR3D0              tcbn65gpluswc
                                   2.520000       1      2.520000  
-OR3D1              tcbn65gpluswc
-                                  2.520000       3      7.560000  
-OR4D0              tcbn65gpluswc
-                                  2.880000       4     11.520000  
-OR4D1              tcbn65gpluswc
-                                  2.880000       2      5.760000  
-SNPS_CLOCK_GATE_HIGH_core_0       6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_1       6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_2       6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_3       6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_4       6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_5       6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_6       6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_7       6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_8       6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_9       6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_10      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_11      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_12      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_13      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_14      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_15      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_16      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_17      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_18      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_19      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_20      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_21      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_22      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_23      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_24      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_27      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_28      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_29      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_30      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_31      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_32      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_33      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_34      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_35      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_36      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_37      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_38      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_39      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_40      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_41      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_42      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_43      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_44      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_45      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_46      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_47      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_48      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_49      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_50      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_51      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_52      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_53      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_54      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_55      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_56      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_57      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_58      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_59      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_60      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_61      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_62      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_63      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_64      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_65      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_66      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_67      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_68      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_69      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_70      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_71      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_80      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_81      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_82      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_83      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_84      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_85      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_86      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_87      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_88      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_97      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_98      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_99      6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_100     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_101     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_102     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_103     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_104     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_105     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_106     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_107     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_108     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_109     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_110     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_111     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_112     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_113     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_114     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_115     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_116     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_117     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_118     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_119     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_120     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_121     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_122     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_123     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_124     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_125     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_126     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_127     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_128     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_129     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_130     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_131     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_132     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_133     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_134     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_135     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_136     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_137     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_138     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_139     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_140     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_141     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_142     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_143     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_144     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_145     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_146     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_147     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_148     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_149     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_150     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_151     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_152     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_153     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_154     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_155     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_156     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_157     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_158     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_159     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_160     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_161     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_162     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_163     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_164     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_165     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_166     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_167     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_168     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_169     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_170     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_171     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_172     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_173     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_174     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_175     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_176     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_177     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_178     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_179     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_180     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_181     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_182     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_183     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_184     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_185     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_186     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_187     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_188     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_189     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_190     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_191     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_192     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_193     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_194     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_195     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_196     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_197     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_198     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_199     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_200     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_201     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_202     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_203     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_204     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_205     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_206     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_207     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_208     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_209     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_210     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_211     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_212     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_213     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_214     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_215     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_216     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_217     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_218     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_219     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_220     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_221     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_222     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_223     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_224     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_225     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_226     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_227     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_228     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_229     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_230     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_231     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_232     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_233     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_234     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_235     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_236     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_237     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_238     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_239     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_240     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_241     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_242     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_243     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_244     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_245     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_246     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_247     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_248     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_249     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_250     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_251     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_252     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_253     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_254     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_255     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_256     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_257     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_258     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_259     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_260     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_261     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_262     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_263     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_264     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_265     6.480000       1      6.480000  b, h
-SNPS_CLOCK_GATE_HIGH_core_266     6.480000       1      6.480000  b, h
-TIEH               tcbn65gpluswc
-                                  1.080000       1      1.080000  
+OAI32D1            tcbn65gpluswc
+                                  2.880000       1      2.880000  
+OAI222D1           tcbn65gpluswc
+                                  3.960000       8     31.680000  
 TIEL               tcbn65gpluswc
                                   1.080000       1      1.080000  
-XNR2D0             tcbn65gpluswc
-                                  3.600000    2380   8567.999773  
 XNR2D1             tcbn65gpluswc
-                                  3.600000     368   1324.799965  
-XNR2D2             tcbn65gpluswc
-                                  3.960000      34    134.640001  
-XNR2D4             tcbn65gpluswc
-                                  7.560000     101    763.559994  
-XNR3D2             tcbn65gpluswc
-                                  7.920000       2     15.840000  
-XNR3D4             tcbn65gpluswc
-                                 10.440000       1     10.440000  
-XOR2D0             tcbn65gpluswc
-                                  3.600000     100    359.999990  
-XOR2D1             tcbn65gpluswc
-                                  3.600000       1      3.600000  
-XOR2D2             tcbn65gpluswc
-                                  3.960000      10     39.600000  
-XOR3D1             tcbn65gpluswc
-                                  6.120000      16     97.919998  
-XOR3D2             tcbn65gpluswc
-                                  6.840000      36    246.240005  
+                                  3.600000       2      7.200000  
+controller                      190.440002       1    190.440002  h, n
+mac_array_col8_bw8_bw_psum20_pr8
+                              125816.040110
+                                                 1  125816.040110 h, n
+ofifo_col8_bw20               44542.079673       1  44542.079673  h, n
+sfp_row_col8_bw8_bw_psum20_out_shift7
+                              29726.280496       1  29726.280496  h, n
+sram_w16_sram_bit64_0         12574.079856       1  12574.079856  h, n
+sram_w16_sram_bit64_1         12956.399748       1  12956.399748  h, n
+sram_w16_sram_bit160          32273.639345       1  32273.639345  h, n
 -----------------------------------------------------------------------------
-Total 442 references                                156045.241966
+Total 53 references                                 260201.519285
 1

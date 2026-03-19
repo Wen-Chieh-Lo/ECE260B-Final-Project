@@ -66,9 +66,8 @@ fifo_depth16_async #(.bw(bw_psum+4)) core0_self_ext_fifo (
 	.out(sum_in1),	
 	.o_empty(core0_self_ext_fifo_empty)
 ); 
-
-assign sum_in1_valid = ~core0_self_ext_fifo_empty; 
-assign sum_in0_valid = ~core1_self_ext_fifo_empty;
+assign sum_in1_valid <= ~core0_self_ext_fifo_empty; 
+assign sum_in0_valid <= ~core1_self_ext_fifo_empty;
 
 fifo_depth16_async #(.bw(bw_psum+4)) core1_self_ext_fifo (
 	.reset(reset1),
