@@ -10,6 +10,7 @@
 module div #(
   parameter bw_psum   = 19,
   parameter out_shift = 7
+  parameter MCP_CYLCE = 5;
 ) (
   input                         clk,
   input                         reset,
@@ -21,11 +22,27 @@ module div #(
   output                        busy
 );
   wire [bw_psum+out_shift-1:0] full_quotient;
+  reg [2:0] MCP_cnt;
+  reg [out_shift-1:0] div_out_q;
 
   assign full_quotient = {in, {out_shift{1'b0}}} / divisor;
-  assign out           = full_quotient[out_shift-1:0];
-  assign done          = start;    // combinational: output always valid
-  assign busy          = 1'b0;    // combinational: never busy
+  assign out           = div_out_q;
+  assign done = (MCP_cnt == MCP_CYLCE);
+
+  always @ (posedge clk)begin
+      if(start)begin
+        MCP_cnt <= MCP_cnt + 1;
+        div_out_q <= div_out_q;
+      end
+      else if (MCP_cnt == MCP_CYLCE) begin
+        MCP_cnt <= 0;
+        div_out_q <= full_quotient[out_shift-1:0];
+      end
+      else begin
+        MCP_cnt <= MCP_cnt;
+        div_out_q <= div_out_q;
+      end
+  end
 endmodule
 
 // -----------------------------------------------------------------------------

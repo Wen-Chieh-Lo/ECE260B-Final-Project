@@ -88,7 +88,11 @@ read_sdc common.sdc
 propagate_constraints
 
 current_design $top_module
+set_multicycle_path 2 -setup -from [all_registers *sum_q*]         -to [all_registers *out_q*]
+set_multicycle_path 1 -hold  -from [all_registers *sum_q*]         -to [all_registers *out_q*]
 
+set_multicycle_path 2 -setup -from [all_registers *div_numerator*] -to [all_registers *out_q*]
+set_multicycle_path 1 -hold  -from [all_registers *div_numerator*] -to [all_registers *out_q*]
 # set_cost_priority {max_transition max_fanout max_delay max_capacitance}
 set_fix_multiple_port_nets -all -buffer_constants
 # set_fix_hold [all_clocks]
