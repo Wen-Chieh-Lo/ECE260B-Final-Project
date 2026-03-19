@@ -130,13 +130,15 @@ module fullchip_tb;
   reg [bw_psum*col-1:0] temp16b;
 
   // ── DUT — clk0 = clk1 = clk ───────────────────────────────────────────────────
-  fullchip #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(2*pr)) fullchip_instance (
+  fullchip fullchip_instance (
     .reset(reset),
     .clk0(clk),
     .clk1(clk),
     .mem_in(mem_in),
     .inst(inst),
-    .out(out)
+    .out(out),
+    .fifo0_empty(),
+    .fifo1_empty()
   );
 
   // ── Clock task — 1.0 GHz, 50% duty cycle ─────────────────────────────────────
@@ -145,7 +147,7 @@ module fullchip_tb;
   // ═══════════════════════════════════════════════════════════════════════════════
   initial begin
 
-    $dumpfile("fullchip_tb.vcd");
+    $dumpfile("../gls/waveform/fullchip_lockstep_tb.vcd");
     $dumpvars(0, fullchip_tb);
 
     mismatch_prd_core0 = 0;  mismatch_prd_core1 = 0;
@@ -155,7 +157,7 @@ module fullchip_tb;
     // 1. Read Q data
     // ─────────────────────────────────────────────────────────────────────────
     $display("##### Q data txt reading #####");
-    qk_file = $fopen("./sim/pattern/qdata.txt", "r");
+    qk_file = $fopen("../sim/pattern/qdata.txt", "r");
     if (qk_file == `NULL) begin $display("ERROR: cannot open qdata.txt"); $finish; end
     for (q = 0; q < total_cycle; q = q+1)
       for (j = 0; j < pr; j = j+1) begin
@@ -172,7 +174,7 @@ module fullchip_tb;
     repeat(10) tick;
     reset = 0;
 
-    qk_file = $fopen("./sim/pattern/kdata_dual.txt", "r");
+    qk_file = $fopen("../sim/pattern/kdata_dual.txt", "r");
     if (qk_file == `NULL) begin $display("ERROR: cannot open kdata_dual.txt"); $finish; end
     for (q = 0; q < 2*col; q = q+1)
       for (j = 0; j < pr; j = j+1) begin
@@ -430,7 +432,7 @@ module fullchip_tb;
     // 10. Read V data
     // ─────────────────────────────────────────────────────────────────────────
     $display("##### V data txt reading #####");
-    qk_file = $fopen("./sim/pattern/vdata.txt", "r");
+    qk_file = $fopen("../sim/pattern/vdata.txt", "r");
     if (qk_file == `NULL) begin $display("ERROR: cannot open vdata.txt"); $finish; end
     for (q = 0; q < col; q = q+1)
       for (j = 0; j < pr; j = j+1) begin

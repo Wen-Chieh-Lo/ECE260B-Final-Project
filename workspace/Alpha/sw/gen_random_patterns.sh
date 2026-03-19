@@ -6,7 +6,7 @@
 # ----
 # - Generates num_sets pattern sets; each set has three files: qdata, kdata, vdata.
 # - Format matches workspace/Alpha/sim/pattern (qdata_core0.txt, kdata_core0.txt, vdata_core0.txt):
-#   one row per line, values separated by TAB; bw-bit signed [-2^(bw-1), 2^(bw-1)-1].
+#   one row per line, values separated by space; bw-bit signed [-2^(bw-1), 2^(bw-1)-1].
 # - qdata: total_cycle rows x pr cols (Q).
 # - kdata: col rows x pr cols (K).
 # - vdata: total_cycle rows x pr cols (V^T layout for tb).
@@ -21,8 +21,13 @@
 #   - total_cycle : number of rows for Q and V (time steps).
 #   - num_sets    : how many pattern sets to generate (default 100).
 #   - out_dir     : output dir relative to script (default pattern/random100).
+#   - dual_core   : if set, also generate kdata_core0_*.txt and kdata_core1_*.txt (for fullchip).
 #
-# Output: for each set idx: qdata_0.txt, kdata_0.txt, vdata_0.txt, ... qdata_99.txt, kdata_99.txt, vdata_99.txt
+# Output: for each set idx: qdata_0.txt, kdata_0.txt, vdata_0.txt, ...
+#   With --dual_core: also kdata_core0_0.txt, kdata_core1_0.txt (same K by default; use for per-core K).
+#
+# core_shell: writeK uses kdata_*.txt
+# fullchip_shell: writeK0/writeK1 can share same kdata_*.txt, or use kdata_core0/kdata_core1 for different K.
 #
 
 set -e
@@ -33,6 +38,7 @@ col=""
 total_cycle=""
 num_sets=100
 out_dir="pattern/random100"
+dual_core=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -42,6 +48,7 @@ while [ $# -gt 0 ]; do
     --total_cycle) total_cycle="$2"; shift 2 ;;
     --num_sets)    num_sets="$2";    shift 2 ;;
     --out_dir)     out_dir="$2";     shift 2 ;;
+    --dual_core)   dual_core=1;      shift 1 ;;
     *) echo "Unknown option: $1" >&2; exit 1 ;;
   esac
 done
@@ -93,6 +100,12 @@ while [ $idx -lt $num_sets ]; do
   gen_matrix "$total_cycle" "$pr" "$((idx * 3 + 1))" > "${dest}/qdata_${base}.txt"
   gen_matrix "$col"       "$pr" "$((idx * 3 + 2))" > "${dest}/kdata_${base}.txt"
   gen_matrix "$total_cycle" "$pr" "$((idx * 3 + 3))" > "${dest}/vdata_${base}.txt"
-  echo "  set $idx: qdata_${base}.txt, kdata_${base}.txt, vdata_${base}.txt"
+  if [ "$dual_core" -eq 1 ]; then
+    gen_matrix "$col" "$pr" "$((idx * 7 + 4))" > "${dest}/kdata_core0_${base}.txt"
+    gen_matrix "$col" "$pr" "$((idx * 7 + 5))" > "${dest}/kdata_core1_${base}.txt"
+    echo "  set $idx: qdata_${base}.txt, kdata_${base}.txt, vdata_${base}.txt, kdata_core0_${base}.txt, kdata_core1_${base}.txt"
+  else
+    echo "  set $idx: qdata_${base}.txt, kdata_${base}.txt, vdata_${base}.txt"
+  fi
   idx=$((idx + 1))
 done

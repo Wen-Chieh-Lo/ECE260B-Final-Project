@@ -1,6 +1,6 @@
 // --- Gate-level simulation: fullchip ---
 // TB
-./gls/tb/fullchip_tb.v
+./gls/tb/fullchip_lockstep_tb.v
 
 // DUT: gate netlist
 ./syn/gate/fullchip.out.v

@@ -1,0 +1,82 @@
+ 
+****************************************
+Report : area
+Design : fullchip
+Version: K-2015.06-SP2
+Date   : Wed Mar 18 23:27:52 2026
+****************************************
+
+Information: Updating design information... (UID-85)
+Warning: Design 'fullchip' contains 2 high-fanout nets. A fanout number of 1000 will be used for delay calculations involving these nets. (TIM-134)
+Library(s) Used:
+
+    tcbn65gpluswc (File: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db)
+
+Number of ports:                        59262
+Number of nets:                        185171
+Number of cells:                       117192
+Number of combinational cells:          92598
+Number of sequential cells:             23896
+Number of macros/black boxes:               0
+Number of buf/inv:                      22834
+Number of references:                      14
+
+Combinational area:             311737.321738
+Buf/Inv area:                    29859.841024
+Noncombinational area:          215560.797196
+Macro/Black Box area:                0.000000
+Net Interconnect area:      undefined  (Wire load has zero net area)
+
+Total cell area:                527298.118934
+Total area:                 undefined
+1
+ 
+****************************************
+Report : reference
+Design : fullchip
+Version: K-2015.06-SP2
+Date   : Wed Mar 18 23:27:59 2026
+****************************************
+
+Attributes:
+    b - black box (unknown)
+   bo - allows boundary optimization
+    d - dont_touch
+   mo - map_only
+    h - hierarchical
+    n - noncombinational
+    r - removable
+    s - synthetic operator
+    u - contains unmapped logic
+
+Reference          Library       Unit Area   Count    Total Area   Attributes
+-----------------------------------------------------------------------------
+CKND12             tcbn65gpluswc
+                                  6.120000       1      6.120000  
+DFKCNQD1           tcbn65gpluswc
+                                  7.200000       1      7.200000  n
+DFQD1              tcbn65gpluswc
+                                  6.840000       2     13.680000  n
+EDFKCNQD1          tcbn65gpluswc
+                                 10.080000      47    473.759996  n
+INR2D0             tcbn65gpluswc
+                                  2.160000       1      2.160000  
+INVD1              tcbn65gpluswc
+                                  1.080000       3      3.240000  
+INVD8              tcbn65gpluswc
+                                  4.320000       1      4.320000  
+INVD12             tcbn65gpluswc
+                                  6.120000       1      6.120000  
+MUX2ND0            tcbn65gpluswc
+                                  2.880000       1      2.880000  
+NR2D0              tcbn65gpluswc
+                                  1.440000       1      1.440000  
+core_col8_bw8_bw_psum20_pr8_0 260216.999474
+                                                 1  260216.999474 h, n
+core_col8_bw8_bw_psum20_pr8_1 255704.399257
+                                                 1  255704.399257 h, n
+fifo_depth16_async_bw24_0      5424.840104       1   5424.840104  h, n
+fifo_depth16_async_bw24_1      5430.960103       1   5430.960103  h, n
+-----------------------------------------------------------------------------
+Total 14 references                                 527298.118934
+1

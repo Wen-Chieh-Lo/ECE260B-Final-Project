@@ -25,6 +25,11 @@
 `define SFP_OUT_SHIFT  7
 `define SFP_ACC_LAT    1
 
+// ----- Fullchip (dual-core) -----
+`ifdef TB_FULLCHIP
+  `define HALF_PR      `PR
+`endif
+
 
 // ----- Pattern folder (for Q/K/V_T) -----
 `define PATTERN_PATH "sim/pattern"

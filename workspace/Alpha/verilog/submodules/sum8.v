@@ -3,10 +3,13 @@
 module sum8 #(
   parameter bw_psum = 19
 ) (
+  input  start,
   input  [bw_psum*8-1:0] in,
+  output valid,
   output [bw_psum+3:0]   sum
 );
 
+  assign valid = start;  // combinational: output valid when input valid
   wire [bw_psum+3:0] ext0 = {4'b0, in[bw_psum*1-1 : bw_psum*0]};
   wire [bw_psum+3:0] ext1 = {4'b0, in[bw_psum*2-1 : bw_psum*1]};
   wire [bw_psum+3:0] ext2 = {4'b0, in[bw_psum*3-1 : bw_psum*2]};
@@ -21,13 +24,16 @@ module sum8 #(
 endmodule
 
 // 8-input adder tree, repipelined: 2 stages of registers to break critical path.
-// Latency: 1 cycles. Output width: bw_psum + 4
+// Latency: 1 cycle. Output width: bw_psum + 4
+// start: pulse when input valid; valid: high when sum output valid (1 cyc after start)
 module sum8_2stage #(
   parameter bw_psum = 19
 ) (
   input  clk,
   input  reset,
+  input  start,
   input  [bw_psum*8-1:0] in,
+  output valid,
   output [bw_psum+3:0]   sum
 );
 
@@ -47,22 +53,26 @@ module sum8_2stage #(
   wire [bw_psum+3:0] s67 = ext6 + ext7;
 
   reg [bw_psum+3:0] s01_r, s23_r, s45_r, s67_r;
+  reg valid_r;
 
   always @(posedge clk) begin
     if (reset) begin
-      s01_r <= 0;
-      s23_r <= 0;
-      s45_r <= 0;
-      s67_r <= 0;
+      s01_r  <= 0;
+      s23_r  <= 0;
+      s45_r  <= 0;
+      s67_r  <= 0;
+      valid_r <= 1'b0;
     end else begin
-      s01_r <= s01;
-      s23_r <= s23;
-      s45_r <= s45;
-      s67_r <= s67;
+      s01_r  <= s01;
+      s23_r  <= s23;
+      s45_r  <= s45;
+      s67_r  <= s67;
+      valid_r <= start;   // valid 1 cyc after start
     end
   end
 
   // Stage 2 & 3: combinational
-  assign sum = (s01_r + s23_r) + (s45_r + s67_r);
+  assign sum   = (s01_r + s23_r) + (s45_r + s67_r);
+  assign valid = valid_r;
 
 endmodule

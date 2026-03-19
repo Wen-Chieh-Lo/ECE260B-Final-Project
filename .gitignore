@@ -3,36 +3,58 @@
 # =============================================================================
 
 # ----- Waveform files -----
-#*.vcd
-#*.vcd.json
-#waveformw.vcd.json
-##**/waveform/
+*.vcd
+*.vcd.json
+waveformw.vcd.json
+**/waveform/
 
 # ----- Simulation / GLS executables -----
-#**/sim/compiled
-#**/gls/compiled
+**/sim/compiled
+**/gls/compiled
+
+# ----- Xcelium / Simvision (Cadence simulation) -----
+**/xcelium.d/
+**/waves.shm/
+**/.simvision/
+**/xrun.key
+**/xrun.log
+**/xrun.history
 
 # ----- Synthesis outputs -----
-#**/syn/work/
-#**/syn/*.svf
+**/syn/work/
+**/syn/*.svf
+**/syn/filenames_*.log
 
 # ----- Design Compiler / Synopsys -----
 **/alib-*/
 **/command.log
 **/filenames.log
 
-# ----- Place-and-route (Innovus) -----
-#**/*.enc.dat/
-#**/pnr/**/*.enc
+# ----- Place-and-route (Innovus) outputs -----
 **/innovus.log
 **/innovus.log*
 **/innovus.cmd
 **/innovus.cmd*
+<<<<<<< HEAD
 #**/.timing_file_*.tif.gz
 #**/.core*.rs.fp
 #**/.core*.rs.fp.spr
 #**/scheduling_file.cts.*
+=======
+**/.timing_file_*.tif.gz
+**/.core*.rs.fp
+**/.core*.rs.fp.spr
+**/scheduling_file.cts.*
+>>>>>>> 76a74299066d0d31cf59aeb002d3a39c6ddbf12c
 **/model.asrt.*
+
+# ----- PnR report files (generated) -----
+**/pnr/**/*.conn.rpt.old
+**/pnr/**/*.geom.rpt.old
+*.def
+
+# ----- Timing reports (Innovus) -----
+**/timingReports/*.gz
 
 # ----- Editor / OS -----
 .DS_Store
@@ -53,7 +75,10 @@ venv/
 *.bak
 *.tmp
 *.temp
+<<<<<<< HEAD
 *.gds2
 #*.sdf
 #*.def
 
+=======
+>>>>>>> 76a74299066d0d31cf59aeb002d3a39c6ddbf12c
