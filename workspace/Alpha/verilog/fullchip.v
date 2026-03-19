@@ -62,7 +62,7 @@ fifo_depth16_async #(.bw(bw_psum+4)) core0_self_ext_fifo (
 	.wr(sum_out0_valid),
 	.in(sum_out0),
 	.rd_clk(clk1),
-	.rd(sum_in_fifo_pop1),
+	.rd(sum_in1_fifo_pop),
 	.out(sum_in1),	
 	.o_empty(core0_self_ext_fifo_empty)
 ); 
@@ -76,7 +76,7 @@ fifo_depth16_async #(.bw(bw_psum+4)) core1_self_ext_fifo (
 	.wr(sum_out1_valid),
 	.in(sum_out1),
 	.rd_clk(clk0),
-	.rd(sum_in_fifo_pop0),
+	.rd(sum_in0_fifo_pop),
 	.out(sum_in0),	
 	.o_empty(core1_self_ext_fifo_empty)
 ); 
