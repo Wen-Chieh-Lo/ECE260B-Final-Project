@@ -15,4 +15,4 @@ set_false_path -from [get_clocks clk0] -to [get_clocks clk1]
 set_false_path -from [get_clocks clk1] -to [get_clocks clk0]
 
 set_input_delay  -clock [get_clocks clk0] -max $io_delay [get_ports {mem_in inst reset}]
-set_output_delay -clock [get_clocks clk] -max $io_delay [get_ports {out fifo0_empty fifo1_empty}]
+set_output_delay -clock [get_clocks clk0] -max $io_delay [get_ports {out fifo0_empty fifo1_empty}]
