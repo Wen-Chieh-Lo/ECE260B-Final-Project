@@ -83,7 +83,7 @@ module sfp_row(clk, reset, acc_start, div_start, acc_done, div_done, div_busy, s
   );
 
   assign acc_done = sum8_valid;
-  assign sum_out  = fifo_rd ? sum_this_core : {(bw_psum+4){1'b0}};
+  assign sum_out = sum8_out;
 
   // =========================================
   // Division path

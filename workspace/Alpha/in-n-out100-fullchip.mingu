@@ -1,11 +1,10 @@
 # =============================================================================
 #
-#   in-n-out100.mingu  —  Batch run random100 pattern sets (0..99) [core_shell]
+#   in-n-out100-fullchip.mingu  —  Batch run random100 pattern sets (0..99) [fullchip_shell]
 #
-#   Uses for-loop to iterate over pattern indices. Each iteration runs the
-#   full attention pipeline (Q*K^T, Norm, V*Norm^T) like in-n-out.mingu.
+#   Dual-core: writeK0/writeK1. Uses same kdata for both cores (or gen_random_patterns --dual_core).
 #
-#   USAGE: ./sim_shell.sh -f in-n-out100.mingu
+#   USAGE: ./sim_shell.sh -f in-n-out100-fullchip.mingu
 #
 # =============================================================================
 
@@ -14,7 +13,7 @@ set_output_dir sim/waveform
 set_sim_stage sim
 set_clock_period 1
 set_sim_define SFP_LONGDIV
-set_sim_target core_shell
+set_sim_target fullchip_shell
 fix_set
 
 for i = 0 to 99
@@ -24,16 +23,18 @@ for i = 0 to 99
 	# Test 1: Q*K^T
 	set_exec_target CORE_MODE_MULT_save_to_PMEM
 	writeQ $(PATTERN)/qdata_$(i).txt
-	writeK $(PATTERN)/kdata_$(i).txt
+	writeK0 $(PATTERN)/kdata_$(i).txt
+	writeK1 $(PATTERN)/kdata_$(i).txt
 	simulate
-	# verifypmem
+	verifypmem
 
 	# Test 2: Norm(Q*K^T)
 	set_exec_target CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM
 	writeQ $(PATTERN)/qdata_$(i).txt
-	writeK $(PATTERN)/kdata_$(i).txt
+	writeK0 $(PATTERN)/kdata_$(i).txt
+	writeK1 $(PATTERN)/kdata_$(i).txt
 	simulate
-	# verifypmem
+	verifypmem
 
 	# Test 3: V*Norm^T
 	set_exec_target CORE_MODE_MULT_save_to_PMEM
@@ -42,6 +43,5 @@ for i = 0 to 99
 	verifypmem
 
 endfor
-
 
 exit

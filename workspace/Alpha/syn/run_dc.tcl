@@ -83,8 +83,12 @@ set_max_area 0
 # Link Design
 link
 
-# Default SDC Constraints
-read_sdc common.sdc
+# Select SDC: fullchip has two async clocks (clk0/clk1); others use single-clock common.sdc
+if { $top_module eq "fullchip" } {
+	read_sdc fullchip.sdc
+} else {
+	read_sdc common.sdc
+}
 propagate_constraints
 
 current_design $top_module

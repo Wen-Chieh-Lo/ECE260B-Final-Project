@@ -38,7 +38,47 @@ wire 						sum_in0_fifo_pop, 	sum_in1_fifo_pop;
 
 wire 						core0_self_ext_fifo_empty, core1_self_ext_fifo_empty;
 
+// =========== sum_in_valid: 1-cycle delay to fix first-row edge case ===========
+// When FIFO becomes non-empty, SH captures data at posedge N+1. If div_start
+// fires at the same posedge (combinational sum_in_valid), sum_in_r latches OLD
+// SH value (0 for row 0). Delaying sum_in_valid by 1 cycle ensures div_start
+// fires at N+2 when SH already holds the correct value.
+reg sum_in0_valid_r, sum_in1_valid_r;
 
+always @(posedge clk0) begin
+	if (reset0) sum_in0_valid_r <= 1'b0;
+	else        sum_in0_valid_r <= ~core1_self_ext_fifo_empty;
+end
+
+always @(posedge clk1) begin
+	if (reset1) sum_in1_valid_r <= 1'b0;
+	else        sum_in1_valid_r <= ~core0_self_ext_fifo_empty;
+end
+
+assign sum_in0_valid = sum_in0_valid_r;
+assign sum_in1_valid = sum_in1_valid_r;
+
+// =========== Sample-and-hold registers ===========
+// Captures FIFO output while non-empty; holds value after FIFO is popped.
+// Synchronous reset: DC cannot eliminate the reset mux, guaranteeing 0 init in GLS.
+reg [bw_psum+3:0] sfp_sum_in_0_r;  // clk0 domain: sum from core1
+reg [bw_psum+3:0] sfp_sum_in_1_r;  // clk1 domain: sum from core0
+
+always @(posedge clk0) begin
+	if (reset0)
+		sfp_sum_in_0_r <= {(bw_psum+4){1'b0}};
+	else
+		sfp_sum_in_0_r <= core1_self_ext_fifo_empty ? sfp_sum_in_0_r : sum_in0;
+end
+
+always @(posedge clk1) begin
+	if (reset1)
+		sfp_sum_in_1_r <= {(bw_psum+4){1'b0}};
+	else
+		sfp_sum_in_1_r <= core0_self_ext_fifo_empty ? sfp_sum_in_1_r : sum_in1;
+end
+
+// =========== Core instances ===========
 core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(half_pr)) core_instance0 (
 	.reset(reset0),
 	.clk(clk0),
@@ -46,7 +86,7 @@ core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(half_pr)) core_instance0 (
 	.mode_in(mode_in0),
 	.mem_in(mem_in0),
 	.inst_ext(inst_ext0),
-	.sum_in(sum_in0),
+	.sum_in(sfp_sum_in_0_r),
 	.sum_in_valid(sum_in0_valid),
 	.sum_in_fifo_pop(sum_in0_fifo_pop), 
 	.sum_out(sum_out0),			
@@ -64,11 +104,9 @@ fifo_depth16_async #(.bw(bw_psum+4)) core0_self_ext_fifo (
 	.rd_clk(clk1),
 	.rd(sum_in1_fifo_pop),
 	.out(sum_in1),	
+	.o_full(),
 	.o_empty(core0_self_ext_fifo_empty)
 ); 
-
-assign sum_in1_valid = ~core0_self_ext_fifo_empty; 
-assign sum_in0_valid = ~core1_self_ext_fifo_empty;
 
 fifo_depth16_async #(.bw(bw_psum+4)) core1_self_ext_fifo (
 	.reset(reset1),
@@ -78,10 +116,9 @@ fifo_depth16_async #(.bw(bw_psum+4)) core1_self_ext_fifo (
 	.rd_clk(clk0),
 	.rd(sum_in0_fifo_pop),
 	.out(sum_in0),	
+	.o_full(),
 	.o_empty(core1_self_ext_fifo_empty)
 ); 
-
-
 
 core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(half_pr)) core_instance1 (
 	.reset(reset1),
@@ -90,7 +127,7 @@ core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(half_pr)) core_instance1 (
 	.mode_in(mode_in1),
 	.mem_in(mem_in1),
 	.inst_ext(inst_ext1),
-	.sum_in(sum_in1),
+	.sum_in(sfp_sum_in_1_r),
 	.sum_in_valid(sum_in1_valid),
 	.sum_in_fifo_pop(sum_in1_fifo_pop), 
 	.sum_out(sum_out1),			

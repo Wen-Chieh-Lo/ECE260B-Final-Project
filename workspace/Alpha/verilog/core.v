@@ -340,8 +340,7 @@ end
 // ########################################### //
 assign core_done = (postMAC_state==S_DONE);
 
-assign sfp_fifo_ext_rd = 1'b0;    // unused in single core
-assign sfp_sum_in = {bw_psum+4{1'b0}}; // unused in single core
+assign sfp_sum_in = sum_in; // other core's accumulated sum, via fullchip sample-and-hold
 
 
 // ########################################### //

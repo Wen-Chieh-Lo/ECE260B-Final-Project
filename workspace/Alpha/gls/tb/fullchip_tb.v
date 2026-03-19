@@ -1,450 +1,673 @@
-// Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
-// Please do not spread this code without permission 
+// Core Verification - CDC 3-initial architecture (ref: fullchip_sepclk_tb)
+// Initial 1: data + golden (no timing). Initial 2: clk0 domain (C0). Initial 3: clk1 domain (C1).
+// C0 inputs driven by tick0; C1 inputs driven by tick1.
 
 `timescale 1ns/1ps
+`define CYCLE 1
+`define H_CYCLE 0.5
+`define H_CYCLE0 0.5   // clk0: period 1ns
+`define H_CYCLE1 0.6   // clk1: period 1.2ns (different freq for CDC)
+`define TIME_OUT 100000
+
 
 module fullchip_tb;
-
-parameter total_cycle = 8;   // how many streamed Q vectors will be processed
-parameter bw = 8;            // Q & K vector bit precision
-parameter bw_psum = 2*bw+4;  // partial sum bit precision
-parameter pr = 8;           // how many products added in each dot product 
-parameter col = 8;           // how many dot product units are equipped
-
-integer qk_file ; // file handler
-integer qk_scan_file ; // file handler
-
-
-integer  captured_data;
-integer  weight [col*pr-1:0];
-`define NULL 0
-
-
-
-
-integer  K[col-1:0][pr-1:0];
-integer  Q[total_cycle-1:0][pr-1:0];
-integer  result[total_cycle-1:0][col-1:0];
-integer  sum[total_cycle-1:0];
-
-integer i,j,k,t,p,q,s,u, m;
-
-
-
-
-
-reg reset = 1;
-reg clk = 0;
-reg [pr*bw-1:0] mem_in; 
-reg ofifo_rd = 0;
-wire [18:0] inst; 
-reg qmem_rd = 0;
-reg qmem_wr = 0; 
-reg kmem_rd = 0; 
-reg kmem_wr = 0;
-reg pmem_rd = 0; 
-reg pmem_wr = 0; 
-reg execute = 0;
-reg load = 0;
-reg [3:0] qkmem_add = 0;
-reg [3:0] pmem_add = 0;
-
-reg [bw-1:0] prob0;
-reg [bw-1:0] prob1;
-reg [bw-1:0] prob2;
-reg [bw-1:0] prob3;
-reg [bw-1:0] prob4;
-reg [bw-1:0] prob5;
-reg [bw-1:0] prob6;
-reg [bw-1:0] prob7;
-reg [bw-1:0] prob8;
-reg [bw-1:0] prob9;
-reg [bw-1:0] prob10;
-reg [bw-1:0] prob11;
-reg [bw-1:0] prob12;
-reg [bw-1:0] prob13;
-reg [bw-1:0] prob14;
-reg [bw-1:0] prob15;
-
-assign inst[18] = 1'b0;           // div policy not determined, set as never used to ensure no error
-assign inst[17] = 1'b0;           // acc policy not determined, set as never used to ensure no error
-assign inst[16] = ofifo_rd;
-assign inst[15:12] = qkmem_add;
-assign inst[11:8]  = pmem_add;
-assign inst[7] = execute;
-assign inst[6] = load;
-assign inst[5] = qmem_rd;
-assign inst[4] = qmem_wr;
-assign inst[3] = kmem_rd;
-assign inst[2] = kmem_wr;
-assign inst[1] = pmem_rd;
-assign inst[0] = pmem_wr;
-
-
-
-reg [bw_psum-1:0] temp5b;
-reg [bw_psum+3:0] temp_sum;
-reg [bw_psum*col-1:0] temp16b;
-
-
-
-fullchip #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) fullchip_instance (
-      .reset(reset),
-      .clk(clk), 
-      .mem_in(mem_in), 
-      .inst(inst)
-);
-
-
-initial begin 
-
-  $dumpfile("gls/waveform/fullchip.vcd");
-  $dumpvars(0,fullchip_tb);
-
-
-
-///// Q data txt reading /////
-
-$display("##### Q data txt reading #####");
-
-
-  qk_file = $fopen("gls/pattern/qdata.txt", "r");
-
-  // To get rid of first 3 lines in data file ////
-  // qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
-  // qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
-  // qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
-  // qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
-
-
-  for (q=0; q<total_cycle; q=q+1) begin
-    for (j=0; j<pr; j=j+1) begin
-          qk_scan_file = $fscanf(qk_file, "%d\n", captured_data);
-          Q[q][j] = captured_data;
-          //$display("%d\n", K[q][j]);
-    end
-  end
-/////////////////////////////////
-
-
-
-
-  for (q=0; q<2; q=q+1) begin
-    #0.5 clk = 1'b0;   
-    #0.5 clk = 1'b1;   
-  end
-
-
-
-
-///// K data txt reading /////
-
-$display("##### K data txt reading #####");
-
-  for (q=0; q<10; q=q+1) begin
-    #0.5 clk = 1'b0;   
-    #0.5 clk = 1'b1;   
-  end
-  reset = 0;
-
-  qk_file = $fopen("gls/pattern/kdata.txt", "r");
-
-  // To get rid of first 4 lines in data file ////
-  // qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
-  // qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
-  // qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
-  // qk_scan_file = $fscanf(qk_file, "%s\n", captured_data);
-
-
-
-
-  for (q=0; q<col; q=q+1) begin
-    for (j=0; j<pr; j=j+1) begin
-          qk_scan_file = $fscanf(qk_file, "%d\n", captured_data);
-          K[q][j] = captured_data;
-          //$display("##### %d\n", K[q][j]);
-    end
-  end
-/////////////////////////////////
-
-
-
-
-
-
-
-
-/////////////// Estimated result printing /////////////////
-
-
-$display("##### Estimated multiplication result #####");
-
-  for (t=0; t<total_cycle; t=t+1) begin
-     for (q=0; q<col; q=q+1) begin
-       result[t][q] = 0;
-     end
-  end
-
-  for (t=0; t<total_cycle; t=t+1) begin
-     for (q=0; q<col; q=q+1) begin
-         for (k=0; k<pr; k=k+1) begin
-            result[t][q] = result[t][q] + Q[t][k] * K[q][k];
-         end
-
-         temp5b = result[t][q];
-         temp16b = {temp16b[139:0], temp5b};
-     end
-
-     //$display("%d %d %d %d %d %d %d %d", result[t][0], result[t][1], result[t][2], result[t][3], result[t][4], result[t][5], result[t][6], result[t][7]);
-     $display("prd @cycle%2d: %40h", t, temp16b);
-  end
-
-//////////////////////////////////////////////
-
-
-
-
-
-
-///// Qmem writing  /////
-
-$display("##### Qmem writing  #####");
-
-  for (q=0; q<total_cycle; q=q+1) begin
-
-    #0.5 clk = 1'b0;  
-    qmem_wr = 1;  if (q>0) qkmem_add = qkmem_add + 1; 
-
-    prob0 = Q[q][0];
-    prob1 = Q[q][1];
-    prob2 = Q[q][2];
-    prob3 = Q[q][3];
-    prob4 = Q[q][4];
-    prob5 = Q[q][5];
-    prob6 = Q[q][6];
-    prob7 = Q[q][7];
-    prob8 = Q[q][8];
-    prob9 = Q[q][9];
-    prob10 = Q[q][10];
-    prob11 = Q[q][11];
-    prob12 = Q[q][12];
-    prob13 = Q[q][13];
-    prob14 = Q[q][14];
-    prob15 = Q[q][15];
-
-    mem_in[1*bw-1:0*bw] = Q[q][0];
-    mem_in[2*bw-1:1*bw] = Q[q][1];
-    mem_in[3*bw-1:2*bw] = Q[q][2];
-    mem_in[4*bw-1:3*bw] = Q[q][3];
-    mem_in[5*bw-1:4*bw] = Q[q][4];
-    mem_in[6*bw-1:5*bw] = Q[q][5];
-    mem_in[7*bw-1:6*bw] = Q[q][6];
-    mem_in[8*bw-1:7*bw] = Q[q][7];
-    mem_in[9*bw-1:8*bw] = Q[q][8];
-    mem_in[10*bw-1:9*bw] = Q[q][9];
-    mem_in[11*bw-1:10*bw] = Q[q][10];
-    mem_in[12*bw-1:11*bw] = Q[q][11];
-    mem_in[13*bw-1:12*bw] = Q[q][12];
-    mem_in[14*bw-1:13*bw] = Q[q][13];
-    mem_in[15*bw-1:14*bw] = Q[q][14];
-    mem_in[16*bw-1:15*bw] = Q[q][15];
-
-    #0.5 clk = 1'b1;  
-
-  end
-
-
-  #0.5 clk = 1'b0;  
-  qmem_wr = 0; 
-  qkmem_add = 0;
-  #0.5 clk = 1'b1;  
-///////////////////////////////////////////
-
-
-
-
-
-///// Kmem writing  /////
-
-$display("##### Kmem writing #####");
-
-  for (q=0; q<col; q=q+1) begin
-
-    #0.5 clk = 1'b0;  
-    kmem_wr = 1; if (q>0) qkmem_add = qkmem_add + 1; 
-    
-    mem_in[1*bw-1:0*bw] = K[q][0];
-    mem_in[2*bw-1:1*bw] = K[q][1];
-    mem_in[3*bw-1:2*bw] = K[q][2];
-    mem_in[4*bw-1:3*bw] = K[q][3];
-    mem_in[5*bw-1:4*bw] = K[q][4];
-    mem_in[6*bw-1:5*bw] = K[q][5];
-    mem_in[7*bw-1:6*bw] = K[q][6];
-    mem_in[8*bw-1:7*bw] = K[q][7];
-    mem_in[9*bw-1:8*bw] = K[q][8];
-    mem_in[10*bw-1:9*bw] = K[q][9];
-    mem_in[11*bw-1:10*bw] = K[q][10];
-    mem_in[12*bw-1:11*bw] = K[q][11];
-    mem_in[13*bw-1:12*bw] = K[q][12];
-    mem_in[14*bw-1:13*bw] = K[q][13];
-    mem_in[15*bw-1:14*bw] = K[q][14];
-    mem_in[16*bw-1:15*bw] = K[q][15];
-
-    #0.5 clk = 1'b1;  
-
-  end
-
-  #0.5 clk = 1'b0;  
-  kmem_wr = 0;  
-  qkmem_add = 0;
-  #0.5 clk = 1'b1;  
-///////////////////////////////////////////
-
-
-
-  for (q=0; q<2; q=q+1) begin
-    #0.5 clk = 1'b0;  
-    #0.5 clk = 1'b1;   
-  end
-
-
-
-
-/////  K data loading  /////
-$display("##### K data loading to processor #####");
-
-  for (q=0; q<col+1; q=q+1) begin
-    #0.5 clk = 1'b0;  
-    load = 1; 
-    if (q==1) kmem_rd = 1;
-    if (q>1) begin
-       qkmem_add = qkmem_add + 1;
-    end
-
-    #0.5 clk = 1'b1;  
-  end
-
-  #0.5 clk = 1'b0;  
-  kmem_rd = 0; qkmem_add = 0;
-  #0.5 clk = 1'b1;  
-
-  #0.5 clk = 1'b0;  
-  load = 0; 
-  #0.5 clk = 1'b1;  
-
-///////////////////////////////////////////
-
- for (q=0; q<10; q=q+1) begin
-    #0.5 clk = 1'b0;   
-    #0.5 clk = 1'b1;   
- end
-
-
-
-
-
-///// execution  /////
-$display("##### execute #####");
-
-  for (q=0; q<total_cycle; q=q+1) begin
-    #0.5 clk = 1'b0;  
-    execute = 1; 
-    qmem_rd = 1;
-
-    if (q>0) begin
-       qkmem_add = qkmem_add + 1;
-    end
-
-    #0.5 clk = 1'b1;  
-  end
-
-  #0.5 clk = 1'b0;  
-  qmem_rd = 0; qkmem_add = 0; execute = 0;
-  #0.5 clk = 1'b1;  
-
-
-///////////////////////////////////////////
-
- for (q=0; q<10; q=q+1) begin
-    #0.5 clk = 1'b0;   
-    #0.5 clk = 1'b1;   
- end
-
-
-
-
-////////////// output fifo rd and wb to psum mem ///////////////////
-
-$display("##### move ofifo to pmem #####");
-
-  for (q=0; q<total_cycle; q=q+1) begin
-    #0.5 clk = 1'b0;  
-    ofifo_rd = 1; 
-    pmem_wr = 1; 
-
-    if (q>0) begin
-       pmem_add = pmem_add + 1;
-    end
-
-    #0.5 clk = 1'b1;  
-  end
-
-  #0.5 clk = 1'b0;  
-  pmem_wr = 0; pmem_add = 0; ofifo_rd = 0;
-  #0.5 clk = 1'b1;  
-
-///////////////////////////////////////////
-
- for (q=0; q<5; q=q+1) begin
-    #0.5 clk = 1'b0;   
-    #0.5 clk = 1'b1;   
- end
-
-// ////////////// sfp accumulation ///////////////////
-
-// $display("##### accumulation in sfp and wb to pmem #####");
-
-//   for (q=0; q<total_cycle; q=q+1) begin
-//     #0.5 clk = 1'b0;  
-//     div = 0;
-//     pmem_rd = 1;
-//     pmem_wr = 0;  
-//     if(q>0) pmem_add = pmem_add + 1;
-//     #0.5 clk = 1'b1;
-
-//     #0.5 clk = 1'b0;
-//     acc = 1;
-//     pmem_rd = 0;
-//     #0.5 clk = 1'b1;
-    
-//     #0.5 clk = 1'b0;
-//     acc = 0;
-//     #0.5 clk = 1'b1;
-    
-//     #0.5 clk = 1'b0;
-//     div = 1;
-//     #0.5 clk = 1'b1;
-    
-//     #0.5 clk = 1'b0;
-//     pmem_wr = 1;
-//     #0.5 clk = 1'b1;
-//   end
-
-//   #0.5 clk = 1'b0;  
-//   pmem_rd = 0; pmem_add = 0; acc = 0; div = 0; pmem_wr = 0;
-//   #0.5 clk = 1'b1;  
-
-// ///////////////////////////////////////////
-
-
-
-  #10 $finish;
-
-
-end
+	parameter total_cycle = 8;
+	parameter bw = 8;
+	parameter bw_psum = 2*bw+4;
+	parameter pr = 8;
+	parameter col = 8;
+	parameter sfp_out_shift = 7;
+	parameter sfp_acc_lat = 1;
+
+	//================= integer / array storage =====================//
+	integer qkvn_file, qkvn_scan_file, captured_data;
+	integer j, k, t, q, c;
+	integer row_err, row;
+	integer divisor;
+
+	integer K_c0     [col-1:0][pr-1:0];
+	integer K_c1     [col-1:0][pr-1:0];
+	integer Q        [total_cycle-1:0][pr-1:0];
+	integer V_T      [total_cycle-1:0][pr-1:0];
+	integer result_c0 [total_cycle-1:0][col-1:0];
+	integer result_c1 [total_cycle-1:0][col-1:0];
+	integer abs_result_c0 [total_cycle-1:0][col-1:0];
+	integer abs_result_c1 [total_cycle-1:0][col-1:0];
+	integer sum_c0   [total_cycle-1:0];
+	integer sum_c1   [total_cycle-1:0];
+	integer N_est_c0 [total_cycle-1:0][col-1:0];
+	integer N_est_c1 [total_cycle-1:0][col-1:0];
+	integer vn_c0    [total_cycle-1:0][col-1:0];
+	integer vn_c1    [total_cycle-1:0][col-1:0];
+	integer err0, err1;
+	integer mismatch_t1_c0, mismatch_t1_c1;  // Test 1 (QK)
+	integer mismatch_t2_c0, mismatch_t2_c1;  // Test 2 (Norm)
+	integer mismatch_t3_c0, mismatch_t3_c1;  // Test 3 (VN)
+	integer q0, q1, row0, row1, row_err0, row_err1, c0, c1;
+	integer          golden_col [0:7];  // RTL col c -> golden result[t][golden_col[c]] (chain mapping)
+
+
+
+	//================= clk (CDC: tick-based, different freq) ==========//
+	reg                clk0  = 0;
+	reg                clk1  = 0;
+	task tick0; begin #(`H_CYCLE0) clk0=1'b0; #(`H_CYCLE0) clk0=1'b1; end endtask
+	task tick1; begin #(`H_CYCLE1) clk1=1'b0; #(`H_CYCLE1) clk1=1'b1; end endtask
+
+	//================= CDC sync flags (ref: fullchip_sepclk_tb) =================//
+	reg data_ready_flag = 0;
+	reg reset_done_c0_flag = 0;
+	reg test1_done_c0_flag = 0, test1_done_c1_flag = 0;
+	reg test2_done_c0_flag = 0, test2_done_c1_flag = 0;
+	reg test3_done_c0_flag = 0, test3_done_c1_flag = 0;
+
+	//================= timeout ======================//
+	initial #(`TIME_OUT) $finish;
+
+	//============= Input to DUT  ===============//
+	reg               	reset0 = 1, reset1 = 1;
+	reg        			start0 = 0, start1 = 0;
+	reg  [pr*bw-1:0]  	mem_in0, 	mem_in1;
+	reg  [1:0]        	mem_cmd_ext0 = 2'd0, mem_cmd_ext1 = 2'd0; 
+  	reg  [3:0]        	addr_ext0 = 4'd0, addr_ext1 = 4'd0; 
+
+	wire [5:0]       	inst_ext0, inst_ext1;
+	assign inst_ext0 = {addr_ext0, mem_cmd_ext0};  // core.v expects inst_ext[5:2]=addr, [1:0]=cmd
+	assign inst_ext1 = {addr_ext1, mem_cmd_ext1};
+
+	// 00: No Op, 01: kmem wr, 10: qmem wr, 11: pmem rd
+	localparam EXT_CMD_NO_OP   = 2'b00;
+	localparam EXT_CMD_KMEM_WR = 2'b01;
+	localparam EXT_CMD_QMEM_WR = 2'b10;
+	localparam EXT_CMD_PMEM_RD = 2'b11;
+
+ 
+	reg 		set_mode0 = 0, set_mode1 = 0;
+	reg [2:0]   mode_in0, mode_in1;
+	// Mode setting.
+	localparam CORE_MODE_MULT_save_to_PMEM					= 3'b100;
+	localparam CORE_MODE_MULT_NORM_save_to_PMEM 			= 3'b001;
+	localparam CORE_MODE_MULT_NORM_save_to_KMEM 			= 3'b010;
+	localparam CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM 	= 3'b011;
+
+	//============= DUT's Output  ===============//
+	wire [3:0] 	status0, status1;      // {busy, qmem_locked, kmem_locked, pmem_locked} from controller
+	wire [bw_psum*col-1:0]	pmem_out0, pmem_out1;
+	wire busy0, busy1, qmem_locked0, qmem_locked1, kmem_locked0, kmem_locked1, pmem_locked0, pmem_locked1;
+	assign busy0 = status0[3];
+	assign qmem_locked0 = status0[2];
+	assign kmem_locked0 = status0[1];
+	assign pmem_locked0 = status0[0];
+	assign busy1 = status1[3];
+	assign qmem_locked1 = status1[2];
+	assign kmem_locked1 = status1[1];
+	assign pmem_locked1 = status1[0];
+
+
+	fullchip #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(2*pr), .half_pr(pr)) fullchip_instance(
+		.reset0(reset0), 		.reset1(reset1), 	
+		.clk0(clk0), 			.clk1(clk1), 	
+		.start0(start0), 		.start1(start1),
+		.set_mode0(set_mode0), 	.set_mode1(set_mode1),
+		.mode_in0(mode_in0), 	.mode_in1(mode_in1),
+		.mem_in0(mem_in0), 		.mem_in1(mem_in1), 
+		.inst_ext0(inst_ext0), 	.inst_ext1(inst_ext1),
+		.out0(pmem_out0), 		.out1(pmem_out1),	
+		.status0(status0), 		.status1(status1)
+	);
+
+	// ========== Initial 1: Data + Golden (no timing) ==========
+	initial begin
+		$dumpfile("sim/waveform/fullchip.vcd");
+		$dumpvars(0, fullchip_tb);
+		$display("");
+
+		//########################################################################
+		//  data.txt -> Integer Arrays: Q, K_c0, K_c1, V_T
+		//########################################################################
+		$display("##### Q data txt reading #####");
+		qkvn_file = $fopen("sim/pattern/qdata.txt", "r");
+		if (qkvn_file == 0) begin $display("ERROR: cannot open qdata.txt"); $finish; end
+		for (q = 0; q < total_cycle; q = q+1)
+			for (j = 0; j < pr; j = j+1) begin
+				qkvn_scan_file = $fscanf(qkvn_file, "%d", captured_data);
+				Q[q][j] = captured_data;
+			end
+		$display("##### K data core0 txt reading #####");
+		qkvn_file = $fopen("sim/pattern/kdata_core0.txt", "r");
+		if (qkvn_file == 0) begin $display("ERROR: cannot open kdata_core0.txt"); $finish; end
+		for (q = 0; q < col; q = q+1)
+			for (j = 0; j < pr; j = j+1) begin
+				qkvn_scan_file = $fscanf(qkvn_file, "%d", captured_data);
+				K_c0[q][j] = captured_data;
+			end
+		$display("##### K data core1 txt reading #####");
+		qkvn_file = $fopen("sim/pattern/kdata_core1.txt", "r");
+		if (qkvn_file == 0) begin $display("ERROR: cannot open kdata_core1.txt"); $finish; end
+		for (q = 0; q < col; q = q+1)
+			for (j = 0; j < pr; j = j+1) begin
+				qkvn_scan_file = $fscanf(qkvn_file, "%d", captured_data);
+				K_c1[q][j] = captured_data;
+			end
+		$display("##### V data txt reading #####");
+		qkvn_file = $fopen("sim/pattern/vdata.txt", "r");
+		if (qkvn_file == 0) begin $display("ERROR: cannot open vdata.txt"); $finish; end
+		for (q = 0; q < col; q = q+1)
+			for (j = 0; j < pr; j = j+1) begin
+				qkvn_scan_file = $fscanf(qkvn_file, "%d", captured_data);
+				V_T[j][q] = captured_data;
+			end
+
+		//########################################################################
+		//  Golden: result_c0, result_c1, sum_c0, sum_c1, N_est_c0, N_est_c1, vn_c0, vn_c1
+		//########################################################################
+		for (t = 0; t < total_cycle; t = t+1)
+			for (q = 0; q < col; q = q+1) begin
+				result_c0[t][q] = 0;
+				result_c1[t][q] = 0;
+			end
+		for (t = 0; t < total_cycle; t = t+1) begin
+			for (q = 0; q < col; q = q+1) begin
+				for (k = 0; k < pr; k = k+1) begin
+					result_c0[t][q] = result_c0[t][q] + Q[t][k] * K_c0[q][k];
+					result_c1[t][q] = result_c1[t][q] + Q[t][k] * K_c1[q][k];
+				end
+			end
+		end
+		for (t = 0; t < total_cycle; t = t+1) begin
+			sum_c0[t] = 0;
+			sum_c1[t] = 0;
+			for (q = 0; q < col; q = q+1) begin
+				abs_result_c0[t][q] = (result_c0[t][q] >= 0) ? result_c0[t][q] : -result_c0[t][q];
+				abs_result_c1[t][q] = (result_c1[t][q] >= 0) ? result_c1[t][q] : -result_c1[t][q];
+				sum_c0[t] = sum_c0[t] + abs_result_c0[t][q];
+				sum_c1[t] = sum_c1[t] + abs_result_c1[t][q];
+			end
+		end
+		for (t = 0; t < total_cycle; t = t+1)
+			for (q = 0; q < col; q = q+1) begin
+				divisor = sum_c0[t] + sum_c1[t];
+				if (divisor == 0) divisor = 1;
+				N_est_c0[t][q] = (abs_result_c0[t][q] << sfp_out_shift) / divisor;
+				N_est_c1[t][q] = (abs_result_c1[t][q] << sfp_out_shift) / divisor;
+			end
+		for (t = 0; t < total_cycle; t = t+1)
+			for (q = 0; q < col; q = q+1) begin
+				vn_c0[t][q] = 0;
+				vn_c1[t][q] = 0;
+				for (k = 0; k < pr; k = k+1) begin
+					vn_c0[t][q] = vn_c0[t][q] + V_T[t][k] * N_est_c0[q][k];
+					vn_c1[t][q] = vn_c1[t][q] + V_T[t][k] * N_est_c1[q][k];
+				end
+			end
+		for (c = 0; c < col; c = c+1) golden_col[c] = 7 - c;
+
+		#0; data_ready_flag = 1;
+
+		mismatch_t1_c0 = 0; mismatch_t1_c1 = 0;
+		mismatch_t2_c0 = 0; mismatch_t2_c1 = 0;
+		mismatch_t3_c0 = 0; mismatch_t3_c1 = 0;
+
+		wait(test1_done_c0_flag && test1_done_c1_flag);
+		wait(test2_done_c0_flag && test2_done_c1_flag);
+		wait(test3_done_c0_flag && test3_done_c1_flag);
+
+		$display("##### All tests complete, checking results #####");
+		$display("------------------------------------------------------------");
+		$display("  Test 1 (QK)  -- C0: %0d  C1: %0d mismatch(es)",
+			mismatch_t1_c0, mismatch_t1_c1);
+		$display("  Test 2 (Norm)-- C0: %0d  C1: %0d mismatch(es)",
+			mismatch_t2_c0, mismatch_t2_c1);
+		$display("  Test 3 (VN)  -- C0: %0d  C1: %0d mismatch(es)",
+			mismatch_t3_c0, mismatch_t3_c1);
+		if (mismatch_t1_c0 == 0 && mismatch_t1_c1 == 0 &&
+		    mismatch_t2_c0 == 0 && mismatch_t2_c1 == 0 &&
+		    mismatch_t3_c0 == 0 && mismatch_t3_c1 == 0) begin
+			$display("  PASS  %0d rows x %0d cols  all tests match estimated result", total_cycle, col);
+			$display("------------------------------------------------------------");
+		end else begin
+			$display("  FAIL  T1:%0d + T2:%0d + T3:%0d mismatches",
+				mismatch_t1_c0 + mismatch_t1_c1,
+				mismatch_t2_c0 + mismatch_t2_c1,
+				mismatch_t3_c0 + mismatch_t3_c1);
+			$display("------------------------------------------------------------");
+		end
+		$display("");
+
+		#10 $finish;
+	end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	// ========== Initial 2: clk0 domain (C0 stimulus) ==========
+	initial begin
+		while (!data_ready_flag) tick0;
+
+		// Reset C0
+		reset0 = 1;
+		repeat(3) tick0;
+		reset0 = 0;
+		reset_done_c0_flag = 1;
+		tick0;
+
+		// ===== Test 1 =====
+		set_mode0 = 1'b1; mode_in0 = CORE_MODE_MULT_save_to_PMEM;
+		repeat(2) tick0;
+		set_mode0 = 1'b0; mode_in0 = 3'b000; tick0;
+
+		mem_cmd_ext0 = EXT_CMD_KMEM_WR; addr_ext0 = 0;
+		for (q0 = 0; q0 < col; q0 = q0+1) begin
+			mem_in0[1*bw-1:0*bw] = K_c0[q0][7]; mem_in0[2*bw-1:1*bw] = K_c0[q0][6];
+			mem_in0[3*bw-1:2*bw] = K_c0[q0][5]; mem_in0[4*bw-1:3*bw] = K_c0[q0][4];
+			mem_in0[5*bw-1:4*bw] = K_c0[q0][3]; mem_in0[6*bw-1:5*bw] = K_c0[q0][2];
+			mem_in0[7*bw-1:6*bw] = K_c0[q0][1]; mem_in0[8*bw-1:7*bw] = K_c0[q0][0];
+			tick0; addr_ext0 = addr_ext0 + 4'd1;
+		end
+		mem_cmd_ext0 = EXT_CMD_NO_OP; addr_ext0 = 0; tick0;
+
+		mem_cmd_ext0 = EXT_CMD_QMEM_WR; addr_ext0 = 0;
+		for (q0 = 0; q0 < total_cycle; q0 = q0+1) begin
+			mem_in0[1*bw-1:0*bw] = Q[q0][7]; mem_in0[2*bw-1:1*bw] = Q[q0][6];
+			mem_in0[3*bw-1:2*bw] = Q[q0][5]; mem_in0[4*bw-1:3*bw] = Q[q0][4];
+			mem_in0[5*bw-1:4*bw] = Q[q0][3]; mem_in0[6*bw-1:5*bw] = Q[q0][2];
+			mem_in0[7*bw-1:6*bw] = Q[q0][1]; mem_in0[8*bw-1:7*bw] = Q[q0][0];
+			tick0; addr_ext0 = addr_ext0 + 4'd1;
+		end
+		mem_cmd_ext0 = EXT_CMD_NO_OP; addr_ext0 = 0; tick0;
+
+		start0 = 1;
+		repeat(2) tick0;
+		start0 = 0; tick0;
+		while (busy0) tick0;
+		repeat(2) tick0;  // margin for PMEM output
+
+		$display("################################################################## ");
+		$display("      Test 1   |  Dual-core Matrix Multiplication (PMEM = Q*K)   ");
+		$display("------------------------------------------------------------------ ");
+		$display("  C0 PMEM content :");
+		$display("  [row]  RTL   :  col0  col1  col2  col3  col4  col5  col6  col7");
+		$display("         golden:  ----  ----  ----  ----  ----  ----  ----  ----");
+		err0 = 0;
+		mem_cmd_ext0 = EXT_CMD_PMEM_RD; addr_ext0 = 0;
+		repeat(2) tick0;  // PMEM read latency
+		for (q0 = 0; q0 < total_cycle; q0 = q0+1) begin
+			row0 = q0;
+			$display("   [%0d]   RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row0,
+				$signed(pmem_out0[7*bw_psum +: bw_psum]), $signed(pmem_out0[6*bw_psum +: bw_psum]),
+				$signed(pmem_out0[5*bw_psum +: bw_psum]), $signed(pmem_out0[4*bw_psum +: bw_psum]),
+				$signed(pmem_out0[3*bw_psum +: bw_psum]), $signed(pmem_out0[2*bw_psum +: bw_psum]),
+				$signed(pmem_out0[1*bw_psum +: bw_psum]), $signed(pmem_out0[0*bw_psum +: bw_psum]));
+			$display("         golden: %5d %5d %5d %5d %5d %5d %5d %5d",
+				result_c0[row0][0], result_c0[row0][1], result_c0[row0][2], result_c0[row0][3],
+				result_c0[row0][4], result_c0[row0][5], result_c0[row0][6], result_c0[row0][7]);
+			row_err0 = 0;
+			for (c0 = 0; c0 < col; c0 = c0+1)
+				if ($signed(pmem_out0[c0*bw_psum +: bw_psum]) !== result_c0[row0][golden_col[c0]]) begin
+					$display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c0,
+						$signed(pmem_out0[c0*bw_psum +: bw_psum]), result_c0[row0][golden_col[c0]]);
+					err0 = err0 + 1; row_err0 = row_err0 + 1;
+				end
+			$display("       %s", (row_err0 == 0) ? "[OK]" : "[MISMATCH]");
+			addr_ext0 = addr_ext0 + 1; repeat(2) tick0;
+		end
+		mem_cmd_ext0 = EXT_CMD_NO_OP;
+		mismatch_t1_c0 = err0;
+		$display("------------------------------------------------------------");
+		if (err0 == 0) $display("  PASS  C0: %0d rows x %0d cols  all match", total_cycle, col);
+		else $display("  FAIL  C0: %0d mismatches", err0);
+		$display("------------------------------------------------------------");
+		$display("");
+		test1_done_c0_flag = 1;
+		while (!test1_done_c1_flag) tick0;
+
+		// ===== Test 2 =====
+		reset0 = 1; repeat(3) tick0; reset0 = 0; tick0;
+		set_mode0 = 1'b1; mode_in0 = CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM;
+		repeat(2) tick0; set_mode0 = 1'b0; mode_in0 = 3'b000; tick0;
+
+		mem_cmd_ext0 = EXT_CMD_KMEM_WR; addr_ext0 = 0;
+		for (q0 = 0; q0 < col; q0 = q0+1) begin
+			mem_in0[1*bw-1:0*bw] = K_c0[q0][7]; mem_in0[2*bw-1:1*bw] = K_c0[q0][6];
+			mem_in0[3*bw-1:2*bw] = K_c0[q0][5]; mem_in0[4*bw-1:3*bw] = K_c0[q0][4];
+			mem_in0[5*bw-1:4*bw] = K_c0[q0][3]; mem_in0[6*bw-1:5*bw] = K_c0[q0][2];
+			mem_in0[7*bw-1:6*bw] = K_c0[q0][1]; mem_in0[8*bw-1:7*bw] = K_c0[q0][0];
+			tick0; addr_ext0 = addr_ext0 + 4'd1;
+		end
+		mem_cmd_ext0 = EXT_CMD_NO_OP; addr_ext0 = 0; tick0;
+
+		mem_cmd_ext0 = EXT_CMD_QMEM_WR; addr_ext0 = 0;
+		for (q0 = 0; q0 < total_cycle; q0 = q0+1) begin
+			mem_in0[1*bw-1:0*bw] = Q[q0][7]; mem_in0[2*bw-1:1*bw] = Q[q0][6];
+			mem_in0[3*bw-1:2*bw] = Q[q0][5]; mem_in0[4*bw-1:3*bw] = Q[q0][4];
+			mem_in0[5*bw-1:4*bw] = Q[q0][3]; mem_in0[6*bw-1:5*bw] = Q[q0][2];
+			mem_in0[7*bw-1:6*bw] = Q[q0][1]; mem_in0[8*bw-1:7*bw] = Q[q0][0];
+			tick0; addr_ext0 = addr_ext0 + 4'd1;
+		end
+		mem_cmd_ext0 = EXT_CMD_NO_OP; addr_ext0 = 0; tick0;
+
+		start0 = 1; repeat(2) tick0; start0 = 0; tick0;
+		while (busy0) tick0; repeat(2) tick0;
+
+		$display("################################################################## ");
+		$display("     Test 2   |  Dual-core MatMul + Norm (cross-core sum FIFO)    ");
+		$display("------------------------------------------------------------------ ");
+		$display("  C0 PMEM content :");
+		$display("  [row]  RTL   :  col0  col1  col2  col3  col4  col5  col6  col7");
+		$display("         golden:  ----  ----  ----  ----  ----  ----  ----  ----");
+		err0 = 0;
+		mem_cmd_ext0 = EXT_CMD_PMEM_RD; addr_ext0 = 0;
+		repeat(2) tick0;  // PMEM read latency
+		for (q0 = 0; q0 < total_cycle; q0 = q0+1) begin
+			row0 = q0;
+			$display("   [%0d]   RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row0,
+				$signed(pmem_out0[7*bw_psum +: bw_psum]), $signed(pmem_out0[6*bw_psum +: bw_psum]),
+				$signed(pmem_out0[5*bw_psum +: bw_psum]), $signed(pmem_out0[4*bw_psum +: bw_psum]),
+				$signed(pmem_out0[3*bw_psum +: bw_psum]), $signed(pmem_out0[2*bw_psum +: bw_psum]),
+				$signed(pmem_out0[1*bw_psum +: bw_psum]), $signed(pmem_out0[0*bw_psum +: bw_psum]));
+			$display("         golden: %5d %5d %5d %5d %5d %5d %5d %5d",
+				N_est_c0[row0][0], N_est_c0[row0][1], N_est_c0[row0][2], N_est_c0[row0][3],
+				N_est_c0[row0][4], N_est_c0[row0][5], N_est_c0[row0][6], N_est_c0[row0][7]);
+			row_err0 = 0;
+			for (c0 = 0; c0 < col; c0 = c0+1)
+				if ($signed(pmem_out0[c0*bw_psum +: bw_psum]) !== N_est_c0[row0][golden_col[c0]]) begin
+					$display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c0,
+						$signed(pmem_out0[c0*bw_psum +: bw_psum]), N_est_c0[row0][golden_col[c0]]);
+					err0 = err0 + 1; row_err0 = row_err0 + 1;
+				end
+			$display("       %s", (row_err0 == 0) ? "[OK]" : "[MISMATCH]");
+			addr_ext0 = addr_ext0 + 1; repeat(2) tick0;
+		end
+		mem_cmd_ext0 = EXT_CMD_NO_OP;
+		mismatch_t2_c0 = err0;
+		$display("------------------------------------------------------------");
+		if (err0 == 0) $display("  PASS  C0: %0d rows x %0d cols  all match (norm)", total_cycle, col);
+		else $display("  FAIL  C0: %0d mismatches", err0);
+		$display("------------------------------------------------------------");
+		$display("");
+		test2_done_c0_flag = 1;
+		while (!test2_done_c1_flag) tick0;
+
+		// ===== Test 3 =====
+		reset0 = 1; repeat(3) tick0; reset0 = 0; tick0;
+		set_mode0 = 1'b1; mode_in0 = CORE_MODE_MULT_save_to_PMEM;
+		repeat(2) tick0; set_mode0 = 1'b0; mode_in0 = 3'b000; tick0;
+
+		mem_cmd_ext0 = EXT_CMD_QMEM_WR; addr_ext0 = 0;
+		for (q0 = 0; q0 < col; q0 = q0+1) begin
+			mem_in0[1*bw-1:0*bw] = V_T[q0][7]; mem_in0[2*bw-1:1*bw] = V_T[q0][6];
+			mem_in0[3*bw-1:2*bw] = V_T[q0][5]; mem_in0[4*bw-1:3*bw] = V_T[q0][4];
+			mem_in0[5*bw-1:4*bw] = V_T[q0][3]; mem_in0[6*bw-1:5*bw] = V_T[q0][2];
+			mem_in0[7*bw-1:6*bw] = V_T[q0][1]; mem_in0[8*bw-1:7*bw] = V_T[q0][0];
+			tick0; addr_ext0 = addr_ext0 + 4'd1;
+		end
+		mem_cmd_ext0 = EXT_CMD_NO_OP; addr_ext0 = 0; tick0;
+
+		start0 = 1; repeat(2) tick0; start0 = 0; tick0;
+		while (busy0) tick0; repeat(2) tick0;
+
+		$display("################################################################## ");
+		$display("     Test 3   |  Full pipeline VN (PMEM = V * N from Test2 KMEM)  ");
+		$display("------------------------------------------------------------------ ");
+		$display("  C0 PMEM content :");
+		$display("  [row]  RTL   :  col0  col1  col2  col3  col4  col5  col6  col7");
+		$display("         golden:  ----  ----  ----  ----  ----  ----  ----  ----");
+		err0 = 0;
+		mem_cmd_ext0 = EXT_CMD_PMEM_RD; addr_ext0 = 0;
+		repeat(2) tick0;  // PMEM read latency
+		for (q0 = 0; q0 < total_cycle; q0 = q0+1) begin
+			row0 = q0;
+			$display("   [%0d]   RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row0,
+				$signed(pmem_out0[7*bw_psum +: bw_psum]), $signed(pmem_out0[6*bw_psum +: bw_psum]),
+				$signed(pmem_out0[5*bw_psum +: bw_psum]), $signed(pmem_out0[4*bw_psum +: bw_psum]),
+				$signed(pmem_out0[3*bw_psum +: bw_psum]), $signed(pmem_out0[2*bw_psum +: bw_psum]),
+				$signed(pmem_out0[1*bw_psum +: bw_psum]), $signed(pmem_out0[0*bw_psum +: bw_psum]));
+			$display("         golden: %5d %5d %5d %5d %5d %5d %5d %5d",
+				vn_c0[row0][0], vn_c0[row0][1], vn_c0[row0][2], vn_c0[row0][3],
+				vn_c0[row0][4], vn_c0[row0][5], vn_c0[row0][6], vn_c0[row0][7]);
+			row_err0 = 0;
+			for (c0 = 0; c0 < col; c0 = c0+1)
+				if ($signed(pmem_out0[c0*bw_psum +: bw_psum]) !== vn_c0[row0][golden_col[c0]]) begin
+					$display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c0,
+						$signed(pmem_out0[c0*bw_psum +: bw_psum]), vn_c0[row0][golden_col[c0]]);
+					err0 = err0 + 1; row_err0 = row_err0 + 1;
+				end
+			$display("       %s", (row_err0 == 0) ? "[OK]" : "[MISMATCH]");
+			addr_ext0 = addr_ext0 + 1; repeat(2) tick0;
+		end
+		mem_cmd_ext0 = EXT_CMD_NO_OP;
+		mismatch_t3_c0 = err0;
+		$display("------------------------------------------------------------");
+		if (err0 == 0) $display("  PASS  C0: %0d rows x %0d cols  all match (VN)", total_cycle, col);
+		else $display("  FAIL  C0: %0d mismatches", err0);
+		$display("------------------------------------------------------------");
+		$display("");
+		test3_done_c0_flag = 1;
+		while (!test3_done_c1_flag) tick0;
+
+		while (1) tick0;  // keep clk0 running
+	end
+
+	// ========== Initial 3: clk1 domain (C1 stimulus) ==========
+	initial begin
+		while (!data_ready_flag) tick1;
+		while (!reset_done_c0_flag) tick1;
+
+		// Reset C1
+		reset1 = 1;
+		repeat(3) tick1;
+		reset1 = 0;
+		tick1;
+
+		// ===== Test 1 =====
+		set_mode1 = 1'b1; mode_in1 = CORE_MODE_MULT_save_to_PMEM;
+		repeat(2) tick1;
+		set_mode1 = 1'b0; mode_in1 = 3'b000; tick1;
+
+		mem_cmd_ext1 = EXT_CMD_KMEM_WR; addr_ext1 = 0;
+		for (q1 = 0; q1 < col; q1 = q1+1) begin
+			mem_in1[1*bw-1:0*bw] = K_c1[q1][7]; mem_in1[2*bw-1:1*bw] = K_c1[q1][6];
+			mem_in1[3*bw-1:2*bw] = K_c1[q1][5]; mem_in1[4*bw-1:3*bw] = K_c1[q1][4];
+			mem_in1[5*bw-1:4*bw] = K_c1[q1][3]; mem_in1[6*bw-1:5*bw] = K_c1[q1][2];
+			mem_in1[7*bw-1:6*bw] = K_c1[q1][1]; mem_in1[8*bw-1:7*bw] = K_c1[q1][0];
+			tick1; addr_ext1 = addr_ext1 + 4'd1;
+		end
+		mem_cmd_ext1 = EXT_CMD_NO_OP; addr_ext1 = 0; tick1;
+
+		mem_cmd_ext1 = EXT_CMD_QMEM_WR; addr_ext1 = 0;
+		for (q1 = 0; q1 < total_cycle; q1 = q1+1) begin
+			mem_in1[1*bw-1:0*bw] = Q[q1][7]; mem_in1[2*bw-1:1*bw] = Q[q1][6];
+			mem_in1[3*bw-1:2*bw] = Q[q1][5]; mem_in1[4*bw-1:3*bw] = Q[q1][4];
+			mem_in1[5*bw-1:4*bw] = Q[q1][3]; mem_in1[6*bw-1:5*bw] = Q[q1][2];
+			mem_in1[7*bw-1:6*bw] = Q[q1][1]; mem_in1[8*bw-1:7*bw] = Q[q1][0];
+			tick1; addr_ext1 = addr_ext1 + 4'd1;
+		end
+		mem_cmd_ext1 = EXT_CMD_NO_OP; addr_ext1 = 0; tick1;
+
+		start1 = 1;
+		repeat(2) tick1;
+		start1 = 0; tick1;
+		while (busy1) tick1;
+		repeat(2) tick1;  // margin for PMEM output (clk1 domain)
+
+		$display("################################################################## ");
+		$display("      Test 1   |  Dual-core Matrix Multiplication (PMEM = Q*K)   ");
+		$display("------------------------------------------------------------------ ");
+		$display("  C1 PMEM content :");
+		$display("  [row]  RTL   :  col0  col1  col2  col3  col4  col5  col6  col7");
+		$display("         golden:  ----  ----  ----  ----  ----  ----  ----  ----");
+		err1 = 0;
+		mem_cmd_ext1 = EXT_CMD_PMEM_RD; addr_ext1 = 0;
+		repeat(2) tick1;  // PMEM read latency
+		for (q1 = 0; q1 < total_cycle; q1 = q1+1) begin
+			row1 = q1;
+			$display("   [%0d]   RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row1,
+				$signed(pmem_out1[7*bw_psum +: bw_psum]), $signed(pmem_out1[6*bw_psum +: bw_psum]),
+				$signed(pmem_out1[5*bw_psum +: bw_psum]), $signed(pmem_out1[4*bw_psum +: bw_psum]),
+				$signed(pmem_out1[3*bw_psum +: bw_psum]), $signed(pmem_out1[2*bw_psum +: bw_psum]),
+				$signed(pmem_out1[1*bw_psum +: bw_psum]), $signed(pmem_out1[0*bw_psum +: bw_psum]));
+			$display("         golden: %5d %5d %5d %5d %5d %5d %5d %5d",
+				result_c1[row1][0], result_c1[row1][1], result_c1[row1][2], result_c1[row1][3],
+				result_c1[row1][4], result_c1[row1][5], result_c1[row1][6], result_c1[row1][7]);
+			row_err1 = 0;
+			for (c1 = 0; c1 < col; c1 = c1+1)
+				if ($signed(pmem_out1[c1*bw_psum +: bw_psum]) !== result_c1[row1][golden_col[c1]]) begin
+					$display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c1,
+						$signed(pmem_out1[c1*bw_psum +: bw_psum]), result_c1[row1][golden_col[c1]]);
+					err1 = err1 + 1; row_err1 = row_err1 + 1;
+				end
+			$display("       %s", (row_err1 == 0) ? "[OK]" : "[MISMATCH]");
+			addr_ext1 = addr_ext1 + 1; repeat(2) tick1;
+		end
+		mem_cmd_ext1 = EXT_CMD_NO_OP;
+		mismatch_t1_c1 = err1;
+		$display("------------------------------------------------------------");
+		if (err1 == 0) $display("  PASS  C1: %0d rows x %0d cols  all match", total_cycle, col);
+		else $display("  FAIL  C1: %0d mismatches", err1);
+		$display("------------------------------------------------------------");
+		$display("");
+		test1_done_c1_flag = 1;
+		while (!test1_done_c0_flag) tick1;
+
+		// ===== Test 2 =====
+		reset1 = 1; repeat(3) tick1; reset1 = 0; tick1;
+		set_mode1 = 1'b1; mode_in1 = CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM;
+		repeat(2) tick1; set_mode1 = 1'b0; mode_in1 = 3'b000; tick1;
+
+		mem_cmd_ext1 = EXT_CMD_KMEM_WR; addr_ext1 = 0;
+		for (q1 = 0; q1 < col; q1 = q1+1) begin
+			mem_in1[1*bw-1:0*bw] = K_c1[q1][7]; mem_in1[2*bw-1:1*bw] = K_c1[q1][6];
+			mem_in1[3*bw-1:2*bw] = K_c1[q1][5]; mem_in1[4*bw-1:3*bw] = K_c1[q1][4];
+			mem_in1[5*bw-1:4*bw] = K_c1[q1][3]; mem_in1[6*bw-1:5*bw] = K_c1[q1][2];
+			mem_in1[7*bw-1:6*bw] = K_c1[q1][1]; mem_in1[8*bw-1:7*bw] = K_c1[q1][0];
+			tick1; addr_ext1 = addr_ext1 + 4'd1;
+		end
+		mem_cmd_ext1 = EXT_CMD_NO_OP; addr_ext1 = 0; tick1;
+
+		mem_cmd_ext1 = EXT_CMD_QMEM_WR; addr_ext1 = 0;
+		for (q1 = 0; q1 < total_cycle; q1 = q1+1) begin
+			mem_in1[1*bw-1:0*bw] = Q[q1][7]; mem_in1[2*bw-1:1*bw] = Q[q1][6];
+			mem_in1[3*bw-1:2*bw] = Q[q1][5]; mem_in1[4*bw-1:3*bw] = Q[q1][4];
+			mem_in1[5*bw-1:4*bw] = Q[q1][3]; mem_in1[6*bw-1:5*bw] = Q[q1][2];
+			mem_in1[7*bw-1:6*bw] = Q[q1][1]; mem_in1[8*bw-1:7*bw] = Q[q1][0];
+			tick1; addr_ext1 = addr_ext1 + 4'd1;
+		end
+		mem_cmd_ext1 = EXT_CMD_NO_OP; addr_ext1 = 0; tick1;
+
+		start1 = 1; repeat(2) tick1; start1 = 0; tick1;
+		while (busy1) tick1; repeat(2) tick1;
+
+		$display("################################################################## ");
+		$display("     Test 2   |  Dual-core MatMul + Norm (cross-core sum FIFO)    ");
+		$display("------------------------------------------------------------------ ");
+		$display("  C1 PMEM content :");
+		$display("  [row]  RTL   :  col0  col1  col2  col3  col4  col5  col6  col7");
+		$display("         golden:  ----  ----  ----  ----  ----  ----  ----  ----");
+		err1 = 0;
+		mem_cmd_ext1 = EXT_CMD_PMEM_RD; addr_ext1 = 0;
+		repeat(2) tick1;  // PMEM read latency
+		for (q1 = 0; q1 < total_cycle; q1 = q1+1) begin
+			row1 = q1;
+			$display("   [%0d]   RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row1,
+				$signed(pmem_out1[7*bw_psum +: bw_psum]), $signed(pmem_out1[6*bw_psum +: bw_psum]),
+				$signed(pmem_out1[5*bw_psum +: bw_psum]), $signed(pmem_out1[4*bw_psum +: bw_psum]),
+				$signed(pmem_out1[3*bw_psum +: bw_psum]), $signed(pmem_out1[2*bw_psum +: bw_psum]),
+				$signed(pmem_out1[1*bw_psum +: bw_psum]), $signed(pmem_out1[0*bw_psum +: bw_psum]));
+			$display("         golden: %5d %5d %5d %5d %5d %5d %5d %5d",
+				N_est_c1[row1][0], N_est_c1[row1][1], N_est_c1[row1][2], N_est_c1[row1][3],
+				N_est_c1[row1][4], N_est_c1[row1][5], N_est_c1[row1][6], N_est_c1[row1][7]);
+			row_err1 = 0;
+			for (c1 = 0; c1 < col; c1 = c1+1)
+				if ($signed(pmem_out1[c1*bw_psum +: bw_psum]) !== N_est_c1[row1][golden_col[c1]]) begin
+					$display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c1,
+						$signed(pmem_out1[c1*bw_psum +: bw_psum]), N_est_c1[row1][golden_col[c1]]);
+					err1 = err1 + 1; row_err1 = row_err1 + 1;
+				end
+			$display("       %s", (row_err1 == 0) ? "[OK]" : "[MISMATCH]");
+			addr_ext1 = addr_ext1 + 1; repeat(2) tick1;
+		end
+		mem_cmd_ext1 = EXT_CMD_NO_OP;
+		mismatch_t2_c1 = err1;
+		$display("------------------------------------------------------------");
+		if (err1 == 0) $display("  PASS  C1: %0d rows x %0d cols  all match (norm)", total_cycle, col);
+		else $display("  FAIL  C1: %0d mismatches", err1);
+		$display("------------------------------------------------------------");
+		$display("");
+		test2_done_c1_flag = 1;
+		while (!test2_done_c0_flag) tick1;
+
+		// ===== Test 3 =====
+		reset1 = 1; repeat(3) tick1; reset1 = 0; tick1;
+		set_mode1 = 1'b1; mode_in1 = CORE_MODE_MULT_save_to_PMEM;
+		repeat(2) tick1; set_mode1 = 1'b0; mode_in1 = 3'b000; tick1;
+
+		mem_cmd_ext1 = EXT_CMD_QMEM_WR; addr_ext1 = 0;
+		for (q1 = 0; q1 < col; q1 = q1+1) begin
+			mem_in1[1*bw-1:0*bw] = V_T[q1][7]; mem_in1[2*bw-1:1*bw] = V_T[q1][6];
+			mem_in1[3*bw-1:2*bw] = V_T[q1][5]; mem_in1[4*bw-1:3*bw] = V_T[q1][4];
+			mem_in1[5*bw-1:4*bw] = V_T[q1][3]; mem_in1[6*bw-1:5*bw] = V_T[q1][2];
+			mem_in1[7*bw-1:6*bw] = V_T[q1][1]; mem_in1[8*bw-1:7*bw] = V_T[q1][0];
+			tick1; addr_ext1 = addr_ext1 + 4'd1;
+		end
+		mem_cmd_ext1 = EXT_CMD_NO_OP; addr_ext1 = 0; tick1;
+
+		start1 = 1; repeat(2) tick1; start1 = 0; tick1;
+		while (busy1) tick1; repeat(2) tick1;
+
+		$display("################################################################## ");
+		$display("     Test 3   |  Full pipeline VN (PMEM = V * N from Test2 KMEM)  ");
+		$display("------------------------------------------------------------------ ");
+		$display("  C1 PMEM content :");
+		$display("  [row]  RTL   :  col0  col1  col2  col3  col4  col5  col6  col7");
+		$display("         golden:  ----  ----  ----  ----  ----  ----  ----  ----");
+		err1 = 0;
+		mem_cmd_ext1 = EXT_CMD_PMEM_RD; addr_ext1 = 0;
+		repeat(2) tick1;  // PMEM read latency
+		for (q1 = 0; q1 < total_cycle; q1 = q1+1) begin
+			row1 = q1;
+			$display("   [%0d]   RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row1,
+				$signed(pmem_out1[7*bw_psum +: bw_psum]), $signed(pmem_out1[6*bw_psum +: bw_psum]),
+				$signed(pmem_out1[5*bw_psum +: bw_psum]), $signed(pmem_out1[4*bw_psum +: bw_psum]),
+				$signed(pmem_out1[3*bw_psum +: bw_psum]), $signed(pmem_out1[2*bw_psum +: bw_psum]),
+				$signed(pmem_out1[1*bw_psum +: bw_psum]), $signed(pmem_out1[0*bw_psum +: bw_psum]));
+			$display("         golden: %5d %5d %5d %5d %5d %5d %5d %5d",
+				vn_c1[row1][0], vn_c1[row1][1], vn_c1[row1][2], vn_c1[row1][3],
+				vn_c1[row1][4], vn_c1[row1][5], vn_c1[row1][6], vn_c1[row1][7]);
+			row_err1 = 0;
+			for (c1 = 0; c1 < col; c1 = c1+1)
+				if ($signed(pmem_out1[c1*bw_psum +: bw_psum]) !== vn_c1[row1][golden_col[c1]]) begin
+					$display("       >>> col%0d MISMATCH (RTL %d != golden %d)", c1,
+						$signed(pmem_out1[c1*bw_psum +: bw_psum]), vn_c1[row1][golden_col[c1]]);
+					err1 = err1 + 1; row_err1 = row_err1 + 1;
+				end
+			$display("       %s", (row_err1 == 0) ? "[OK]" : "[MISMATCH]");
+			addr_ext1 = addr_ext1 + 1; repeat(2) tick1;
+		end
+		mem_cmd_ext1 = EXT_CMD_NO_OP;
+		mismatch_t3_c1 = err1;
+		$display("------------------------------------------------------------");
+		if (err1 == 0) $display("  PASS  C1: %0d rows x %0d cols  all match (VN)", total_cycle, col);
+		else $display("  FAIL  C1: %0d mismatches", err1);
+		$display("------------------------------------------------------------");
+		$display("");
+		test3_done_c1_flag = 1;
+		while (!test3_done_c0_flag) tick1;
+
+		while (1) tick1;  // keep clk1 running
+	end
 
 endmodule
-
-
-
-
