@@ -1,0 +1,96 @@
+*** Message Type: info ***
+When: Wed Mar 18 23:37:37 PDT 2026
+SimVision started.
+Version: TOOL:  simvision(64)   20.09-s017
+User: sabhonsle
+Host: ieng6-ece-01.ucsd.edu
+Platform: Linux/x86_64/3.10.0-1160.119.1.el7.x86_64
+Started: Wed Mar 18 23:37:37 PDT 2026
+Command: /software/ECE/XCELIUM-2009/tools.lnx86/simvision/bin/64bit/simvision.exe -connect dc:ieng6-ece-01.ucsd.edu:49136 -64BIT -nocopyright
+Work Directory: /home/linux/ieng6/ECE260B_WI26_A00/sabhonsle/ECE260BProject/ECE260B-Final-Project/workspace/Step3_norm/post_sim
+ 
+*** Message Type: info ***
+When: Wed Mar 18 23:37:37 PDT 2026
+Create browser window: "Design Browser 1"
+ 
+*** Message Type: info ***
+When: Wed Mar 18 23:37:46 PDT 2026
+Create console window: "Console"
+ 
+*** Message Type: info ***
+When: Wed Mar 18 23:37:51 PDT 2026
+Connect to Simulator
+      Design: worklib.core_tb:v
+   Languages: verilog
+   Simulator: XM-Sim
+     Version: TOOL:  xmsim(64)       20.09-s017
+        User: sabhonsle
+        Host: ieng6-ece-01.ucsd.edu
+Time Started: Wed Mar 18 23:37:35 PDT 2026
+  Process ID: 26436
+   Directory: /home/linux/ieng6/ECE260B_WI26_A00/sabhonsle/ECE260BProject/ECE260B-Final-Project/workspace/Step3_norm/post_sim
+     Command: xrun +gui +access+rwc +xm64bit +xmstatus +xmtimescale+1ns/1ps +xmoveride_timescale +define+INITIALIZE_MEMORY -xminitialize 0 +xmseq_udp_delay+20ps -nowarn CUVWSP -v ./netlist/tcbn65gplus.v -v ./netlist/core.pnr.v -v ./netlist/sram_w16.pnr.v -v ./netlist/sram_160b_w16.pnr.v ./netlist/core_tb.v
+
+ 
+*** Message Type: info ***
+When: Wed Mar 18 23:37:51 PDT 2026
+Create utility window: "Properties"
+ 
+*** Message Type: info ***
+When: Wed Mar 18 23:42:25 PDT 2026
+Create waveform window: "Waveform 1"
+ 
+*** Message Type: info ***
+When: Thu Mar 19 00:49:13 PDT 2026
+Delete waveform window: "Waveform 1"
+ 
+*** Message Type: info ***
+When: Thu Mar 19 00:49:15 PDT 2026
+Delete browser window: "Design Browser 1"
+ 
+*** Message Type: info ***
+When: Thu Mar 19 00:49:21 PDT 2026
+Exit XM-Sim: user
+      Design: worklib.core_tb:v
+   Languages: verilog
+   Simulator: XM-Sim
+     Version: TOOL:  xmsim(64)       20.09-s017
+        User: sabhonsle
+        Host: ieng6-ece-01.ucsd.edu
+Time Started: Wed Mar 18 23:37:35 PDT 2026
+  Process ID: 26436
+   Directory: /home/linux/ieng6/ECE260B_WI26_A00/sabhonsle/ECE260BProject/ECE260B-Final-Project/workspace/Step3_norm/post_sim
+     Command: xrun +gui +access+rwc +xm64bit +xmstatus +xmtimescale+1ns/1ps +xmoveride_timescale +define+INITIALIZE_MEMORY -xminitialize 0 +xmseq_udp_delay+20ps -nowarn CUVWSP -v ./netlist/tcbn65gplus.v -v ./netlist/core.pnr.v -v ./netlist/sram_w16.pnr.v -v ./netlist/sram_160b_w16.pnr.v ./netlist/core_tb.v
+
+ 
+*** Message Type: error ***
+When: Thu Mar 19 00:49:36 PDT 2026
+XM-Sim Crashed:
+      Design: worklib.core_tb:v
+   Languages: verilog
+   Simulator: XM-Sim
+     Version: TOOL:  xmsim(64)       20.09-s017
+        User: sabhonsle
+        Host: ieng6-ece-01.ucsd.edu
+Time Started: Wed Mar 18 23:37:35 PDT 2026
+  Process ID: 26436
+   Directory: /home/linux/ieng6/ECE260B_WI26_A00/sabhonsle/ECE260BProject/ECE260B-Final-Project/workspace/Step3_norm/post_sim
+     Command: xrun +gui +access+rwc +xm64bit +xmstatus +xmtimescale+1ns/1ps +xmoveride_timescale +define+INITIALIZE_MEMORY -xminitialize 0 +xmseq_udp_delay+20ps -nowarn CUVWSP -v ./netlist/tcbn65gplus.v -v ./netlist/core.pnr.v -v ./netlist/sram_w16.pnr.v -v ./netlist/sram_160b_w16.pnr.v ./netlist/core_tb.v
+      Design: worklib.core_tb:v
+   Languages: verilog
+   Simulator: XM-Sim
+     Version: TOOL:  xmsim(64)       20.09-s017
+        User: sabhonsle
+        Host: ieng6-ece-01.ucsd.edu
+Time Started: Wed Mar 18 23:37:35 PDT 2026
+  Process ID: 26436
+   Directory: /home/linux/ieng6/ECE260B_WI26_A00/sabhonsle/ECE260BProject/ECE260B-Final-Project/workspace/Step3_norm/post_sim
+     Command: xrun +gui +access+rwc +xm64bit +xmstatus +xmtimescale+1ns/1ps +xmoveride_timescale +define+INITIALIZE_MEMORY -xminitialize 0 +xmseq_udp_delay+20ps -nowarn CUVWSP -v ./netlist/tcbn65gplus.v -v ./netlist/core.pnr.v -v ./netlist/sram_w16.pnr.v -v ./netlist/sram_160b_w16.pnr.v ./netlist/core_tb.v
+
+Outstanding STRAP Requests:
+        strap::report enable out
+ 
+*** Message Type: info ***
+When: Thu Mar 19 00:49:44 PDT 2026
+SimVision Exit.
+ 
