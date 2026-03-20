@@ -3,8 +3,11 @@
 `timescale 1ns/1ps
 `define CYCLE 1
 `define H_CYCLE 0.5
-`define TIME_OUT 100000
+`define TIME_OUT 1000
 
+`ifndef SFP_THRESHOLD
+  `define SFP_THRESHOLD 0
+`endif
 
 module core_tb;
 	parameter total_cycle = 8;
@@ -14,11 +17,6 @@ module core_tb;
 	parameter col = 8;
 	parameter sfp_out_shift = 7;
 	parameter sfp_acc_lat = 1;
-	`ifdef SFP_LONGDIV
-		parameter sfp_div_lat = 8;  // div_longdiv: 1 input reg + 6 iter + 1
-	`else
-		parameter sfp_div_lat = 0;
-	`endif
 
 	//================= integer / array storage =====================//
 	integer qkvn_file, qkvn_scan_file, captured_data;
@@ -43,6 +41,10 @@ module core_tb;
 
 	//================= timeout ======================//
 	initial #(`TIME_OUT) $finish;
+
+	//================= dual core =================//
+	reg sum_in_valid = 1'b1;       
+	reg [bw_psum+3:0] sum_in = 0; // unused in this testbench since we are not testing dual core, but core requires it to be connected
 
 	//============= Input to DUT  ===============//
 	reg               	reset = 1;
@@ -85,7 +87,11 @@ module core_tb;
 			.mode_in(mode_in),
 			.mem_in(mem_in),
 			.inst_ext(inst_ext),
-			.sum_out(),
+			.sum_in(sum_in),
+			.sum_in_valid(sum_in_valid),
+			.sum_in_fifo_pop(), // unused in single core mode
+			.sum_out(),			// unused in single core mode
+			.sum_out_valid(),	// unused in single core mode
 			.out(pmem_out),
 			.start(start),
 			.status(status)
@@ -94,7 +100,7 @@ module core_tb;
 	
 	
 initial begin
-	$dumpfile("sim/waveform/core.vcd");
+	$dumpfile("gls/waveform/core.vcd");
 	$dumpvars(0, core_tb);
 	$display("");
 	
@@ -102,7 +108,7 @@ initial begin
 //  				data.txt -> Integer Arrays: Q, K, V_T						  
 //########################################################################
 	// $display("##### Q data txt reading #####");
-	qkvn_file = $fopen("sim/pattern/qdata.txt", "r");
+	qkvn_file = $fopen("gls/pattern/qdata.txt", "r");
 	for (q = 0; q < total_cycle; q = q+1)begin
 		for (j = 0; j < pr; j = j+1) begin
 			qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
@@ -110,7 +116,7 @@ initial begin
 	  end
 	end
 	// $display("##### K data txt reading #####");
-	qkvn_file = $fopen("sim/pattern/kdata.txt", "r");
+	qkvn_file = $fopen("gls/pattern/kdata.txt", "r");
 	for (q = 0; q < total_cycle; q = q+1)begin
 		for (j = 0; j < pr; j = j+1) begin
 			qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
@@ -118,7 +124,7 @@ initial begin
 		end
 	end
 	// $display("##### V data txt reading #####");
-    qkvn_file = $fopen("sim/pattern/vdata.txt", "r");
+    qkvn_file = $fopen("gls/pattern/vdata.txt", "r");
     for (q = 0; q < total_cycle; q = q+1)begin
       for (j = 0; j < pr; j = j+1) begin
             qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
@@ -286,11 +292,19 @@ Reset2Cyc;
         sum_abs = sum_abs + unsigned_val;
       end
       if (sum_abs == 0) sum_abs = 1;
-      for (c = 0; c < col; c = c + 1) begin
-        unsigned_val = result[r][c];
-        if (unsigned_val[bw_psum-1] == 1'b1)
-          unsigned_val = ~(unsigned_val-1'b1); 
-        estimated[r*col + c] = {unsigned_val, {sfp_out_shift{1'b0}}} / sum_abs;
+      if (sum_abs < `SFP_THRESHOLD) begin
+        if (`SFP_THRESHOLD > 0)
+          $display("[TB][Norm gate] row %0d: row L1 sum (after zero-guard) = %0d < SFP_THRESHOLD=%0d -> golden estimated row forced to 0",
+              r, sum_abs, `SFP_THRESHOLD);
+        for (c = 0; c < col; c = c + 1)
+          estimated[r*col + c] = 0;
+      end else begin
+        for (c = 0; c < col; c = c + 1) begin
+          unsigned_val = result[r][c];
+          if (unsigned_val[bw_psum-1] == 1'b1)
+            unsigned_val = ~(unsigned_val-1'b1);
+          estimated[r*col + c] = {unsigned_val, {sfp_out_shift{1'b0}}} / sum_abs;
+        end
       end
     end
 
@@ -346,6 +360,12 @@ CoreSetMode(CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM);
 
 //============		  Start the core & wait for done	==================
 Start1Cyc;
+
+/* Test if sum_in_valid properly delays div.
+repeat(100) @(negedge clk);
+sum_in_valid = 1'b1;
+*/
+
 wait(!busy); @(negedge clk);
 
 //============		  Pretty Verification Banner :D 	==================
@@ -581,6 +601,3 @@ end
   endtask
 
 endmodule
-
-
-

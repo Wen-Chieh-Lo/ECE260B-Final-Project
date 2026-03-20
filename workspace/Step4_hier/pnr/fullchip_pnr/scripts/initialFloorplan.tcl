@@ -1,5 +1,5 @@
 # Floorplan
-floorPlan -site core -s 3000 3000 20.0 20.0 20.0 20.0
+floorPlan -site core -s 2800 1600 20.0 20.0 20.0 20.0
 
 #timeDesign -preplace -prefix preplace
 
@@ -18,8 +18,6 @@ addStripe -skip_via_on_wire_shape Noshape -block_ring_top_layer_limit M1 -max_sa
 setObjFPlanBox Instance core_instance_0 100 100 1300 1300
 setObjFPlanBox Instance core_instance_1 1500 100 2700 1300
 
-flipOrRotateObject -rotate R270 -name core_instance_0
-flipOrRotateObject -flip MX -name core_instance_1
 
 addHaloToBlock {3 3 3 3} core_instance_0
 addHaloToBlock {3 3 3 3} core_instance_1

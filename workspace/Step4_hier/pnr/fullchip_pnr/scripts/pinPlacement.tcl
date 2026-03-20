@@ -20,7 +20,7 @@ setPinAssignMode -pinEditInBatch false
 # ---------- OUTPUT PINS (SOUTH) ----------
 setPinAssignMode -pinEditInBatch true
 
-editPin -fixOverlap 1 -unit MICRON -spreadDirection clockwise -side Top -layer 6 -spreadType center -spacing 4 -pin {out[*] fifo0_empty fifo1_empty} -fixedPin true
+editPin -fixOverlap 1 -unit MICRON -spreadDirection clockwise -side Top -layer 6 -spreadType center -spacing 6 -pin {out[*] fifo0_empty fifo1_empty} -fixedPin true
 
 setPinAssignMode -pinEditInBatch false
 

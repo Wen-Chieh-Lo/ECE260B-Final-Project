@@ -35,17 +35,10 @@ waveformw.vcd.json
 **/innovus.log*
 **/innovus.cmd
 **/innovus.cmd*
-<<<<<<< HEAD
 #**/.timing_file_*.tif.gz
 #**/.core*.rs.fp
 #**/.core*.rs.fp.spr
 #**/scheduling_file.cts.*
-=======
-**/.timing_file_*.tif.gz
-**/.core*.rs.fp
-**/.core*.rs.fp.spr
-**/scheduling_file.cts.*
->>>>>>> 76a74299066d0d31cf59aeb002d3a39c6ddbf12c
 **/model.asrt.*
 
 # ----- PnR report files (generated) -----
@@ -75,10 +68,7 @@ venv/
 *.bak
 *.tmp
 *.temp
-<<<<<<< HEAD
 *.gds2
 #*.sdf
 #*.def
 
-=======
->>>>>>> 76a74299066d0d31cf59aeb002d3a39c6ddbf12c

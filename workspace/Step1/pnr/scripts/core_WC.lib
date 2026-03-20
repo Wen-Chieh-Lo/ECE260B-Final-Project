@@ -1,6 +1,6 @@
 library (core ){
   delay_model : table_lookup;
-  date : "Sun Mar  1 18:37:51 2026" ;
+  date : "Wed Mar 18 23:59:16 2026" ;
   revision : "0.0" ;
   bus_naming_style : "%s[%d]" ;
   capacitive_load_unit ( 1.0000,pf);

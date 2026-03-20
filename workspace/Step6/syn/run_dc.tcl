@@ -27,14 +27,16 @@ if { [file exists $filelist_full] } {
 }
 
 # Target library
-set target_library /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db
-set link_library $target_library
+set target_library /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gplustc.db
+set link_library [list * \
+    /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gplustc.db \
+    /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db \
+    /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gplusbc.db]
 set symbol_library {}
 set wire_load_mode enclosed
 set timing_use_enhanced_capacitance_modeling true
 
 set search_path [concat $rtlPath $rtlPath/verilog $rtlPath/verilog/memory $rtlPath/verilog/mac $search_path]
-set link_library [concat * $link_library ]
 
 set synthetic_library {}
 set link_path [concat  $link_library $synthetic_library]
@@ -76,22 +78,25 @@ elaborate $top_module -lib WORK -update
 current_design $top_module
 
 # Now that current_design is defined, apply design-level directives
-set_optimize_registers true
+set_optimize_registers false
 set_cost_priority -delay
 set_max_area 0
 
 # Link Design
 link
 
-# Default SDC Constraints
-read_sdc common.sdc
+# Select SDC: fullchip has two async clocks (clk0/clk1); others use single-clock common.sdc
+if { $top_module eq "fullchip" } {
+	read_sdc fullchip.sdc
+} else {
+	read_sdc common.sdc
+}
 propagate_constraints
 
 current_design $top_module
-
-set_cost_priority {max_transition max_fanout max_delay max_capacitance}
+# set_cost_priority {max_transition max_fanout max_delay max_capacitance}
 set_fix_multiple_port_nets -all -buffer_constants
-set_fix_hold [all_clocks]
+# set_fix_hold [all_clocks]
 
 set_driving_cell -lib_cell BUFFD8 -pin Z [all_inputs]
 #set_load [get_attribute "$target_library/BUFFD8/A" fanout_load] [all_outputs]
@@ -126,8 +131,10 @@ if { $syn_effort == "low" } {
     compile -map_effort medium
 } else {
     # compile_ultra -retime -gate_clock -exact_map
-	compile_ultra -retime -gate_clock
-	compile_ultra -incremental -retime
+	ungroup -all -flatten
+	compile_ultra  -retime -gate_clock
+	set_fix_hold [all_clocks]
+	compile_ultra  -incremental -retime
 }
 
 # Write Out Design - Hierarchical
@@ -137,12 +144,40 @@ change_names -rules verilog -hierarchy
 
 write -format verilog -hier -output [format "gate/%s.out.v" $top_module]
 
-# Write Reports
+# Area / power
 redirect [format "%s%s%s" log/ $top_module _area.rep] { report_area }
 redirect -append [format "%s%s%s" log/ $top_module _area.rep] { report_reference }
 redirect [format "%s%s%s" log/ $top_module _power.rep] { report_power }
-redirect [format "%s%s%s" log/ $top_module _timing.rep] \
-  { report_timing -path full -max_paths 100 -nets -transition_time -capacitance -significant_digits 3 -nosplit}
+
+# TYP setup
+set_operating_conditions NCCOM -library tcbn65gplustc
+redirect [format "%s%s%s" log/ $top_module _typ_oc.rep] {
+    report_operating_conditions -library tcbn65gplustc
+}
+redirect [format "%s%s%s" log/ $top_module _timing_typ_setup.rep] {
+    report_timing -delay max -path full -max_paths 100 -nets \
+                  -transition_time -capacitance -significant_digits 3 -nosplit
+}
+
+# WC setup
+set_operating_conditions WCCOM -library tcbn65gpluswc
+redirect [format "%s%s%s" log/ $top_module _wc_oc.rep] {
+    report_operating_conditions -library tcbn65gpluswc
+}
+redirect [format "%s%s%s" log/ $top_module _timing_wc_setup.rep] {
+    report_timing -delay max -path full -max_paths 100 -nets \
+                  -transition_time -capacitance -significant_digits 3 -nosplit
+}
+
+# BC hold
+set_operating_conditions BCCOM -library tcbn65gplusbc
+redirect [format "%s%s%s" log/ $top_module _bc_oc.rep] {
+    report_operating_conditions -library tcbn65gplusbc
+}
+redirect [format "%s%s%s" log/ $top_module _timing_bc_hold.rep] {
+    report_timing -delay min -path full -max_paths 100 -nets \
+                  -transition_time -capacitance -significant_digits 3 -nosplit
+}
 
 set inFile  [open log/$top_module\_area.rep]
 while { [gets $inFile line]>=0 } {

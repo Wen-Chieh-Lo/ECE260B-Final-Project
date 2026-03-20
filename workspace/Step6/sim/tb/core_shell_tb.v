@@ -11,6 +11,9 @@ module core_shell_tb;
 	int i, j, k, t, p, q, s, u, m, r, c;
 	int err_count;
 	int err, row_err, row;
+	int total_mismatches;  // accumulated across all verifypmem
+	int verify_count;      // number of verifypmem calls
+	int verify_err[0:1023]; // mismatch count per verifypmem call (1-based index in report)
 	int sum_abs, divisor, unsigned_val;
 
 	int K        [`COL-1:0][`PR-1:0];
@@ -71,6 +74,8 @@ module core_shell_tb;
 		MonitorStatus;
 		current_mode = `CORE_MODE_MULT_save_to_PMEM;
 		last_writeQ_was_vdata = 0;
+		total_mismatches = 0;
+		verify_count = 0;
 		Reset2Cyc;
 
 		$display(">>> Core shell. Type: set_exec_target, writeQ, writeK, simulate, verifypmem, reset, exit, help");
@@ -99,9 +104,17 @@ module core_shell_tb;
 					Start1Cyc;
 					WaitCoreDone;
 				end 
-				else if (cmd == "verifypmem") VerifyPMEMGolden;
+				else if (cmd == "verifypmem") begin
+					VerifyPMEMGolden;
+					verify_err[verify_count] = err;
+					total_mismatches += err;
+					verify_count++;
+				end
 				else if (cmd == "reset") Reset2Cyc;
-				else if (cmd == "exit") $finish;
+				else if (cmd == "exit") begin
+					PrintSummary;
+					$finish;
+				end
 				else if (cmd == "help") PrintHelpShell;
 				else $display("Unknown command: %s (type help)", cmd);
 			end

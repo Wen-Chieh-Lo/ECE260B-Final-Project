@@ -24,8 +24,9 @@ module div #(
 
   assign full_quotient = {in, {out_shift{1'b0}}} / divisor;
   assign out           = full_quotient[out_shift-1:0];
-  assign done          = start;    // combinational: output always valid
-  assign busy          = 1'b0;    // combinational: never busy
+  assign done = start;
+  assign busy = start;
+
 endmodule
 
 // -----------------------------------------------------------------------------
@@ -34,7 +35,8 @@ endmodule
 // -----------------------------------------------------------------------------
 module div_mcp #(
   parameter bw_psum   = 19,
-  parameter out_shift = 7
+  parameter out_shift = 7,
+  parameter MCP_CYLCE = 10
 ) (
   input                         clk,
   input                         reset,
@@ -45,11 +47,55 @@ module div_mcp #(
   output                        done,
   output                        busy
 );
+  parameter IDLE       = 3'd0;
+  parameter MCP_WAIT       = 3'd1;
+
+  
   wire [bw_psum+out_shift-1:0] full_quotient;
+  reg [9:0] MCP_cnt;
+  reg done_q;
+  reg state_q;
+  reg [out_shift-1:0] div_out_q;
+
   assign full_quotient = {in, {out_shift{1'b0}}} / divisor;
-  assign out           = full_quotient[out_shift-1:0];
-  assign done          = start;    // combinational: output always valid
-  assign busy          = 1'b0;    // combinational: never busy
+  assign out           = div_out_q;
+  assign done          = done_q;    // combinational: output always valid
+  assign busy          = (MCP_cnt != 0) | start;
+  
+  always @ (posedge clk or posedge reset)begin
+    if(reset)begin
+      MCP_cnt <= 0;
+      div_out_q <= 0;
+      done_q <= 0;
+      state_q <= IDLE;
+    end
+    else begin
+      if(start)begin
+        MCP_cnt <= MCP_cnt + 1;
+        div_out_q <= div_out_q;
+        done_q <= 0;
+        state_q <= MCP_WAIT;
+      end
+      else if (MCP_cnt == MCP_CYLCE) begin
+        MCP_cnt <= 0;
+        div_out_q <= full_quotient[out_shift-1:0];
+        done_q <= 1;
+        state_q <= IDLE;
+      end
+      else if(state_q == MCP_WAIT)begin
+        MCP_cnt <= MCP_cnt + 1;
+        div_out_q <= div_out_q;
+        done_q <= 0;
+        state_q <= state_q;
+      end
+      else begin
+        MCP_cnt <= 0;
+        div_out_q <= 0;
+        done_q <= 0;
+        state_q <= state_q;
+      end
+    end
+  end    // combinational: never busy
 endmodule
 
 
