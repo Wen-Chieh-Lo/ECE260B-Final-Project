@@ -14,3 +14,10 @@ set_false_path -from [get_clocks clk1] -to [get_clocks clk0]
 
 set_input_delay  -clock [get_clocks clk0] -max $io_delay [get_ports {mem_in inst reset}]
 set_output_delay -clock [get_clocks clk0] -max $io_delay [get_ports {out fifo0_empty fifo1_empty}]
+
+set MCP_FROM [get_cells -hierarchical * -filter {is_sequential == true && (full_name =~ *sum_this_core_r_reg* || full_name =~ *sum_in_r_reg* || full_name =~ *abs_div_reg*)}]
+
+set MCP_TO [get_cells -hierarchical * -filter {is_sequential == true && full_name =~ *div_out_q_reg*}]
+
+set_multicycle_path 10 -setup -from $MCP_FROM -to $MCP_TO
+set_multicycle_path 9  -hold  -from $MCP_FROM -to $MCP_TO
