@@ -56,8 +56,8 @@ module fullchip_tb;
 
   reg  [pr*bw-1:0]   mem_in_core0;
   reg  [pr*bw-1:0]   mem_in_core1;
-  wire [2*pr*bw-1:0] mem_in;
-  assign mem_in = {mem_in_core1, mem_in_core0};
+  //wire [2*pr*bw-1:0] mem_in;
+  //assign mem_in = {mem_in_core1, mem_in_core0};
 
   // ── Per-core instruction fields ───────────────────────────────────────────────
   // Both sets always driven to the same value — lockstep.
@@ -92,7 +92,7 @@ module fullchip_tb;
 
   // ── 40-bit packed inst bus ────────────────────────────────────────────────────
   wire [19:0] inst0, inst1;
-  wire [39:0] inst;
+  //wire [39:0] inst;
 
   assign inst0[19]    = VN_mode_c0;
   assign inst0[18]    = div_c0;
@@ -124,22 +124,27 @@ module fullchip_tb;
   assign inst1[1]     = pmem_rd_c1;
   assign inst1[0]     = 1'b0;
 
-  assign inst = {inst1, inst0};
+  //assign inst = {inst1, inst0};
 
   reg [bw_psum-1:0]     temp5b;
   reg [bw_psum*col-1:0] temp16b;
 
   // ── DUT — clk0 = clk1 = clk ───────────────────────────────────────────────────
-  fullchip fullchip_instance (
-    .reset(reset),
+  fullchip #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(2*pr)) fullchip_instance (
+    .reset0(reset),          // core0 domain reset
+    .reset1(reset),          // core1 domain reset
     .clk0(clk),
     .clk1(clk),
-    .mem_in(mem_in),
-    .inst(inst),
-    .out(out),
+    .mem_in0(mem_in_core0),
+    .mem_in1(mem_in_core1),
+    .inst0(inst0),
+    .inst1(inst1),
+    .out0(out[bw_psum*col-1:0]),
+    .out1(out[2*bw_psum*col-1:bw_psum*col]),
     .fifo0_empty(),
     .fifo1_empty()
   );
+
 
   // ── Clock task — 1.0 GHz, 50% duty cycle ─────────────────────────────────────
   task tick; begin #0.5 clk=1'b0; #0.5 clk=1'b1; end endtask
@@ -147,7 +152,7 @@ module fullchip_tb;
   // ═══════════════════════════════════════════════════════════════════════════════
   initial begin
 
-    $dumpfile("../gls/waveform/fullchip_lockstep_tb.vcd");
+    $dumpfile("fullchip_tb.vcd");
     $dumpvars(0, fullchip_tb);
 
     mismatch_prd_core0 = 0;  mismatch_prd_core1 = 0;
@@ -157,7 +162,7 @@ module fullchip_tb;
     // 1. Read Q data
     // ─────────────────────────────────────────────────────────────────────────
     $display("##### Q data txt reading #####");
-    qk_file = $fopen("../sim/pattern/qdata.txt", "r");
+    qk_file = $fopen("./sim/pattern/qdata.txt", "r");
     if (qk_file == `NULL) begin $display("ERROR: cannot open qdata.txt"); $finish; end
     for (q = 0; q < total_cycle; q = q+1)
       for (j = 0; j < pr; j = j+1) begin
@@ -174,7 +179,7 @@ module fullchip_tb;
     repeat(10) tick;
     reset = 0;
 
-    qk_file = $fopen("../sim/pattern/kdata_dual.txt", "r");
+    qk_file = $fopen("./sim/pattern/kdata_dual.txt", "r");
     if (qk_file == `NULL) begin $display("ERROR: cannot open kdata_dual.txt"); $finish; end
     for (q = 0; q < 2*col; q = q+1)
       for (j = 0; j < pr; j = j+1) begin
@@ -432,7 +437,7 @@ module fullchip_tb;
     // 10. Read V data
     // ─────────────────────────────────────────────────────────────────────────
     $display("##### V data txt reading #####");
-    qk_file = $fopen("../sim/pattern/vdata.txt", "r");
+    qk_file = $fopen("./sim/pattern/vdata.txt", "r");
     if (qk_file == `NULL) begin $display("ERROR: cannot open vdata.txt"); $finish; end
     for (q = 0; q < col; q = q+1)
       for (j = 0; j < pr; j = j+1) begin

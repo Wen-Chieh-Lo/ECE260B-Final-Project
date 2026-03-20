@@ -52,9 +52,7 @@ sh echo hostname
 sh echo uptime
 
 #Compiler directives
-set_optimize_registers true
-set_cost_priority -delay
-set_max_area 0
+
 set compile_effort   "high"
 set compile_no_new_cells_at_top_level false
 set hdlin_enable_vpp true
@@ -78,8 +76,16 @@ if { [info exists syn_defines] && [llength $syn_defines] > 0 } {
 elaborate $top_module -lib WORK -update
 current_design $top_module
 
+set_optimize_registers true
+set_cost_priority -delay
+set_max_area 0
+
 # Link Design
 link
+
+foreach_in_collection bb [get_cells -hier -filter "is_black_box == true"] {
+    set_dont_touch $bb
+}
 
 # Default SDC Constraints
 read_sdc common.sdc
