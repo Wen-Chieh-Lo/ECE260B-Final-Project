@@ -12,7 +12,7 @@ set PATTERN sw/pattern/random100
 set_output_dir sim/waveform
 set_sim_stage sim
 set_clock_period 1
-set_sim_define SFP_LONGDIV
+set_sim_define SFP_LONGDIV SFP_THRESHOLD=169503
 set_sim_target fullchip_shell
 fix_set
 

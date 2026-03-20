@@ -94,6 +94,40 @@ if { $top_module eq "fullchip" } {
 propagate_constraints
 
 current_design $top_module
+
+set enable_sfp_mcp 0
+if { [info exists syn_defines] && [lsearch -exact $syn_defines "SFP_MCP"] >= 0} {
+	echo
+    set enable_sfp_mcp 1
+}
+
+if { $enable_sfp_mcp } {
+    echo "========================================================"
+    echo ">>> INFO: SFP_MCP ENABLED"
+	echo ">>> INFO: Applying multicycle path"
+    echo "========================================================"
+
+    set MCP_FROM [get_cells -hierarchical * -filter {is_sequential == true && (full_name =~ *sum_this_core_r_reg* || full_name =~ *sum_in_r_reg* || full_name =~ *abs_div_reg*)}]
+    set MCP_TO   [get_cells -hierarchical * -filter {is_sequential == true && full_name =~ *div_out_q_reg*}]
+
+    set from_cnt [sizeof_collection $MCP_FROM]
+    set to_cnt   [sizeof_collection $MCP_TO]
+
+    echo ">>> MCP_FROM count = $from_cnt"
+    echo ">>> MCP_TO   count = $to_cnt"
+
+    if { $from_cnt > 0 && $to_cnt > 0 } {
+        set_multicycle_path 10 -setup -from $MCP_FROM -to $MCP_TO
+        set_multicycle_path 9  -hold  -from $MCP_FROM -to $MCP_TO
+
+        echo ">>> SUCCESS: set_multicycle_path applied (setup=10, hold=9)"
+    } else {
+        echo ">>> WARNING: MCP collections empty → constraint NOT applied"
+    }
+} else {
+    echo ">>> INFO: SFP_MCP NOT enabled → skip multicycle path"
+}
+
 # set_cost_priority {max_transition max_fanout max_delay max_capacitance}
 set_fix_multiple_port_nets -all -buffer_constants
 # set_fix_hold [all_clocks]
@@ -133,8 +167,8 @@ if { $syn_effort == "low" } {
     # compile_ultra -retime -gate_clock -exact_map
 	ungroup -all -flatten
 	compile_ultra  -retime -gate_clock
-	set_fix_hold [all_clocks]
-	compile_ultra  -incremental -retime
+	# set_fix_hold [all_clocks]
+	# compile_ultra  -incremental -retime
 }
 
 # Write Out Design - Hierarchical

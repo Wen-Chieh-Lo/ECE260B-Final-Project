@@ -4,7 +4,62 @@
 	$display("");
   endtask
 
-  `ifndef TB_FULLCHIP
+`ifndef TB_FULLCHIP
+	integer skip_count_c0;
+	integer skip_count_c1;
+	integer skip_count_total;
+	integer skip_total_count;
+	real    skip_percent;
+	integer skip_count_c0_all;
+	integer skip_count_c1_all;
+	integer skip_count_total_all;
+	integer skip_total_count_all;
+	real    skip_percent_all;	
+	`define SKIP_SIG_C0 `TB_TOP.fullchip_instance.core_instance0.sfp_instance.skip
+	`define SKIP_SIG_C1 `TB_TOP.fullchip_instance.core_instance1.sfp_instance.skip
+	task ResetSkipCountFullchip;
+	begin
+		skip_count_c0    = 0;
+		skip_count_c1    = 0;
+		skip_count_total = 0;
+		skip_total_count = 0;
+		skip_percent     = 0.0;
+		
+	end
+	endtask
+	task SampleSkipFullchip;
+		begin
+		if (`SKIP_SIG_C0)
+			skip_count_c0 = skip_count_c0 + 1;
+
+		if (`SKIP_SIG_C1)
+			skip_count_c1 = skip_count_c1 + 1;
+		end
+	endtask
+	task AccumulateSkipCountAllFullchip;
+	begin
+	skip_count_c0_all    = skip_count_c0_all + skip_count_c0;
+	skip_count_c1_all    = skip_count_c1_all + skip_count_c1;
+	skip_count_total_all = skip_count_total_all + skip_count_total;
+	skip_total_count_all = skip_total_count_all + skip_total_count;
+	end
+	endtask
+	task PrintSkipSummaryAllFullchip;
+	begin
+	if (skip_total_count_all > 0)
+		skip_percent_all = (100.0 * skip_count_total_all) / skip_total_count_all;
+	else
+		skip_percent_all = 0.0;
+
+	$display("======= OVERALL SKIP SUMMARY =======");
+	$display("  C0 total skip : %0d", skip_count_c0_all);
+	$display("  C1 total skip : %0d", skip_count_c1_all);
+	$display("  Total skip    : %0d / %0d", skip_count_total_all, skip_total_count_all);
+	$display("  Skip percent  : %0f%%", skip_percent_all);
+	$display("====================================");
+	$display("");
+	end
+	endtask
   task LoadAndWriteQ(input string path, output logic was_vdata);
 	integer fd, i;
 	logic is_vdata;

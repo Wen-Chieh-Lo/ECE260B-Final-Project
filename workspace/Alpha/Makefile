@@ -11,7 +11,7 @@
 # Simulation targets (TARGET=):
 #   target        description              filelist (in sim/filelists/)
 #   ------------- -----------------------  --------------------------
-#   fullchip      fullchip single-core     filelist            (default)
+#   fullchip      fullchip (shell TB)      filelist_fullchip_shell (sim/gls); syn uses syn/filelists/filelist_fullchip
 #   controller    controller               filelist_controller
 #   core          single core              filelist_core
 #   mac           mac_array                filelist_mac
@@ -23,15 +23,11 @@
 #   Waveforms: gls/waveform/*.vcd
 #
 # Synthesis targets (TARGET=):
-#   target   top_module   filelist (in syn/filelists/)  SDC              outputs
-#   -------- ------------ ---------------------------- ---------------- --------------------------
-#   fullchip fullchip     filelist                      fullchip.sdc *   gate/fullchip.out.v
-#   core     core         filelist_core                 common.sdc       gate/core.out.v     (default)
-#   sfp_row  sfp_row      filelist_sfp_row              common.sdc       gate/sfp_row.out.v
-#   mac      mac_array    filelist_mac                  common.sdc       gate/mac_array.out.v
-#
-#   * fullchip uses syn/fullchip.sdc: dual async clocks (clk0=1.0ns, clk1=1.2ns) +
-#     set_clock_groups -asynchronous. Automatically selected in run_dc.tcl.
+#   target   top_module   filelist (in syn/filelists/)  SDC         outputs
+#   -------- ------------ ---------------------------- ----------- --------------------------
+#   core     core         filelist_core                 common.sdc  gate/core.out.v     (default)
+#   sfp_row  sfp_row      filelist_sfp_row              common.sdc  gate/sfp_row.out.v
+#   mac      mac_array    filelist_mac                  common.sdc  gate/mac_array.out.v
 #
 # Defaults can also be set in USER_DEFINE_TASK_VARS (command-line overrides that file).
 # Waveforms  : sim/waveform/*.vcd
@@ -61,8 +57,7 @@ SYNDIR            := syn
 # ----- Lookup tables -----
 # target -> filelist filename (shared between sim and syn for filelist name lookup)
 TARGET_FILELIST_table := \
-	fullchip:filelist \
-	fullchip_shell:filelist_fullchip_shell \
+	fullchip:filelist_fullchip_shell \
 	controller:filelist_controller \
 	core:filelist_core \
 	core_shell:filelist_core_shell \
@@ -73,7 +68,6 @@ TARGET_FILELIST_table := \
 # target -> waveform filename
 TARGET_WAVEFORM_table := \
 	fullchip:fullchip.vcd \
-	fullchip_shell:fullchip.vcd \
 	controller:controller.vcd \
 	core:core.vcd \
 	core_shell:core.vcd \
@@ -83,14 +77,14 @@ TARGET_WAVEFORM_table := \
 
 # target -> RTL top_module name (synthesis only; differs where make-target != module name)
 TARGET_TOP_MODULE_table := \
-	core:core \
 	fullchip:fullchip \
+	core:core \
 	controller:controller \
 	mac:mac_array \
 	sfp_row:sfp_row
 
-SIM_TARGETS := fullchip fullchip_shell controller core core_shell mac sfp_row sfp_row_dual
-SYN_TARGETS := fullchip sfp_row controller core mac
+SIM_TARGETS := fullchip controller core core_shell mac sfp_row sfp_row_dual
+SYN_TARGETS := fullchip  sfp_row controller core mac
 
 $(foreach p,$(TARGET_FILELIST_table),$(eval $(firstword $(subst :, ,$(p))): FILELIST_NAME := $(word 2,$(subst :, ,$(p)))))
 $(foreach p,$(TARGET_WAVEFORM_table),$(eval $(firstword $(subst :, ,$(p))): WAVEFORM     := $(word 2,$(subst :, ,$(p)))))
@@ -153,7 +147,12 @@ else
 endif
 
 TOP_MODULE   = $(word 2,$(subst :, ,$(filter $(SYN_TARGET):%,$(TARGET_TOP_MODULE_table))))
-SYN_FILELIST = $(SYN_FILELISTS_DIR)/$(word 2,$(subst :, ,$(filter $(SYN_TARGET):%,$(TARGET_FILELIST_table))))
+# sim/gls use sim/filelists/filelist_fullchip_shell for fullchip; DC still reads RTL-only syn/filelists/filelist_fullchip
+ifeq ($(SYN_TARGET),fullchip)
+  SYN_FILELIST = $(SYN_FILELISTS_DIR)/filelist_fullchip
+else
+  SYN_FILELIST = $(SYN_FILELISTS_DIR)/$(word 2,$(subst :, ,$(filter $(SYN_TARGET):%,$(TARGET_FILELIST_table))))
+endif
 
 # Synthesis effort: low | medium | high  (built-in default: high)
 SYN_EFFORT ?= high
