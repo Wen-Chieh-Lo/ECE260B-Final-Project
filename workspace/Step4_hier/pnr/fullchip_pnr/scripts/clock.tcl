@@ -2,6 +2,7 @@
 # Clock Tree Synthesis
 ############################################
 
+
 # Improve skew/transition targets for 1GHz
 set_ccopt_property -update_io_latency false
 set_ccopt_property target_skew 0.05

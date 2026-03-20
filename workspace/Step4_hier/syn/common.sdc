@@ -30,11 +30,6 @@ set_clock_groups -asynchronous -group [get_clocks clk0] -group [get_clocks clk1]
 set_input_delay  -clock clk0 -max $io_delay [get_ports {reset0 mem_in0 inst0}]
 set_output_delay -clock clk0 -max $io_delay [get_ports {out0 fifo1_empty}]
 
-<<<<<<< HEAD
-set_input_delay  -clock [get_clocks clk0] -max $io_delay [get_ports {mem_in inst reset}]
-set_output_delay -clock [get_clocks clk0] -max $io_delay [get_ports {out fifo0_empty fifo1_empty}]
-=======
 # ---- I/O delays: clk1 domain ----
 set_input_delay  -clock clk1 -max $io_delay [get_ports {reset1 mem_in1 inst1}]
 set_output_delay -clock clk1 -max $io_delay [get_ports {out1 fifo0_empty}]
->>>>>>> f4975206040eabb55f68cfd73787b5f91d55da60

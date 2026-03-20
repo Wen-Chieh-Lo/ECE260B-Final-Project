@@ -4,23 +4,16 @@
 # Outputs : South (Bottom)
 ############################################
 
-# ---------- INPUT PINS (WEST) ----------
-setPinAssignMode -pinEditInBatch true
-
-editPin -fixOverlap 1 -unit MICRON -spreadDirection clockwise -side Left -layer 5 -spreadType center -spacing 6 -pin {clk0 clk1 reset} -fixedPin true
-
-setPinAssignMode -pinEditInBatch false
 
 setPinAssignMode -pinEditInBatch true
 
-editPin -fixOverlap 1 -unit MICRON -spreadDirection clockwise -side Bottom -layer 4 -spreadType center -spacing 6 -pin {mem_in[*] inst[*]} -fixedPin true
+editPin -fixOverlap 1 -unit MICRON -spreadDirection clockwise -side Left -layer 3 -spreadType center -spacing 6 -pin {clk0 reset0} -fixedPin true
 
-setPinAssignMode -pinEditInBatch false
+editPin -fixOverlap 1 -unit MICRON -spreadDirection clockwise -side Right -layer 3 -spreadType center -spacing 6 -pin {clk1 reset1} -fixedPin true
 
-# ---------- OUTPUT PINS (SOUTH) ----------
-setPinAssignMode -pinEditInBatch true
+editPin -fixOverlap 1 -unit MICRON -spreadDirection clockwise -side Bottom -layer 4 -spreadType center -spacing 8 -pin {mem_in0[*] inst0[*] inst1[*] mem_in1[*]} -fixedPin true
 
-editPin -fixOverlap 1 -unit MICRON -spreadDirection clockwise -side Top -layer 6 -spreadType center -spacing 6 -pin {out[*] fifo0_empty fifo1_empty} -fixedPin true
+editPin -fixOverlap 1 -unit MICRON -spreadDirection clockwise -side Top -layer 4 -spreadType center -spacing 6 -pin {out0[*] out1[*] fifo0_empty fifo1_empty} -fixedPin true
 
 setPinAssignMode -pinEditInBatch false
 
