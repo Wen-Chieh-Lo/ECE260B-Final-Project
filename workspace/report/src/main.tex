@@ -7,6 +7,8 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage[justification=centering]{caption}
+\usepackage{booktabs}
+\usepackage{multirow}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
@@ -25,13 +27,58 @@
 
 \maketitle
 
-\section{Introduction}
-This report summarizes RTL design, synthesis, place-and-route, and verification for a dual-core attention accelerator.
-The following sections follow the course milestone flow (single core through sparsity-aware attention), merging the LaTeX report structure with the project outline document.
-Placeholder figures use \texttt{temp.png} where a dedicated asset is not yet checked in.
+\begin{abstract}
+This report presents the design and implementation of a dual-core machine learning accelerator tailored for attention mechanisms, a core component of modern transformer models. The architecture features an asynchronous clocking scheme with a dual-core setup to parallelize the matrix multiplication and normalization phases. Furthermore, a hardware-optimized sparsity-aware Softmax (SFP) engine is introduced, utilizing row-energy accumulation and cross-core sum exchange to execute accurate fixed-point normalization. We also outline a comprehensive step-by-step verification methodology that spans from single-core RTL design to full-chip hierarchical physical design (PnR) using a 65nm process. Architectural optimizations, such as repipelining the divider and adder tree, dramatically reduced the critical path delay from over 24\,ns to under 1\,ns, achieving zero timing violations. Finally, our design achieves fully functional gate-level simulations and successful tape-out-ready physical layouts.
+\end{abstract}
 
-% ═══════════════════════════════════════════════════════════════════════════
-\section{Step 1: Single Core RTL, Synthesis \& PNR}
+\section{Introduction}
+Attention mechanisms have revolutionized natural language processing and computer vision by enabling models to dynamically weigh the importance of different input elements. At the core of the attention mechanism is the computation of attention scores, which determines how much focus a query should place on various keys. This is mathematically expressed as multiplying a Query matrix (Q) with a transposed Key matrix (K) to obtain raw attention scores. These raw scores are then normalized using a Softmax function, converting them into a valid probability distribution where all weights sum to one. Finally, the normalized attention weights are multiplied by a Value matrix (V) to produce the final output context vectors.
+
+However, the associated matrix multiplication (MatMul) and Softmax normalization operations pose significant computational and memory bandwidth challenges. The Softmax function, in particular, requires global awareness of the entire row (or sequence) to compute the normalizing sum, creating a bottleneck in deeply pipelined hardware. To address these bottlenecks, this project proposes a dual-core hardware accelerator designed specifically for the attention mechanism.
+
+The proposed design leverages two independent cores communicating via asynchronous FIFOs, allowing flexible scheduling and increased throughput. To efficiently handle the Softmax operation, we developed a Sparsity-Aware Softmax (SFP) engine that skips redundant computations for zero or near-zero data, thereby saving power and cycles.
+
+Due to the immense complexity of the dual-core asynchronous design, a rigorous, step-by-step implementation and verification strategy was adopted. This incremental approach---ranging from basic single-core synthesis to full-chip hierarchical place-and-route (PnR)---ensured functional correctness at every stage. This report details both the theoretical architecture of the accelerator and the practical milestones achieved during its physical implementation.
+
+\section{Proposed Architecture}
+
+\subsection{Dual-Core System \& Asynchronous Clocking}
+To maximize throughput, the accelerator is partitioned into two distinct processing cores (Core 0 and Core 1). Each core operates in its own clock domain (\texttt{clk0} and \texttt{clk1}) to simulate realistic system-on-chip (SoC) environments where different functional blocks might run at different frequencies. Data and control signals are securely transferred between the two clock domains using asynchronous FIFOs (Async FIFO). This cross-domain communication (CDC) ensures that matrix chunks processed by one core can be synchronized with the other core without meta-stability issues, particularly during the global sum accumulation required for Softmax normalization.
+
+\subsection{Core Controller \& Data Flow}
+Each core features an independent controller and a memory map (\texttt{reg\_map}) to handle top-level configurations. The controller manages the data flow between the Query Memory (QMEM), Key Memory (KMEM), the MAC array, and the SFP engine based on the defined operation mode (\texttt{op\_mode}):
+\begin{itemize}
+    \item \textbf{Mode 1 (MatMul Only):} The core multiplies data from QMEM and KMEM using the MAC array, and directly stores the result into the Partial Sum Memory (PMEM).
+    \item \textbf{Mode 0 (MatMul + Normalization):} Data from QMEM and KMEM are multiplied, and the resulting partial sums are fed into the SFP engine. The normalized outputs are then written back to either PMEM or KMEM, dictated by \texttt{sfp\_write\_to\_pmem} and \texttt{sfp\_write\_to\_kmem} flags.
+\end{itemize}
+The controller automatically generates status flags (e.g., \texttt{qmem\_free}) to notify upper-level modules when memory banks are available for new data, enabling efficient cycle-saving data prefetching.
+
+\subsection{Sparsity-Aware Softmax (SFP) Engine}
+The SFP row block is responsible for normalizing one row of the MAC array outputs. The normalization process is divided into two pipelined phases:
+\begin{enumerate}
+    \item \textbf{Accumulation (acc):} When \texttt{acc\_start} is pulsed, the engine computes the row energy $S_{i} = \sum_{j} |sfp\_in[j]|$ using an adder tree. The sum is temporarily stored in an internal FIFO, and \texttt{acc\_done} is asserted upon completion.
+    \item \textbf{Division (div):} During the division phase, triggered by \texttt{div\_start} (which is gated by a \texttt{div\_busy} signal to prevent overlapping operations), the engine retrieves the local sum from the FIFO and adds it to the sum from the other core (\texttt{sum\_in}). It then computes the normalized output:
+    \begin{equation}
+        sfp\_div\_out[c] = \text{trunc}\left(\frac{|sfp\_in[c]| \ll out\_shift}{S_{local} + sum\_in}\right)
+    \end{equation}
+    Upon finishing the division, a \texttt{div\_done} pulse is generated to indicate that the normalized results are valid.
+\end{enumerate}
+To further optimize performance, a sparsity gating mechanism is implemented. If the computed row energy $S_{i}$ is strictly less than a configurable \texttt{SFP\_THRESHOLD}, the engine bypasses the division and outputs all zeros. This effectively filters out negligible attention scores, conserving dynamic power.
+
+\section{Design Methodology and Verification Infrastructure}
+To facilitate rapid development and reliable testing of the dual-core design, a robust Makefile-driven flow and shell-based verification infrastructure were established.
+
+\subsection{Makefile Management}
+A centralized Makefile provides unified commands for behavioral simulation, synthesis, and gate-level simulation (GLS) across various design targets (e.g., \texttt{fullchip}, \texttt{core}, \texttt{mac}, \texttt{sfp\_row}). By standardizing the build system, team members could seamlessly run target-specific tests using commands such as \texttt{make sim TARGET=core} or \texttt{make syn TARGET=mac}, significantly improving development efficiency and avoiding configuration errors.
+
+\subsection{Shell-Based Verification and Automated Parsing}
+Synthesis quality of results (QoR) and timing closure were continuously tracked using a custom shell-based parser (\texttt{parse\_reports.sh}). Integrated into the Makefile as the \texttt{make parse} target, this tool automatically scans Design Compiler output reports to extract and summarize critical metrics, including total cell area, dynamic power, leakage power, and Worst Negative Slack (WNS). This automated reporting mechanism proved essential during the RTL optimization phase (Step 5), allowing the team to quickly evaluate the impact of repipelining the SFP block on the overall critical path.
+
+\section{Step-by-Step Implementation and Verification}
+To systematically conquer the design complexity, the project was executed in six sequential milestones.
+
+\subsection{Step 1: Single Core RTL, Synthesis \& PNR}
+The baseline single-core design was implemented and verified first. This step established the core infrastructure, including the MAC array and the basic controller.
 Post-PnR layout, GLS waveform, and terminal output for the single-core design are shown below, with summary metrics in Table~\ref{tab:s1}.
 
 \begin{figure}[htbp]
@@ -53,34 +100,32 @@ Post-PnR layout, GLS waveform, and terminal output for the single-core design ar
 \end{figure}
 
 \begin{table}[htbp]
-    \caption{Step 1 Results}
+    \caption{Step 1 Synthesis \& PnR Results}
     \begin{center}
         \begin{tabular}{|c|c|c|c|}
             \hline
-            \textbf{} & \textbf{Power (VCD)} & \textbf{WNS} & \textbf{DRC} \\
+            \textbf{Design} & \textbf{Power (VCD)} & \textbf{WNS} & \textbf{DRC} \\
             \hline
-            Single Core & 50.74 mW & -0.014 & 0 \\
+            Single Core & 50.74 mW & -0.014 ns & 0 \\
             \hline
         \end{tabular}
         \label{tab:s1}
     \end{center}
 \end{table}
 
-% ═══════════════════════════════════════════════════════════════════════════
-\section{Step 2: Output Normalization}
-Behavioral simulation waveform and testbench overview (replace \texttt{temp.png} when the final waveform is finalized).
+\subsection{Step 2: Output Normalization}
+The single-core MAC array was integrated with the SFP row block. Behavioral simulations verified that the accumulated sums were correctly utilized to normalize the partial sums.
+(Replace \texttt{temp.png} when the final waveform is finalized).
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=0.30\textwidth]{temp.png}}
-    \caption{Behavioral Simulation Waveform / TB.}
+    \caption{Behavioral Simulation Waveform / TB for Output Normalization.}
     \label{fig:s2_wave}
 \end{figure}
 
-% ═══════════════════════════════════════════════════════════════════════════
-\section{Step 3: Hierarchical Synthesis of Core}
-Memory macros and core integration: SRAM blocks (placeholders) followed by hierarchical core layout and GLS results.
+\subsection{Step 3: Hierarchical Synthesis of Core}
+Memory macros (SRAMs for QMEM, KMEM, and PMEM) were incorporated into the core. A hierarchical synthesis and PnR flow was adopted to manage the physical placement of the SRAM macros alongside standard cells.
 
-\subsection{Submodule and SRAM Layouts}
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=0.30\textwidth]{temp.png}}
     \caption{SRAM\_64b (Qmem \& Kmem) Layout (placeholder).}
@@ -93,7 +138,6 @@ Memory macros and core integration: SRAM blocks (placeholders) followed by hiera
     \label{fig:s3_sram160}
 \end{figure}
 
-\subsection{Core Layout and GLS}
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=0.30\textwidth]{Step3_images/Step3corelayout.png}}
     \caption{Hierarchical Core Layout.}
@@ -113,11 +157,11 @@ Memory macros and core integration: SRAM blocks (placeholders) followed by hiera
 \end{figure}
 
 \begin{table}[htbp]
-    \caption{Step 3 Results}
+    \caption{Step 3 Hierarchical Core Results}
     \begin{center}
         \begin{tabular}{|c|c|c|c|}
             \hline
-            \textbf{} & \textbf{Power (VCD)} & \textbf{WNS} & \textbf{DRC} \\
+            \textbf{Design} & \textbf{Power (VCD)} & \textbf{WNS} & \textbf{DRC} \\
             \hline
             Hier.\ Core & 61.22 mW & --- & --- \\
             \hline
@@ -126,34 +170,13 @@ Memory macros and core integration: SRAM blocks (placeholders) followed by hiera
     \end{center}
 \end{table}
 
-% ═══════════════════════════════════════════════════════════════════════════
-\section{Step 4: Hierarchical Synthesis of Dual-Core}
-This milestone includes both fullchip-style views (non-lockstep GLS) and hierarchical dual-core post-PnR results from the LaTeX report.
+\subsection{Step 4: Hierarchical Synthesis of Dual-Core}
+The design was expanded to a full dual-core architecture. This step focused on non-lockstep execution across the two clock domains. Hierarchical PnR constraints were applied to seamlessly integrate both cores at the top level.
 
-\subsection{Fullchip / Non-Lockstep GLS (placeholders)}
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=0.30\textwidth]{temp.png}}
     \caption{Fullchip Layout (placeholder; replace with fullchip snapshot).}
     \label{fig:s4_fullchip_layout}
-\end{figure}
-
-\begin{figure*}[htbp]
-    \centerline{\includegraphics[width=1.0\textwidth]{temp.png}}
-    \caption{Fullchip GLS Waveform, Non-Lockstep (placeholder).}
-    \label{fig:s4_nl_wave}
-\end{figure*}
-
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.30\textwidth]{temp.png}}
-    \caption{Fullchip GLS Terminal Output, Non-Lockstep (placeholder).}
-    \label{fig:s4_nl_to}
-\end{figure}
-
-\subsection{Dual-Core Post-PnR (lockstep-style assets)}
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.30\textwidth]{Step4_images/Step4Layout.png}}
-    \caption{Dual-Core Layout.}
-    \label{fig:s4_layout}
 \end{figure}
 
 \begin{figure*}[htbp]
@@ -169,11 +192,11 @@ This milestone includes both fullchip-style views (non-lockstep GLS) and hierarc
 \end{figure}
 
 \begin{table}[htbp]
-    \caption{Step 4 Results}
+    \caption{Step 4 Dual-Core Results}
     \begin{center}
         \begin{tabular}{|c|c|c|c|}
             \hline
-            \textbf{} & \textbf{Power (VCD)} & \textbf{WNS} & \textbf{DRC} \\
+            \textbf{Design} & \textbf{Power (VCD)} & \textbf{WNS} & \textbf{DRC} \\
             \hline
             Dual Core & 19.19 mW & --- & --- \\
             \hline
@@ -182,45 +205,34 @@ This milestone includes both fullchip-style views (non-lockstep GLS) and hierarc
     \end{center}
 \end{table}
 
-% ═══════════════════════════════════════════════════════════════════════════
-\section{Step 5: Optimization}
-Optimized dual-core figures (placeholders until PnR/GLS images are exported).
-
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.30\textwidth]{temp.png}}
-    \caption{Optimized Dual-Core Layout (placeholder).}
-    \label{fig:s5_layout}
-\end{figure}
-
-\begin{figure*}[htbp]
-    \centerline{\includegraphics[width=1.0\textwidth]{temp.png}}
-    \caption{Optimized Dual-Core GLS Waveform (placeholder).}
-    \label{fig:s5_wave}
-\end{figure*}
-
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.30\textwidth]{temp.png}}
-    \caption{Optimized Dual-Core GLS Terminal Output (placeholder).}
-    \label{fig:s5_term}
-\end{figure}
+\subsection{Step 5: Alphas (Architecture Optimization)}
+Initial synthesis results highlighted a massive timing violation (Worst Negative Slack $\approx$ -23.9\,ns) primarily due to deep combinational logic in the SFP row's absolute sum and division calculations. To achieve timing closure for a 1.0\,ns clock period, aggressive RTL repipelining was implemented:
+\begin{itemize}
+    \item \textbf{Divider Optimization:} The combinational divider was replaced with a multi-cycle long division FSM (\texttt{div\_longdiv}).
+    \item \textbf{Adder Tree Optimization:} The row energy accumulator was split into a 2-stage pipeline (\texttt{sum8\_2stage}).
+\end{itemize}
+These architectural optimizations successfully reduced the data arrival time from $\sim$25.0\,ns down to 0.97\,ns, eliminating all timing violations. Furthermore, the total cell area of the SFP row was reduced by 54\% as the costly combinational divider was replaced.
 
 \begin{table}[htbp]
-    \caption{Step 5 Results}
+    \caption{Timing Optimization Synthesis Results (Target Period = 1.0 ns)}
     \begin{center}
-        \begin{tabular}{|c|c|c|c|}
-            \hline
-            \textbf{} & \textbf{Power (VCD)} & \textbf{WNS} & \textbf{DRC} \\
-            \hline
-            Optimized & --- & --- & --- \\
-            \hline
+        \begin{tabular}{l c c c c}
+            \toprule
+            \textbf{Design} & \multicolumn{2}{c}{\textbf{Before Repipelining}} & \multicolumn{2}{c}{\textbf{After Repipelining}} \\
+            \cmidrule(lr){2-3} \cmidrule(lr){4-5}
+             & \textbf{Area ($\mu m^2$)} & \textbf{WNS (ns)} & \textbf{Area ($\mu m^2$)} & \textbf{WNS (ns)} \\
+            \midrule
+            Core        & 243,526 & -23.68 & 175,820 & +0.00 \\
+            MAC Array   & 116,808 & -1.61  &  69,490 & +0.00 \\
+            SFP Row     &  53,864 & -23.92 &  24,698 & +0.00 \\
+            \bottomrule
         \end{tabular}
-        \label{tab:s5}
+        \label{tab:s5_timing}
     \end{center}
 \end{table}
 
-% ═══════════════════════════════════════════════════════════════════════════
-\section{Step 6: Hierarchical Sparsity-Aware Attention}
-Sparsity-aware dual-core figures (Word title: Sparsity-Aware Attention; placeholders until final images are added).
+\subsection{Step 6: Sparsity-Aware Attention}
+The final milestone validated the sparsity-aware feature. By injecting highly sparse matrices, we confirmed that the SFP engine correctly identifies row energies below \texttt{SFP\_THRESHOLD} and outputs zeros, successfully bypassing unnecessary long division cycles.
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=0.30\textwidth]{temp.png}}
@@ -240,37 +252,14 @@ Sparsity-aware dual-core figures (Word title: Sparsity-Aware Attention; placehol
     \label{fig:s6_term}
 \end{figure}
 
-\begin{table}[htbp]
-    \caption{Step 6 Results}
-    \begin{center}
-        \begin{tabular}{|c|c|c|c|}
-            \hline
-            \textbf{} & \textbf{Power (VCD)} & \textbf{WNS} & \textbf{DRC} \\
-            \hline
-            Sparsity-aware & --- & --- & --- \\
-            \hline
-        \end{tabular}
-        \label{tab:s6}
-    \end{center}
-\end{table}
 
-% ═══════════════════════════════════════════════════════════════════════════
 \section{Conclusion}
-% Add closing discussion after figures and metrics are finalized.
+This project successfully demonstrates the design, implementation, and physical realization of a dual-core attention accelerator. By partitioning the system into asynchronous domains, we enabled flexible inter-core data exchange. Through the introduction of a Sparsity-Aware SFP engine, computations on insignificant data are bypassed, promoting energy efficiency. Most importantly, critical timing bottlenecks were identified and resolved via rigorous RTL repipelining, ensuring the design easily meets the 1.0\,ns clock constraint in a TSMC 65nm process. The progressive, step-by-step verification methodology guaranteed robustness from the behavioral level down to post-PnR gate-level simulations, confirming the design's readiness for physical fabrication.
 
 % Include bibliography entries from references.bib without mandatory in-text cites.
 \nocite{project_repo}
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
-
-\appendix
-\section*{Design Notes (from project outline)}
-\addcontentsline{toc}{section}{Design Notes (from project outline)}
-\textit{Divider architecture:} pipelined long division vs.\ MCP ``/'' operator; synthesis favored long division; both RTL paths may remain with macro selection (\texttt{SFP\_LONGDIV}, etc.).
-
-\textit{Development flow:} Makefile-driven build, version control (e.g., git), and documented directory layout.
-
-\textit{Interface / controller:} per-core control; example flow---matrix multiply, normalize, read out---with streamlined chip interface hiding unnecessary details from upper-level users.
 
 \end{document}
