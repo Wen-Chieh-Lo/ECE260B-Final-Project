@@ -73,21 +73,12 @@ if {![file exists gate]} { exec mkdir gate }
 set_svf work/default.svf
 1
 sh date
-Thu Mar 19 19:20:18 PDT 2026
+Thu Mar 19 19:37:01 PDT 2026
 sh echo hostname
 hostname
 sh echo uptime
 uptime
 #Compiler directives
-set_optimize_registers true
-Error: Current design is not defined. (UID-4)
-0
-set_cost_priority -delay
-Error: Current design is not defined. (UID-4)
-0
-set_max_area 0
-Error: Current design is not defined. (UID-4)
-0
 set compile_effort   "high"
 high
 set compile_no_new_cells_at_top_level false
@@ -192,6 +183,13 @@ Warning: Design 'fullchip' has '1' unresolved references. For more detailed info
 current_design $top_module
 Current design is 'fullchip'.
 {fullchip}
+set_optimize_registers true
+1
+set_cost_priority -delay
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+1
+set_max_area 0
+1
 # Link Design
 link
 
@@ -206,6 +204,31 @@ Information: Building the design 'core' instantiated from design 'fullchip' with
 Warning: Cannot find the design 'core' in the library 'WORK'. (LBR-1)
 Warning: Unable to resolve reference 'core' in 'fullchip'. (LINK-5)
 0
+foreach_in_collection bb [get_cells -hier -filter "is_black_box == true"] {
+    set_dont_touch $bb
+}
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
+Warning: Design 'fullchip' has '1' unresolved references. For more detailed information, use the "link" command. (UID-341)
 # Default SDC Constraints
 read_sdc common.sdc
 
@@ -646,6 +669,7 @@ Information: Evaluating DesignWare library utilization. (UISN-27)
 | Licensed DW Building Blocks        | K-2015.06-DWBB_201506.2 |     *     |
 ============================================================================
 
+Information: Retiming is enabled. SVF file must be used for formal verification. (OPT-1210)
 
 Information: There are 220 potential problems in your design. Please run 'check_design' for more information. (LINT-99)
 
@@ -678,7 +702,55 @@ Information: The target library(s) contains cell(s), other than black boxes, tha
 
   Beginning Mapping Optimizations  (Ultra High effort)
   -------------------------------
+Information: Checking pipeline property of design fullchip. (RTDC-137)
+Information: Pipeline detection aborted. Reason: net clk0 is multidriver net. (RTDC-138)
+Information: Aborted pipeline detection on design fullchip. (RTDC-140)
   Mapping Optimization (Phase 1)
+Information: Checkpoint guidance is generated in the .svf file. (INFO-122)
+  Retiming fullchip (top)
+Warning: A black box cell core_instance_0 is 	found on the clock tree.  (RTDC-103)
+Warning: A black box cell core_instance_1 is 	found on the clock tree.  (RTDC-103)
+  Preferred flip-flop is DFD1 with setup = 0.02
+
+Warning: Cell 'core_instance_1' has no timing information. Treating it 
+	like an external module. (RTDC-32)
+Warning: Cell 'core_instance_0' has no timing information. Treating it 
+	like an external module. (RTDC-32)
+
+  Retiming base-clock clk1, rising edge.
+  Beginning minimum period retiming ...
+  ... minimum period retiming done.
+  Beginning minimum area retiming step 1 ...
+  ... minimum area retiming step 1 done.
+  Beginning minimum area retiming step 2 ...
+  5% 10% 15% 20% 25% 30% 35% 40% 45% 50% 55% 60% 65% 70% 75% 80% 85% 90% 95% 100% 
+  ... minimum area retiming step 2 done.
+  Beginning minimum area retiming step 3 ...
+  10% 20% 30% 40% 50% 60% ... 100% 
+  ... minimum area retiming step 3 done.
+  Beginning final register move ...
+  ... final register move done.
+  Lower bound estimate = 0.87
+  Critical path length = 0.87
+  Clock correction = 0.15 (clock-to-Q delay = 0.13, setup = 0.02, uncertainty = 0.00)
+
+  Retiming base-clock clk0, rising edge.
+  Beginning minimum period retiming ...
+  ... minimum period retiming done.
+  Beginning minimum area retiming step 1 ...
+  ... minimum area retiming step 1 done.
+  Beginning minimum area retiming step 2 ...
+  5% 10% 15% 20% 25% 30% 35% 40% 45% 50% 55% 60% 65% 70% 75% 80% 85% 90% 95% 100% 
+  ... minimum area retiming step 2 done.
+  Beginning minimum area retiming step 3 ...
+  10% 20% 30% 40% 50% 60% ... 100% 
+  ... minimum area retiming step 3 done.
+  Beginning final register move ...
+  ... final register move done.
+  Lower bound estimate = 1.79
+  Critical path length = 1.79
+  Clock correction = 0.15 (clock-to-Q delay = 0.13, setup = 0.02, uncertainty = 0.00)
+  Mapping Optimization (Phase 2)
 
   Beginning Constant Register Removal
   -----------------------------------
@@ -729,35 +801,35 @@ Information: The target library(s) contains cell(s), other than black boxes, tha
    ELAPSED            WORST NEG   SETUP    DESIGN                              LEAKAGE   MIN DELAY 
     TIME      AREA      SLACK     COST    RULE COST         ENDPOINT            POWER      COST    
   --------- --------- --------- --------- --------- ------------------------- --------- -----------
-    0:00:11   12118.7      0.00       0.0       0.1                           81418.3359      0.00  
-    0:00:11   12118.7      0.00       0.0       0.1                           81418.3359      0.00  
-    0:00:11   12118.7      0.00       0.0       0.1                           81418.3359      0.00  
-    0:00:11   12118.7      0.00       0.0       0.1                           81418.3359      0.00  
+    0:00:15   11901.6      0.26      93.2       0.1                           73199.6094      0.00  
+    0:00:16   12023.6      0.05      11.2       0.1                           75690.6094      0.00  
+    0:00:16   12023.6      0.05      11.2       0.1                           75690.6094      0.00  
+    0:00:16   12023.6      0.05      11.2       0.1                           75690.6094      0.00  
 
   Beginning WLM Backend Optimization
   --------------------------------------
-    0:00:12   12022.9      0.00       0.0       0.0                           79288.1719      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
+    0:00:17   11948.0      0.05      10.6       0.0                           74507.8516      0.00  
+    0:00:17   11947.3      0.05      10.6       0.0                           74232.8125      0.00  
+    0:00:17   11947.3      0.05      10.6       0.0                           74232.8125      0.00  
+    0:00:17   11961.7      0.04      10.4       0.0                           74408.2266      0.00  
+    0:00:17   11961.7      0.04      10.4       0.0                           74408.2266      0.00  
+    0:00:17   11961.7      0.04      10.4       0.0                           74408.2266      0.00  
+    0:00:17   11961.7      0.04      10.4       0.0                           74408.2266      0.00  
+    0:00:17   11961.7      0.04      10.4       0.0                           74408.2266      0.00  
+    0:00:17   11961.7      0.04      10.4       0.0                           74408.2266      0.00  
+    0:00:18   11969.6      0.04      10.9       0.0                           74577.0156      0.00  
+    0:00:18   11969.6      0.04      10.9       0.0                           74577.0156      0.00  
+    0:00:18   11969.6      0.04      10.9       0.0                           74577.0156      0.00  
+    0:00:18   11969.6      0.04      10.9       0.0                           74577.0156      0.00  
+    0:00:18   11969.6      0.04      10.9       0.0                           74577.0156      0.00  
+    0:00:18   11969.6      0.04      10.9       0.0                           74577.0156      0.00  
+    0:00:18   11969.6      0.04      10.9       0.0                           74577.0156      0.00  
+    0:00:18   11969.6      0.04      10.9       0.0                           74577.0156      0.00  
+    0:00:18   11969.6      0.04      10.9       0.0                           74577.0156      0.00  
+    0:00:18   11969.6      0.04      10.9       0.0                           74577.0156      0.00  
+    0:00:18   11969.6      0.04      10.9       0.0                           74577.0156      0.00  
+    0:00:19   12016.8      0.00       0.0       0.0                           75297.5625      0.00  
+    0:00:19   12016.8      0.00       0.0       0.0                           75297.5625      0.00  
 
 
   Beginning Leakage Power Optimization  (max_leakage_power 0)
@@ -767,7 +839,7 @@ Information: The target library(s) contains cell(s), other than black boxes, tha
    ELAPSED            WORST NEG   SETUP    DESIGN                              LEAKAGE   MIN DELAY 
     TIME      AREA      SLACK     COST    RULE COST         ENDPOINT            POWER      COST    
   --------- --------- --------- --------- --------- ------------------------- --------- -----------
-    0:00:13   12022.9      0.00       0.0       0.0                           75797.7812      0.00  
+    0:00:19   12016.8      0.00       0.0       0.0                           75297.5625      0.00  
   Global Optimization (Phase 32)
   Global Optimization (Phase 33)
   Global Optimization (Phase 34)
@@ -782,43 +854,46 @@ Information: The target library(s) contains cell(s), other than black boxes, tha
   Global Optimization (Phase 43)
   Global Optimization (Phase 44)
   Global Optimization (Phase 45)
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
+  Global Optimization (Phase 46)
+  Global Optimization (Phase 47)
+  Global Optimization (Phase 48)
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
 
                                   TOTAL                                                            
    ELAPSED            WORST NEG   SETUP    DESIGN                              LEAKAGE   MIN DELAY 
     TIME      AREA      SLACK     COST    RULE COST         ENDPOINT            POWER      COST    
   --------- --------- --------- --------- --------- ------------------------- --------- -----------
-    0:00:14   11973.2      0.00       0.0       0.0                           72011.5859      0.00  
-    0:00:15   11933.6      0.00       0.0       0.0                           71591.9453      0.00  
-    0:00:15   11933.6      0.00       0.0       0.0                           71591.9453      0.00  
-    0:00:15   11933.6      0.00       0.0       0.0                           71591.9453      0.00  
-    0:00:15   11933.6      0.00       0.0       0.0                           71591.9453      0.00  
-    0:00:15   11921.4      0.00       0.0       0.0                           71310.1016      0.00  
-    0:00:15   11921.4      0.00       0.0       0.0                           71310.1016      0.00  
-    0:00:16   11921.4      0.00       0.0       0.0                           71310.1016      0.00  
-    0:00:16   11921.4      0.00       0.0       0.0                           71310.1016      0.00  
-    0:00:16   11891.9      0.00       0.0       0.0                           70897.4531      0.00  
+    0:00:23   12009.6      0.00       0.0       0.0                           74649.0469      0.00  
+    0:00:24   11933.3      0.00       0.0       0.0                           73639.5078      0.00  
+    0:00:24   11933.3      0.00       0.0       0.0                           73639.5078      0.00  
+    0:00:24   11933.3      0.00       0.0       0.0                           73639.5078      0.00  
+    0:00:24   11933.3      0.00       0.0       0.0                           73639.5078      0.00  
+    0:00:24   11910.2      0.00       0.0       0.0                           73072.8281      0.00  
+    0:00:24   11910.2      0.00       0.0       0.0                           73072.8281      0.00  
+    0:00:24   11910.2      0.00       0.0       0.0                           73072.8281      0.00  
+    0:00:24   11910.2      0.00       0.0       0.0                           73072.8281      0.00  
+    0:00:25   11874.6      0.00       0.0       0.0                           72379.9766      0.00  
 Loading db file '/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db'
 
 
@@ -881,9 +956,9 @@ if {  [sizeof_collection $unmapped_designs] != 0 } {
 }
 # Done
 sh date
-Thu Mar 19 19:22:07 PDT 2026
+Thu Mar 19 19:39:01 PDT 2026
 sh uptime
- 19:22:07 up 268 days,  3:10, 10 users,  load average: 8.44, 7.30, 6.56
+ 19:39:01 up 268 days,  3:27, 11 users,  load average: 7.66, 7.39, 6.79
 # Move DC runtime artifacts to work/ to keep syn/ clean
 foreach f {command.log filenames.log} {
     if { [file exists $f] } { file rename -force $f work/$f }
