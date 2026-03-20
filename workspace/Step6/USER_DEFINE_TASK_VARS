@@ -25,4 +25,4 @@ SYN_EFFORT = high
 # Verilog preprocessor defines for simulation (iverilog -D) and synthesis (DC -define).
 # Space-separated tokens, e.g.: SFP_LONGDIV VANILLA SFP_MCP SFP_THRESHOLD=400
 # Leave blank for no extra defines.
-USER_DEFINES = SFP_LONGDIV SFP_THRESHOLD=500
+USER_DEFINES = SFP_LONGDIV SFP_THRESHOLD=169503

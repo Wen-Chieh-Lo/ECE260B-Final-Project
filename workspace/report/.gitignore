@@ -1,0 +1,14 @@
+# LaTeX build artifacts (under src/)
+src/*.aux
+src/*.bbl
+src/*.blg
+src/*.fdb_latexmk
+src/*.fls
+src/*.log
+src/*.out
+src/*.synctex.gz
+src/*.toc
+src/*.lof
+src/*.lot
+src/*.bcf
+src/*.run.xml

@@ -4,6 +4,7 @@
 ./verilog/sync.v
 ./verilog/submodules/sum8.v
 ./verilog/submodules/div.v
+./verilog/submodules/controller.v
 
 // --- MAC ---
 ./verilog/mac/mac_col.v

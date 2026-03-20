@@ -282,6 +282,9 @@ Reset2Cyc;
 		  result[t][q] = result[t][q] + Q[t][k] * K[q][k];
 	  end
 	end
+	// Row L1 = sum_c |result[r][c]|. Threshold gate matches sfp_row: (sum_2core < SFP_THRESHOLD) -> divisor 0.
+	// Do NOT inject sum_abs==1 before the threshold compare (RTL compares raw energy to TH).
+	// Only use divisor = max(1, row_l1) in the normalize branch (avoid /0; matches div_longdiv zero handling).
 	// $display("##### Estimated normalization (sum_abs>>7, then signed divide) #####");
     for (r = 0; r < total_cycle; r = r + 1) begin
       sum_abs = 0;
@@ -291,19 +294,19 @@ Reset2Cyc;
           unsigned_val = ~(unsigned_val-1'b1);
         sum_abs = sum_abs + unsigned_val;
       end
-      if (sum_abs == 0) sum_abs = 1;
       if (sum_abs < `SFP_THRESHOLD) begin
         if (`SFP_THRESHOLD > 0)
-          $display("[TB][Norm gate] row %0d: row L1 sum (after zero-guard) = %0d < SFP_THRESHOLD=%0d -> golden estimated row forced to 0",
+          $display("[TB][Norm gate] row %0d: row L1 sum = %0d < SFP_THRESHOLD=%0d -> golden estimated row forced to 0",
               r, sum_abs, `SFP_THRESHOLD);
         for (c = 0; c < col; c = c + 1)
           estimated[r*col + c] = 0;
       end else begin
+        divisor = (sum_abs == 0) ? 1 : sum_abs;
         for (c = 0; c < col; c = c + 1) begin
           unsigned_val = result[r][c];
           if (unsigned_val[bw_psum-1] == 1'b1)
             unsigned_val = ~(unsigned_val-1'b1);
-          estimated[r*col + c] = {unsigned_val, {sfp_out_shift{1'b0}}} / sum_abs;
+          estimated[r*col + c] = {unsigned_val, {sfp_out_shift{1'b0}}} / divisor;
         end
       end
     end

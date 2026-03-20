@@ -26,7 +26,7 @@ module fullchip_tb;
 	integer qkvn_file, qkvn_scan_file, captured_data;
 	integer j, k, t, q, c;
 	integer row_err, row;
-	integer divisor;
+	integer divisor, sum_2core;
 
 	integer K_c0     [col-1:0][pr-1:0];
 	integer K_c1     [col-1:0][pr-1:0];
@@ -187,18 +187,19 @@ module fullchip_tb;
 				sum_c1[t] = sum_c1[t] + abs_result_c1[t][q];
 			end
 		end
+		// sfp_row: sum_2core = sum_this_core + sum_in; TB models dual-core as sum_c0+sum_c1 per row.
 		for (t = 0; t < total_cycle; t = t+1) begin
-			divisor = sum_c0[t] + sum_c1[t];
-			if (divisor < `SFP_THRESHOLD) begin
+			sum_2core = sum_c0[t] + sum_c1[t];
+			if (sum_2core < `SFP_THRESHOLD) begin
 				if (`SFP_THRESHOLD > 0)
 					$display("[TB][Norm gate] row %0d (dual-core): sum_2core = sum_c0+sum_c1 = %0d < SFP_THRESHOLD=%0d -> golden N_est_c0/N_est_c1 forced to 0",
-						t, divisor, `SFP_THRESHOLD);
+						t, sum_2core, `SFP_THRESHOLD);
 				for (q = 0; q < col; q = q+1) begin
 					N_est_c0[t][q] = 0;
 					N_est_c1[t][q] = 0;
 				end
 			end else begin
-				if (divisor == 0) divisor = 1;
+				divisor = (sum_2core == 0) ? 1 : sum_2core;
 				for (q = 0; q < col; q = q+1) begin
 					N_est_c0[t][q] = (abs_result_c0[t][q] << sfp_out_shift) / divisor;
 					N_est_c1[t][q] = (abs_result_c1[t][q] << sfp_out_shift) / divisor;
