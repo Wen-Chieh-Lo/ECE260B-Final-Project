@@ -24,7 +24,8 @@ module div #(
 
   assign full_quotient = {in, {out_shift{1'b0}}} / divisor;
   assign out           = full_quotient[out_shift-1:0];
-  assign done = 1'b1;
+  assign done = start;
+  assign busy = start;
 
 endmodule
 
