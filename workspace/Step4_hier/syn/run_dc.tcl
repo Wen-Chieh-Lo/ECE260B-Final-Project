@@ -134,6 +134,8 @@ if { $syn_effort == "low" } {
 # Write Out Design - Hierarchical
 current_design $top_module
 
+set_app_var verilogout_single_bit false
+uniquify -force
 change_names -rules verilog -hierarchy
 
 write -format verilog -hier -output [format "gate/%s.out.v" $top_module]
