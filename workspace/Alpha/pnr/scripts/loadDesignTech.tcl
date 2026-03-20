@@ -1,7 +1,7 @@
 # Load design
 set desdir 		"./netlist"
 set libdir 		"/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata"
-set design 		"add"
+set design 		"fullchip"
 set netlist 		"$desdir/$design.out.v"
 set sdc 		"./constraints/$design.sdc"
 set best_timing_lib 	"$libdir/lib/tcbn65gplusbc.lib"

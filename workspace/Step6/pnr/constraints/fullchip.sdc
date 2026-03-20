@@ -1,17 +1,7 @@
 # =============================================================================
-# fullchip.sdc  --  Two-clock async SDC for fullchip dual-core synthesis
-#
-# Canonical copy: keep in sync with workspace/Alpha/syn/fullchip.sdc
-#
-# Clock topology (matches fullchip_tb.v):
-#   clk0 : Core-0 domain  period = 1.0 ns  (H_CYCLE0 = 0.5)
-#   clk1 : Core-1 domain  period = 1.2 ns  (H_CYCLE1 = 0.6)
-#   The two domains communicate via async FIFO (CDC).
-#   => set_clock_groups -asynchronous : no cross-domain path is timed.
-#
-# I/O port mapping:
-#   clk0 domain: reset0 start0 set_mode0 mode_in0 mem_in0 inst_ext0 | out0 status0
-#   clk1 domain: reset1 start1 set_mode1 mode_in1 mem_in1 inst_ext1 | out1 status1
+# fullchip.sdc (PNR) — clocks / I/O MUST match Alpha/syn/fullchip.sdc.
+# Innovus: PNR-only multicycle appended below.
+# Use with loadDesignTech.tcl: set design "fullchip" (netlist top = fullchip).
 # =============================================================================
 
 set clk0_period 1.0
@@ -32,3 +22,9 @@ set_output_delay -clock clk0 -max $io_delay [get_ports {out0 status0}]
 # ---- I/O delays: clk1 domain ----
 set_input_delay  -clock clk1 -max $io_delay [get_ports {reset1 start1 set_mode1 mode_in1 mem_in1 inst_ext1}]
 set_output_delay -clock clk1 -max $io_delay [get_ports {out1 status1}]
+
+# ---- PNR only: multicycle through SFP row divider (names depend on hierarchy) ----
+set MCP_FROM [get_cells -hierarchical * -filter {is_sequential == true && (full_name =~ *sum_this_core_r_reg* || full_name =~ *sum_in_r_reg* || full_name =~ *abs_div_reg*)}]
+set MCP_TO [get_cells -hierarchical * -filter {is_sequential == true && full_name =~ *div_out_q_reg*}]
+set_multicycle_path 10 -setup -from $MCP_FROM -to $MCP_TO
+set_multicycle_path 9  -hold  -from $MCP_FROM -to $MCP_TO
