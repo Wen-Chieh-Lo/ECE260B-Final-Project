@@ -3,31 +3,31 @@
 Report : area
 Design : fullchip
 Version: K-2015.06-SP2
-Date   : Wed Mar 18 23:27:52 2026
+Date   : Thu Mar 19 17:45:30 2026
 ****************************************
 
 Information: Updating design information... (UID-85)
 Warning: Design 'fullchip' contains 2 high-fanout nets. A fanout number of 1000 will be used for delay calculations involving these nets. (TIM-134)
 Library(s) Used:
 
-    tcbn65gpluswc (File: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gpluswc.db)
+    tcbn65gplustc (File: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db/tcbn65gplustc.db)
 
-Number of ports:                        59262
-Number of nets:                        185171
-Number of cells:                       117192
-Number of combinational cells:          92598
-Number of sequential cells:             23896
+Number of ports:                         2586
+Number of nets:                         72009
+Number of cells:                        63809
+Number of combinational cells:          41051
+Number of sequential cells:             22232
 Number of macros/black boxes:               0
-Number of buf/inv:                      22834
-Number of references:                      14
+Number of buf/inv:                       4131
+Number of references:                     679
 
-Combinational area:             311737.321738
-Buf/Inv area:                    29859.841024
-Noncombinational area:          215560.797196
+Combinational area:             133699.680118
+Buf/Inv area:                     4582.440180
+Noncombinational area:          157629.962988
 Macro/Black Box area:                0.000000
 Net Interconnect area:      undefined  (Wire load has zero net area)
 
-Total cell area:                527298.118934
+Total cell area:                291329.643106
 Total area:                 undefined
 1
  
@@ -35,7 +35,7 @@ Total area:                 undefined
 Report : reference
 Design : fullchip
 Version: K-2015.06-SP2
-Date   : Wed Mar 18 23:27:59 2026
+Date   : Thu Mar 19 17:45:34 2026
 ****************************************
 
 Attributes:
@@ -51,32 +51,1364 @@ Attributes:
 
 Reference          Library       Unit Area   Count    Total Area   Attributes
 -----------------------------------------------------------------------------
-CKND12             tcbn65gpluswc
-                                  6.120000       1      6.120000  
-DFKCNQD1           tcbn65gpluswc
-                                  7.200000       1      7.200000  n
-DFQD1              tcbn65gpluswc
-                                  6.840000       2     13.680000  n
-EDFKCNQD1          tcbn65gpluswc
-                                 10.080000      47    473.759996  n
-INR2D0             tcbn65gpluswc
-                                  2.160000       1      2.160000  
-INVD1              tcbn65gpluswc
-                                  1.080000       3      3.240000  
-INVD8              tcbn65gpluswc
-                                  4.320000       1      4.320000  
-INVD12             tcbn65gpluswc
-                                  6.120000       1      6.120000  
-MUX2ND0            tcbn65gpluswc
-                                  2.880000       1      2.880000  
-NR2D0              tcbn65gpluswc
+AN2D0              tcbn65gplustc
+                                  2.160000       4      8.640000  
+AN2D1              tcbn65gplustc
+                                  2.160000      66    142.560006  
+AN2D2              tcbn65gplustc
+                                  2.520000       7     17.640000  
+AN2D4              tcbn65gplustc
+                                  4.320000       6     25.920001  
+AN2XD1             tcbn65gplustc
+                                  2.160000       6     12.960001  
+AN3D0              tcbn65gplustc
+                                  2.520000       8     20.160000  
+AN3XD1             tcbn65gplustc
+                                  2.520000       1      2.520000  
+AN4D0              tcbn65gplustc
+                                  2.880000     242    696.960028  
+AN4XD1             tcbn65gplustc
+                                  2.880000      12     34.560001  
+AO21D0             tcbn65gplustc
+                                  2.520000     649   1635.479988  
+AO21D1             tcbn65gplustc
+                                  2.520000      17     42.840000  
+AO22D0             tcbn65gplustc
+                                  2.880000     597   1719.360068  
+AO22D1             tcbn65gplustc
+                                  3.240000      14     45.360000  
+AO31D0             tcbn65gplustc
+                                  2.880000      20     57.600002  
+AO211D0            tcbn65gplustc
+                                  2.880000      56    161.280006  
+AOI21D0            tcbn65gplustc
+                                  2.160000     728   1572.480062  
+AOI21D1            tcbn65gplustc
+                                  2.160000     125    270.000011  
+AOI21D2            tcbn65gplustc
+                                  3.240000       7     22.680000  
+AOI21D4            tcbn65gplustc
+                                  6.480000       5     32.400000  
+AOI22D0            tcbn65gplustc
+                                  2.520000    8277  20858.039842  
+AOI22D1            tcbn65gplustc
+                                  2.520000      46    115.919999  
+AOI22D2            tcbn65gplustc
+                                  4.320000      36    155.520006  
+AOI31D0            tcbn65gplustc
+                                  2.520000      68    171.359999  
+AOI31D1            tcbn65gplustc
+                                  2.520000      11     27.720000  
+AOI32D0            tcbn65gplustc
+                                  2.880000      10     28.800001  
+AOI211D0           tcbn65gplustc
+                                  2.520000     419   1055.879992  
+AOI211D1           tcbn65gplustc
+                                  2.520000       7     17.640000  
+AOI211XD0          tcbn65gplustc
+                                  2.520000       4     10.080000  
+AOI221D0           tcbn65gplustc
+                                  2.880000     329    947.520038  
+BUFFD0             tcbn65gplustc
                                   1.440000       1      1.440000  
-core_col8_bw8_bw_psum20_pr8_0 260216.999474
-                                                 1  260216.999474 h, n
-core_col8_bw8_bw_psum20_pr8_1 255704.399257
-                                                 1  255704.399257 h, n
-fifo_depth16_async_bw24_0      5424.840104       1   5424.840104  h, n
-fifo_depth16_async_bw24_1      5430.960103       1   5430.960103  h, n
+BUFFD1             tcbn65gplustc
+                                  1.440000      22     31.680001  
+BUFFD2             tcbn65gplustc
+                                  2.160000      45     97.200004  
+BUFFD3             tcbn65gplustc
+                                  2.520000       4     10.080000  
+CKAN2D0            tcbn65gplustc
+                                  2.160000     529   1142.640045  
+CKAN2D1            tcbn65gplustc
+                                  2.160000     316    682.560027  
+CKBD0              tcbn65gplustc
+                                  1.440000       6      8.640000  
+CKBD1              tcbn65gplustc
+                                  1.440000      16     23.040001  
+CKBD2              tcbn65gplustc
+                                  2.160000      17     36.720001  
+CKBD4              tcbn65gplustc
+                                  3.240000       8     25.920000  
+CKMUX2D0           tcbn65gplustc
+                                  3.600000       1      3.600000  
+CKMUX2D1           tcbn65gplustc
+                                  3.600000      25     89.999998  
+CKND0              tcbn65gplustc
+                                  1.080000    3348   3615.840144  
+CKND1              tcbn65gplustc
+                                  1.080000      64     69.120003  
+CKND2              tcbn65gplustc
+                                  1.440000      16     23.040001  
+CKND2D0            tcbn65gplustc
+                                  1.440000    3032   4366.080173  
+CKND2D1            tcbn65gplustc
+                                  1.440000     157    226.080009  
+CKND2D2            tcbn65gplustc
+                                  2.520000      43    108.359999  
+CKND2D3            tcbn65gplustc
+                                  3.240000       1      3.240000  
+CKND12             tcbn65gplustc
+                                  6.120000       1      6.120000  
+CKXOR2D0           tcbn65gplustc
+                                  3.600000     478   1720.799954  
+CKXOR2D1           tcbn65gplustc
+                                  3.600000      45    161.999996  
+CMPE42D1           tcbn65gplustc
+                                 16.559999     906  15003.359516  r
+DFCND1             tcbn65gplustc
+                                  8.640000     900   7776.000309  n
+DFCNQD1            tcbn65gplustc
+                                  7.920000    3504  27751.680267  n
+DFCNQD2            tcbn65gplustc
+                                  9.000000      28    252.000000  n
+DFCNQD4            tcbn65gplustc
+                                 10.080000       7     70.559999  n
+DFKCNQD1           tcbn65gplustc
+                                  7.200000     642   4622.399878  n
+DFQD1              tcbn65gplustc
+                                  6.840000   16594  113502.962532 n
+DFQD2              tcbn65gplustc
+                                  7.200000      10     71.999998  n
+DFQD4              tcbn65gplustc
+                                  8.280000       5     41.399999  n
+DFSNQD1            tcbn65gplustc
+                                  8.280000      16    132.479996  n
+FA1D0              tcbn65gplustc
+                                  9.000000    2010  18090.000000  r
+FA1D1              tcbn65gplustc
+                                 10.080000    1061  10694.879919  r
+FA1D2              tcbn65gplustc
+                                 10.440000       2     20.879999  r
+FCSICIND1          tcbn65gplustc
+                                 18.000000      16    288.000000  r
+FICIND2            tcbn65gplustc
+                                 12.240000       4     48.959999  r
+FIICOND1           tcbn65gplustc
+                                 10.440000      16    167.039993  r
+HA1D0              tcbn65gplustc
+                                  5.760000     619   3565.440142  r
+IAO21D0            tcbn65gplustc
+                                  2.520000      55    138.599999  
+IND2D0             tcbn65gplustc
+                                  2.160000     285    615.600024  
+IND2D2             tcbn65gplustc
+                                  2.880000       1      2.880000  
+IND2D4             tcbn65gplustc
+                                  5.760000       1      5.760000  
+IND3D0             tcbn65gplustc
+                                  2.520000       8     20.160000  
+IND4D0             tcbn65gplustc
+                                  2.880000      96    276.480011  
+INR2D0             tcbn65gplustc
+                                  2.160000     959   2071.440082  
+INR2D1             tcbn65gplustc
+                                  2.160000      31     66.960003  
+INR2XD0            tcbn65gplustc
+                                  2.160000       1      2.160000  
+INR2XD1            tcbn65gplustc
+                                  2.880000       1      2.880000  
+INR2XD2            tcbn65gplustc
+                                  4.680000       4     18.719999  
+INR2XD4            tcbn65gplustc
+                                  9.360000       2     18.719999  
+INR3D0             tcbn65gplustc
+                                  2.520000      13     32.760000  
+INR4D0             tcbn65gplustc
+                                  2.880000       4     11.520000  
+INVD0              tcbn65gplustc
+                                  1.080000     486    524.880021  
+INVD1              tcbn65gplustc
+                                  1.080000      90     97.200004  
+INVD2              tcbn65gplustc
+                                  1.440000       5      7.200000  
+INVD3              tcbn65gplustc
+                                  2.160000       2      4.320000  
+IOA21D0            tcbn65gplustc
+                                  2.520000     619   1559.879988  
+IOA21D1            tcbn65gplustc
+                                  2.520000      45    113.399999  
+MAOI22D0           tcbn65gplustc
+                                  2.880000       4     11.520000  
+MAOI222D0          tcbn65gplustc
+                                  2.880000     256    737.280029  
+MOAI22D0           tcbn65gplustc
+                                  2.880000     175    504.000020  
+MOAI22D1           tcbn65gplustc
+                                  2.880000       5     14.400001  
+MUX2D0             tcbn65gplustc
+                                  3.240000     114    369.360001  
+MUX2ND0            tcbn65gplustc
+                                  2.880000     537   1546.560061  
+MUX2ND1            tcbn65gplustc
+                                  4.320000      10     43.200002  
+ND2D0              tcbn65gplustc
+                                  1.440000      67     96.480004  
+ND2D1              tcbn65gplustc
+                                  1.440000     131    188.640007  
+ND2D2              tcbn65gplustc
+                                  2.520000       7     17.640000  
+ND3D0              tcbn65gplustc
+                                  2.160000     372    803.520032  
+ND3D1              tcbn65gplustc
+                                  2.160000      15     32.400001  
+ND3D2              tcbn65gplustc
+                                  3.240000       9     29.160000  
+ND4D0              tcbn65gplustc
+                                  2.520000     978   2464.559981  
+ND4D1              tcbn65gplustc
+                                  2.520000       2      5.040000  
+ND4D2              tcbn65gplustc
+                                  4.680000       1      4.680000  
+NR2D0              tcbn65gplustc
+                                  1.440000    1556   2240.640089  
+NR2D1              tcbn65gplustc
+                                  1.440000     126    181.440007  
+NR2D2              tcbn65gplustc
+                                  2.520000      44    110.879999  
+NR2D3              tcbn65gplustc
+                                  3.240000       4     12.960000  
+NR2D4              tcbn65gplustc
+                                  4.320000       4     17.280001  
+NR2XD0             tcbn65gplustc
+                                  1.440000      90    129.600005  
+NR2XD1             tcbn65gplustc
+                                  2.520000      28     70.559999  
+NR2XD2             tcbn65gplustc
+                                  4.320000       9     38.880002  
+NR2XD3             tcbn65gplustc
+                                  6.120000       1      6.120000  
+NR3D0              tcbn65gplustc
+                                  2.160000      39     84.240003  
+NR3D1              tcbn65gplustc
+                                  3.240000      14     45.360000  
+NR4D0              tcbn65gplustc
+                                  2.520000      14     35.280000  
+NR4D1              tcbn65gplustc
+                                  3.600000       3     10.800000  
+NR4D2              tcbn65gplustc
+                                  7.200000       3     21.599999  
+OA21D0             tcbn65gplustc
+                                  2.520000      97    244.439998  
+OA21D1             tcbn65gplustc
+                                  2.520000       9     22.680000  
+OA22D0             tcbn65gplustc
+                                  2.880000      71    204.480008  
+OA31D0             tcbn65gplustc
+                                  2.880000       1      2.880000  
+OA211D0            tcbn65gplustc
+                                  2.880000      29     83.520003  
+OAI21D0            tcbn65gplustc
+                                  2.160000     582   1257.120050  
+OAI21D1            tcbn65gplustc
+                                  2.160000     123    265.680011  
+OAI21D2            tcbn65gplustc
+                                  3.240000       4     12.960000  
+OAI21D4            tcbn65gplustc
+                                  6.480000       3     19.440000  
+OAI22D0            tcbn65gplustc
+                                  2.520000    3555   8958.599932  
+OAI22D1            tcbn65gplustc
+                                  2.520000      80    201.599998  
+OAI31D0            tcbn65gplustc
+                                  2.520000      96    241.919998  
+OAI32D0            tcbn65gplustc
+                                  2.880000     390   1123.200045  
+OAI211D0           tcbn65gplustc
+                                  2.520000      11     27.720000  
+OAI221D0           tcbn65gplustc
+                                  2.880000     168    483.840019  
+OAI221D1           tcbn65gplustc
+                                  3.240000      32    103.680000  
+OAI222D0           tcbn65gplustc
+                                  3.240000       3      9.720000  
+OAI222D1           tcbn65gplustc
+                                  3.960000       1      3.960000  
+OR2D0              tcbn65gplustc
+                                  2.160000     407    879.120035  
+OR2D1              tcbn65gplustc
+                                  2.160000      19     41.040002  
+OR3D0              tcbn65gplustc
+                                  2.520000      20     50.400000  
+OR3D1              tcbn65gplustc
+                                  2.520000       1      2.520000  
+OR3D4              tcbn65gplustc
+                                  5.040000       1      5.040000  
+SNPS_CLOCK_GATE_HIGH_fullchip_0
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_1
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_2
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_3
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_4
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_5
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_6
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_7
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_8
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_9
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_10
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_11
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_12
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_13
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_14
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_15
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_16
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_17
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_18
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_19
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_20
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_21
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_22
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_23
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_24
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_25
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_26
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_27
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_28
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_29
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_30
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_31
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_32
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_33
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_34
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_35
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_36
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_37
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_38
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_39
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_40
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_41
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_42
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_43
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_44
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_45
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_46
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_47
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_48
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_49
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_50
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_51
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_52
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_53
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_54
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_55
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_56
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_57
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_58
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_59
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_60
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_61
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_62
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_63
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_64
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_65
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_66
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_67
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_68
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_69
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_70
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_71
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_72
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_73
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_74
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_75
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_76
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_77
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_78
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_79
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_80
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_81
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_82
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_83
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_84
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_85
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_86
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_87
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_88
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_89
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_90
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_91
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_92
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_93
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_94
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_95
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_96
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_97
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_98
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_99
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_100
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_101
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_102
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_103
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_104
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_105
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_106
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_107
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_108
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_109
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_110
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_111
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_112
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_113
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_114
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_115
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_116
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_117
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_118
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_119
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_120
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_121
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_122
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_123
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_124
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_125
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_126
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_127
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_128
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_129
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_130
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_131
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_140
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_141
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_142
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_143
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_144
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_145
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_146
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_147
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_148
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_157
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_158
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_159
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_160
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_161
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_162
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_163
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_164
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_165
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_174
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_175
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_176
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_177
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_178
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_179
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_180
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_181
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_182
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_191
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_192
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_193
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_194
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_195
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_196
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_197
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_198
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_199
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_200
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_201
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_202
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_203
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_204
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_205
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_206
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_207
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_209
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_210
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_211
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_212
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_213
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_214
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_215
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_216
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_217
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_218
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_219
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_220
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_221
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_222
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_223
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_224
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_225
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_227
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_228
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_229
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_230
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_231
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_232
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_233
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_234
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_235
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_236
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_237
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_238
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_239
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_240
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_241
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_242
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_243
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_245
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_246
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_247
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_248
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_249
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_250
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_251
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_252
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_253
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_254
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_255
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_256
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_257
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_258
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_259
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_260
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_261
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_263
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_264
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_265
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_266
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_267
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_268
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_269
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_270
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_271
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_272
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_273
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_274
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_275
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_276
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_277
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_278
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_279
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_281
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_282
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_283
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_284
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_285
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_286
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_287
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_288
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_289
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_290
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_291
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_292
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_293
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_294
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_295
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_296
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_297
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_299
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_300
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_301
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_302
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_303
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_304
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_305
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_306
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_307
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_308
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_309
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_310
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_311
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_312
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_313
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_314
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_315
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_317
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_318
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_319
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_320
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_321
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_322
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_323
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_324
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_325
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_326
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_327
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_328
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_329
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_330
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_331
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_332
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_333
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_334
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_335
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_336
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_337
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_338
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_339
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_340
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_341
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_342
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_343
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_344
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_345
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_346
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_347
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_348
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_349
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_350
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_352
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_353
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_354
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_355
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_356
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_357
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_358
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_359
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_360
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_361
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_362
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_363
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_364
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_365
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_366
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_367
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_368
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_370
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_371
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_372
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_373
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_374
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_375
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_376
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_377
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_378
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_379
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_380
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_381
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_382
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_383
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_384
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_385
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_386
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_388
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_389
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_390
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_391
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_392
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_393
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_394
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_395
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_396
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_397
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_398
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_399
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_400
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_401
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_402
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_403
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_404
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_406
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_407
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_408
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_409
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_410
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_411
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_412
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_413
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_414
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_415
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_416
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_417
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_418
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_419
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_420
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_421
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_422
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_424
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_425
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_426
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_427
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_428
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_429
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_430
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_431
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_432
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_433
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_434
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_435
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_436
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_437
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_438
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_439
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_440
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_442
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_443
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_444
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_445
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_446
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_447
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_448
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_449
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_450
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_451
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_452
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_453
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_454
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_455
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_456
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_457
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_458
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_460
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_461
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_462
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_463
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_464
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_465
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_466
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_467
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_468
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_469
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_470
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_471
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_472
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_473
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_474
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_475
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_476
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_477
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_478
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_479
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_480
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_481
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_482
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_483
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_484
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_485
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_486
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_487
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_488
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_489
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_490
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_491
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_492
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_493
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_494
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_495
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_496
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_497
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_498
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_499
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_500
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_501
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_502
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_503
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_504
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_505
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_506
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_507
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_508
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_509
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_510
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_511
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_512
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_513
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_514
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_515
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_516
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_517
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_518
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_519
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_520
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_521
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_522
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_523
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_524
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_525
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_526
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_527
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_528
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_529
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_530
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_531
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_532
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_533
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_534
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_535
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_536
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_537
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_538
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_539
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_540
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_541
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_542
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_543
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_544
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_545
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_546
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_547
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_548
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_549
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_550
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_551
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_552
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_553
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_554
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_555
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_556
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_557
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_558
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_559
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_560
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_561
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_562
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_563
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_564
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_565
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_566
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_567
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_568
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_569
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_570
+                                  6.480000       1      6.480000  b, h
+SNPS_CLOCK_GATE_HIGH_fullchip_571
+                                  6.480000       1      6.480000  b, h
+TIEH               tcbn65gplustc
+                                  1.080000       1      1.080000  
+TIEL               tcbn65gplustc
+                                  1.080000       1      1.080000  
+XNR2D0             tcbn65gplustc
+                                  3.600000    2631   9471.599749  
+XNR2D1             tcbn65gplustc
+                                  3.600000     173    622.799984  
+XNR2D2             tcbn65gplustc
+                                  3.960000      20     79.200001  
+XNR2D4             tcbn65gplustc
+                                  7.560000       1      7.560000  
+XNR3D0             tcbn65gplustc
+                                  6.120000      59    361.079993  
+XOR2D0             tcbn65gplustc
+                                  3.600000      65    233.999994  
+XOR2D2             tcbn65gplustc
+                                  3.960000       2      7.920000  
+XOR3D0             tcbn65gplustc
+                                  6.120000     475   2906.999946  
+XOR3D1             tcbn65gplustc
+                                  6.120000       3     18.360000  
+XOR3D2             tcbn65gplustc
+                                  6.840000       5     34.200001  
 -----------------------------------------------------------------------------
-Total 14 references                                 527298.118934
+Total 679 references                                291329.643106
 1
