@@ -1,11 +1,11 @@
 /////////////////////////////////////////////////////////////
 // Created by: Synopsys DC Ultra(TM) in wire load mode
 // Version   : K-2015.06-SP2
-// Date      : Thu Mar 19 19:39:00 2026
+// Date      : Fri Mar 20 01:44:58 2026
 /////////////////////////////////////////////////////////////
 
 
-module fifo_depth16_async_bw24_0_DW01_inc_J1_0 ( A, SUM );
+module fifo_depth16_async_bw24_0_DW01_inc_J1_0_1 ( A, SUM );
   input [4:0] A;
   output [4:0] SUM;
   wire   n1, n2, n3;
@@ -18,7 +18,7 @@ module fifo_depth16_async_bw24_0_DW01_inc_J1_0 ( A, SUM );
 endmodule
 
 
-module fifo_depth16_async_bw24_0_DW01_inc_J1_1 ( A, SUM );
+module fifo_depth16_async_bw24_0_DW01_inc_J1_1_1 ( A, SUM );
   input [4:0] A;
   output [4:0] SUM;
   wire   n1, n2, n3;
@@ -31,7 +31,7 @@ module fifo_depth16_async_bw24_0_DW01_inc_J1_1 ( A, SUM );
 endmodule
 
 
-module fifo_depth16_async_bw24_1 ( rd_clk, wr_clk, rd, wr, reset, in, out, 
+module fifo_depth16_async_bw24_2 ( rd_clk, wr_clk, rd, wr, reset, in, out, 
         o_full, o_empty );
   input [23:0] in;
   output [23:0] out;
@@ -106,9 +106,9 @@ module fifo_depth16_async_bw24_1 ( rd_clk, wr_clk, rd, wr, reset, in, out,
   tri   reset;
   tri   [23:0] in;
 
-  fifo_depth16_async_bw24_0_DW01_inc_J1_0 add_x_2 ( .A({n60, net31638, 
+  fifo_depth16_async_bw24_0_DW01_inc_J1_0_1 add_x_2 ( .A({n60, net31638, 
         net31639, net34874, net34902}), .SUM({wr_ptr_bin_next, wr_ptr_bin}) );
-  fifo_depth16_async_bw24_0_DW01_inc_J1_1 add_x_1 ( .A({
+  fifo_depth16_async_bw24_0_DW01_inc_J1_1_1 add_x_1 ( .A({
         rd_ptr_gray_sync_wr1_4_, n469, n467, n465, n463}), .SUM({
         rd_ptr_gray[4], rd_ptr_bin}) );
   NR3D0 U61 ( .A1(n31), .A2(n30), .A3(n29), .ZN(n576) );
@@ -1282,7 +1282,33 @@ module fifo_depth16_async_bw24_1 ( rd_clk, wr_clk, rd, wr, reset, in, out,
 endmodule
 
 
-module fifo_depth16_async_bw24_0 ( rd_clk, wr_clk, rd, wr, reset, in, out, 
+module fifo_depth16_async_bw24_0_DW01_inc_J1_0_0 ( A, SUM );
+  input [4:0] A;
+  output [4:0] SUM;
+  wire   n1, n2, n3;
+
+  HA1D0 U2 ( .A(n2), .B(A[3]), .CO(n1), .S(SUM[3]) );
+  HA1D0 U3 ( .A(n3), .B(A[2]), .CO(n2), .S(SUM[2]) );
+  HA1D0 U4 ( .A(A[0]), .B(A[1]), .CO(n3), .S(SUM[1]) );
+  CKXOR2D0 U8 ( .A1(n1), .A2(A[4]), .Z(SUM[4]) );
+  INVD0 U9 ( .I(A[0]), .ZN(SUM[0]) );
+endmodule
+
+
+module fifo_depth16_async_bw24_0_DW01_inc_J1_1_0 ( A, SUM );
+  input [4:0] A;
+  output [4:0] SUM;
+  wire   n1, n2, n3;
+
+  HA1D0 U2 ( .A(n2), .B(A[3]), .CO(n1), .S(SUM[3]) );
+  HA1D0 U3 ( .A(n3), .B(A[2]), .CO(n2), .S(SUM[2]) );
+  HA1D0 U4 ( .A(A[0]), .B(A[1]), .CO(n3), .S(SUM[1]) );
+  CKXOR2D0 U8 ( .A1(n1), .A2(A[4]), .Z(SUM[4]) );
+  INVD0 U9 ( .I(A[0]), .ZN(SUM[0]) );
+endmodule
+
+
+module fifo_depth16_async_bw24_3 ( rd_clk, wr_clk, rd, wr, reset, in, out, 
         o_full, o_empty );
   input [23:0] in;
   output [23:0] out;
@@ -1356,10 +1382,10 @@ module fifo_depth16_async_bw24_0 ( rd_clk, wr_clk, rd, wr, reset, in, out,
   tri   reset;
   tri   [23:0] in;
 
-  fifo_depth16_async_bw24_0_DW01_inc_J1_0 add_x_2 ( .A({
+  fifo_depth16_async_bw24_0_DW01_inc_J1_0_0 add_x_2 ( .A({
         wr_ptr_gray_sync_rd1_4_, n127, n126, n125, n124}), .SUM({
         wr_ptr_bin_next, wr_ptr_bin}) );
-  fifo_depth16_async_bw24_0_DW01_inc_J1_1 add_x_1 ( .A({n104, n87, n88, n89, 
+  fifo_depth16_async_bw24_0_DW01_inc_J1_1_0 add_x_1 ( .A({n104, n87, n88, n89, 
         n91}), .SUM({rd_ptr_gray[4], rd_ptr_bin}) );
   NR3D0 U61 ( .A1(n617), .A2(n618), .A3(n619), .ZN(n621) );
   NR3D0 U71 ( .A1(n614), .A2(n615), .A3(n616), .ZN(n1) );
@@ -2469,10 +2495,10 @@ module fullchip ( clk0, clk1, mem_in0, mem_in1, inst0, inst1, reset0, reset1,
   core core_instance_1 ( .clk(clk1), .sum_in(sfp_sum_in_1_r), .mem_in(mem_in1), 
         .out(out1), .inst(inst1), .reset(reset1), .ext_fifo_wr(fifo_wr_core1), 
         .ext_fifo_in(ext_fifo_in_1), .ext_fifo_rd(fifo_rd_core1) );
-  fifo_depth16_async_bw24_1 fifo_inst_ext_core0_1 ( .rd_clk(clk1), .wr_clk(
+  fifo_depth16_async_bw24_2 fifo_inst_ext_core0_1 ( .rd_clk(clk1), .wr_clk(
         clk0), .rd(fifo_rd_core1), .wr(fifo_wr_core0), .reset(reset0), .in(
         ext_fifo_in_0), .out(sum_out_0_1), .o_empty(fifo0_empty) );
-  fifo_depth16_async_bw24_0 fifo_inst_ext_core1_0 ( .rd_clk(clk0), .wr_clk(
+  fifo_depth16_async_bw24_3 fifo_inst_ext_core1_0 ( .rd_clk(clk0), .wr_clk(
         clk1), .rd(fifo_rd_core0), .wr(fifo_wr_core1), .reset(reset1), .in(
         ext_fifo_in_1), .out(sum_out_1_0), .o_empty(fifo1_empty) );
   AO22D0 U5 ( .A1(n77), .A2(sfp_sum_in_0_r[0]), .B1(n1), .B2(sum_out_1_0[0]), 
