@@ -13,7 +13,6 @@
 // --- memory / FIFO ---
 ./verilog/memory/sram_w16.v
 ./verilog/ofifo.v
-./verilog/memory/fifo_depth16_async.v
 ./verilog/memory/fifo_depth16.v
 ./verilog/memory/fifo_mux_16_1.v
 ./verilog/memory/fifo_mux_8_1.v

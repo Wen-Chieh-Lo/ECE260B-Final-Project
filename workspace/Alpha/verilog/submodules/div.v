@@ -35,7 +35,7 @@ endmodule
 module div_mcp #(
   parameter bw_psum   = 19,
   parameter out_shift = 7,
-  parameter MCP_CYLCE = 5
+  parameter MCP_CYLCE = 10
 ) (
   input                         clk,
   input                         reset,
@@ -75,7 +75,7 @@ module div_mcp #(
         done_q <= 0;
         state_q <= MCP_WAIT;
       end
-      else if (MCP_cnt == MCP_CYLCE) begin
+      else if (MCP_cnt == MCP_CYLCE-1) begin
         MCP_cnt <= 0;
         div_out_q <= full_quotient[out_shift-1:0];
         done_q <= 1;

@@ -94,6 +94,14 @@ if { $top_module eq "fullchip" } {
 propagate_constraints
 
 current_design $top_module
+
+set MCP_FROM [get_cells -hierarchical * -filter {is_sequential == true && (full_name =~ *sum_this_core_r_reg* || full_name =~ *sum_in_r_reg* || full_name =~ *abs_div_reg*)}]
+
+set MCP_TO [get_cells -hierarchical * -filter {is_sequential == true && full_name =~ *div_out_q_reg*}]
+
+set_multicycle_path 10 -setup -from $MCP_FROM -to $MCP_TO
+set_multicycle_path 9  -hold  -from $MCP_FROM -to $MCP_TO
+
 # set_cost_priority {max_transition max_fanout max_delay max_capacitance}
 set_fix_multiple_port_nets -all -buffer_constants
 # set_fix_hold [all_clocks]
@@ -133,8 +141,8 @@ if { $syn_effort == "low" } {
     # compile_ultra -retime -gate_clock -exact_map
 	ungroup -all -flatten
 	compile_ultra  -retime -gate_clock
-	set_fix_hold [all_clocks]
-	compile_ultra  -incremental -retime
+	# set_fix_hold [all_clocks]
+	# compile_ultra  -incremental -retime
 }
 
 # Write Out Design - Hierarchical
