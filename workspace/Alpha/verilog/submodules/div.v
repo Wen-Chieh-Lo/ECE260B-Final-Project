@@ -52,7 +52,7 @@ module div_mcp #(
 
   
   wire [bw_psum+out_shift-1:0] full_quotient;
-  reg [2:0] MCP_cnt;
+  reg [9:0] MCP_cnt;
   reg done_q;
   reg state_q;
   reg [out_shift-1:0] div_out_q;
@@ -76,7 +76,7 @@ module div_mcp #(
         done_q <= 0;
         state_q <= MCP_WAIT;
       end
-      else if (MCP_cnt == MCP_CYLCE-1) begin
+      else if (MCP_cnt == MCP_CYLCE) begin
         MCP_cnt <= 0;
         div_out_q <= full_quotient[out_shift-1:0];
         done_q <= 1;
