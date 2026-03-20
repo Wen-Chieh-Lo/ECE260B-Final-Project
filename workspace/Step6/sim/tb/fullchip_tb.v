@@ -121,7 +121,7 @@ module fullchip_tb;
 
 	// ========== Initial 1: Data + Golden (no timing) ==========
 	initial begin
-		$dumpfile("gls/waveform/fullchip.vcd");
+		$dumpfile("sim/waveform/fullchip.vcd");
 		$dumpvars(0, fullchip_tb);
 		$display("");
 
@@ -129,7 +129,7 @@ module fullchip_tb;
 		//  data.txt -> Integer Arrays: Q, K_c0, K_c1, V_T
 		//########################################################################
 		$display("##### Q data txt reading #####");
-		qkvn_file = $fopen("gls/pattern/qdata.txt", "r");
+		qkvn_file = $fopen("sim/pattern/qdata.txt", "r");
 		if (qkvn_file == 0) begin $display("ERROR: cannot open qdata.txt"); $finish; end
 		for (q = 0; q < total_cycle; q = q+1)
 			for (j = 0; j < pr; j = j+1) begin
@@ -137,7 +137,7 @@ module fullchip_tb;
 				Q[q][j] = captured_data;
 			end
 		$display("##### K data core0 txt reading #####");
-		qkvn_file = $fopen("gls/pattern/kdata_core0.txt", "r");
+		qkvn_file = $fopen("sim/pattern/kdata_core0.txt", "r");
 		if (qkvn_file == 0) begin $display("ERROR: cannot open kdata_core0.txt"); $finish; end
 		for (q = 0; q < col; q = q+1)
 			for (j = 0; j < pr; j = j+1) begin
@@ -145,7 +145,7 @@ module fullchip_tb;
 				K_c0[q][j] = captured_data;
 			end
 		$display("##### K data core1 txt reading #####");
-		qkvn_file = $fopen("gls/pattern/kdata_core1.txt", "r");
+		qkvn_file = $fopen("sim/pattern/kdata_core1.txt", "r");
 		if (qkvn_file == 0) begin $display("ERROR: cannot open kdata_core1.txt"); $finish; end
 		for (q = 0; q < col; q = q+1)
 			for (j = 0; j < pr; j = j+1) begin
@@ -153,7 +153,7 @@ module fullchip_tb;
 				K_c1[q][j] = captured_data;
 			end
 		$display("##### V data txt reading #####");
-		qkvn_file = $fopen("gls/pattern/vdata.txt", "r");
+		qkvn_file = $fopen("sim/pattern/vdata.txt", "r");
 		if (qkvn_file == 0) begin $display("ERROR: cannot open vdata.txt"); $finish; end
 		for (q = 0; q < col; q = q+1)
 			for (j = 0; j < pr; j = j+1) begin

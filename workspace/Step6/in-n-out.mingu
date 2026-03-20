@@ -1,6 +1,6 @@
 # =============================================================================
 #
-#   in-n-out.mingu  —  RTL Simulation Command Script
+#   in-n-out.mingu  —  RTL Simulation Command Script (core_shell)
 #
 #   MINGU (Matrix INstruction Generation Utility) feeds batch commands
 #   to the interactive core simulation for attention pipeline verification.
@@ -8,12 +8,14 @@
 # =============================================================================
 #
 #   USAGE: ./sim_shell.sh -f in-n-out.mingu
-#   SHELL: set_output_dir | set_sim_stage | set_clock_period | set_sim_define | set <var> <val> | fix_set
-#   TB: set_exec_target <mode> | writeQ | writeK | simulate | verifypmem | reset | exit | help
+#   SHELL: set_output_dir | set_sim_stage | set_sim_target | set_clock_period | set_sim_define | set <var> <val> | fix_set
+#   TB (core_shell): set_exec_target | writeQ | writeK | simulate | verifypmem | reset | exit | help
+#   TB (fullchip_shell): set_exec_target | writeQ | writeK0 | writeK1 | simulate | verifypmem | reset | exit | help
 #
 # =============================================================================
 
 set PATTERN sim/pattern
+set_sim_target core_shell
 set_output_dir sim/waveform
 set_sim_stage sim
 set_clock_period 1
@@ -22,21 +24,21 @@ fix_set
 
 # Test 1: Q*K^T
 set_exec_target CORE_MODE_MULT_save_to_PMEM
-writeQ $PATTERN/qdata.txt
-writeK $PATTERN/kdata.txt
+writeQ $(PATTERN)/qdata.txt
+writeK $(PATTERN)/kdata.txt
 simulate
 verifypmem
 
 # Test 2: Norm(Q*K^T)
 set_exec_target CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM
-writeQ $PATTERN/qdata.txt
-writeK $PATTERN/kdata.txt
+writeQ $(PATTERN)/qdata.txt
+writeK $(PATTERN)/kdata.txt
 simulate
 verifypmem
 
 # Test 3: V*Norm^T (KMEM has norm from Test 2)
 set_exec_target CORE_MODE_MULT_save_to_PMEM
-writeQ $PATTERN/vdata.txt
+writeQ $(PATTERN)/vdata.txt
 simulate
 verifypmem
 

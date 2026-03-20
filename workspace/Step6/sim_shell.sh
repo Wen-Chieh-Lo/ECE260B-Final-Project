@@ -6,9 +6,16 @@
 #   ./sim_shell.sh              - interactive mode (stdin)
 #   ./sim_shell.sh -f mingu.X   - feed X.mingu to interactive mode
 #
-# Shell-level commands (before fix_set): set_output_dir, set_sim_stage, set_sim_define, set_clock_period, set <var> <value>
+# Shell-level commands (before fix_set): set_output_dir, set_sim_stage, set_sim_target, set_sim_define, set_clock_period, set <var> <value>
+#   set_sim_target: core_shell (default) | fullchip_shell
 # fix_set: lock settings, compile, start sim. After fix_set, TB commands go to vvp.
-# User vars (set VAR value): use $VAR or ${VAR} in later lines; substituted before passing to vvp.
+# User vars (set VAR value): use $(VAR) in later lines; substituted before passing to vvp.
+#
+# For-loop (TB block only, after fix_set):
+#   for <var> = <start> to <end>
+#     ... TB commands; use $var or ${var} ...
+#   endfor
+#   Single-level only; inclusive range [start,end]. Use $(var) in body. Example: for i = 0 to 99 ... $(i) ... endfor
 # =============================================================================
 
 PROJ_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,7 +26,7 @@ OUTPUT_DIR="sim/waveform"
 SIM_STAGE="sim"
 SIM_DEFINES="SFP_LONGDIV"
 CLOCK_PERIOD="1"
-TARGET="core"
+SIM_TARGET="core_shell"
 FIXED=0
 
 # Parse -f
@@ -71,6 +78,9 @@ parse_line() {
 		set_sim_stage)
 			SIM_STAGE="$arg"
 			;;
+		set_sim_target)
+			SIM_TARGET="$arg"
+			;;
 		set_sim_define)
 			SIM_DEFINES="$arg"
 			;;
@@ -81,7 +91,7 @@ parse_line() {
 			FIXED=1
 			return 1
 			;;
-		set_exec_target|writeQ|writeK|simulate|verifypmem|reset|exit|help)
+		set_exec_target|writeQ|writeK|writeK0|writeK1|simulate|verifypmem|verifypmem0|verifypmem1|reset|exit|help)
 			echo "Error: TB command '$cmd' before fix_set. Run fix_set first." >&2
 			;;
 		*)
@@ -91,9 +101,70 @@ parse_line() {
 	return 0
 }
 
+# Expand for loops in TB block: "for var = start to end" ... "endfor" -> repeated body with set var
+# Single-level only; no nesting. Inclusive range [start,end].
+expand_for_loops() {
+	local content="$1"
+	local out=""
+	local in_for=0
+	local loop_var="" start_val="" end_val=""
+	local body_lines=""
+
+	while IFS= read -r line; do
+		line_trimmed=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+
+		if [[ $in_for -eq 1 ]]; then
+			if [[ "$line_trimmed" == "endfor" ]]; then
+				if [[ ! "$start_val" =~ ^-?[0-9]+$ ]] || [[ ! "$end_val" =~ ^-?[0-9]+$ ]]; then
+					echo "Error: for loop requires integer start/end (got start=$start_val end=$end_val)" >&2
+					exit 1
+				fi
+				if [[ "$start_val" -gt "$end_val" ]]; then
+					echo "Error: for loop start ($start_val) > end ($end_val)" >&2
+					exit 1
+				fi
+				local i="$start_val"
+				while [[ "$i" -le "$end_val" ]]; do
+					out="$out${out:+$'\n'}set $loop_var $i"
+					while IFS= read -r bl; do
+						[[ -z "$bl" ]] && continue
+						out="$out${out:+$'\n'}$bl"
+					done <<< "$body_lines"
+					i=$((i + 1))
+				done
+				in_for=0
+				body_lines=""
+			elif [[ "$line_trimmed" =~ ^for[[:space:]] ]]; then
+				echo "Error: nested for not supported" >&2
+				exit 1
+			else
+				body_lines="$body_lines${body_lines:+$'\n'}$line_trimmed"
+			fi
+			continue
+		fi
+
+		if [[ "$line_trimmed" =~ ^for[[:space:]]+([A-Za-z_][A-Za-z0-9_]*)[[:space:]]*=[[:space:]]*(-?[0-9]+)[[:space:]]+to[[:space:]]+(-?[0-9]+)[[:space:]]*$ ]]; then
+			loop_var="${BASH_REMATCH[1]}"
+			start_val="${BASH_REMATCH[2]}"
+			end_val="${BASH_REMATCH[3]}"
+			in_for=1
+			body_lines=""
+		else
+			out="$out${out:+$'\n'}$line_trimmed"
+		fi
+	done <<< "$content"
+
+	if [[ $in_for -eq 1 ]]; then
+		echo "Error: unclosed for loop (missing endfor)" >&2
+		exit 1
+	fi
+
+	echo "$out"
+}
+
 # Build make args from current state
 make_args() {
-	local args="TARGET=core_shell"
+	local args="TARGET=$SIM_TARGET"
 	[[ -n "$OUTPUT_DIR" ]] && args="$args OUTPUT_DIR=$OUTPUT_DIR"
 	[[ -n "$CLOCK_PERIOD" ]] && args="$args CYCLE=$CLOCK_PERIOD"
 	[[ -n "$SIM_DEFINES" ]] && args="$args USER_DEFINES=\"$SIM_DEFINES\""
@@ -123,6 +194,7 @@ run_with_fix_set() {
 		case "${line%% *}" in
 			set_output_dir) OUTPUT_DIR="${line#* }" ;;
 			set_sim_stage)  SIM_STAGE="${line#* }" ;;
+			set_sim_target) SIM_TARGET="${line#* }" ;;
 			set_sim_define) SIM_DEFINES="${line#* }" ;;
 			set_clock_period) CLOCK_PERIOD="${line#* }" ;;
 			set)
@@ -136,12 +208,16 @@ run_with_fix_set() {
 
 	# Collect lines after fix_set (or all TB commands if no fix_set)
 	if [[ $found_fix -eq 0 ]]; then
-		after_fix=$(echo "$content" | grep -v '^[[:space:]]*#' | grep -v '^[[:space:]]*$' | grep -v '^set_output_dir' | grep -v '^set_sim_stage' | grep -v '^set_sim_define' | grep -v '^set_clock_period' | grep -v '^set ')
+		after_fix=$(echo "$content" | grep -v '^[[:space:]]*#' | grep -v '^[[:space:]]*$' | grep -v '^set_output_dir' | grep -v '^set_sim_stage' | grep -v '^set_sim_target' | grep -v '^set_sim_define' | grep -v '^set_clock_period' | grep -v '^set ')
 	else
 		after_fix=$(echo "$content" | awk '/^[[:space:]]*fix_set[[:space:]]*$/{f=1;next}f' | grep -v '^[[:space:]]*#' | grep -v '^[[:space:]]*$')
 	fi
 
-	# Process "set VAR value" in after_fix (export for envsubst) and remove from output
+	# Expand for loops (for var = start to end ... endfor) in TB block
+	after_fix=$(expand_for_loops "$after_fix")
+
+	# Process "set VAR value" in after_fix (export for envsubst) and remove from output.
+	# Do envsubst per-line so loop vars (set i 0; writeQ ...$i...; set i 1; ...) get correct values.
 	after_fix_filtered=""
 	while IFS= read -r ln; do
 		if [[ "$ln" == set\ * ]]; then
@@ -150,19 +226,19 @@ run_with_fix_set() {
 			value="${rest#* }"; value="${value# }"
 			[[ -n "$var" ]] && export "$var=$value"
 		else
-			after_fix_filtered="$after_fix_filtered$ln"$'\n'
+			# Convert $(var) to ${var} for envsubst; unified syntax
+			ln_norm=$(echo "$ln" | perl -pe 's/\$\(([A-Za-z_][A-Za-z0-9_]*)\)/\${\1}/g')
+			substed=$(echo "$ln_norm" | envsubst 2>/dev/null || echo "$ln_norm")
+			after_fix_filtered="$after_fix_filtered$substed"$'\n'
 		fi
 	done <<< "$after_fix"
 	after_fix="$after_fix_filtered"
 
-	# Substitute user vars ($VAR, ${VAR}) in TB commands
-	after_fix=$(echo "$after_fix" | envsubst 2>/dev/null || echo "$after_fix")
-
 	# Run make (sim or gls) with params; stdin to vvp
 	if [[ "$SIM_STAGE" == "gls" ]]; then
-		echo "$after_fix" | make gls TARGET=core_shell OUTPUT_DIR="$OUTPUT_DIR" CYCLE="$CLOCK_PERIOD" USER_DEFINES="$SIM_DEFINES"
+		echo "$after_fix" | make gls TARGET="$SIM_TARGET" OUTPUT_DIR="$OUTPUT_DIR" CYCLE="$CLOCK_PERIOD" USER_DEFINES="$SIM_DEFINES"
 	else
-		echo "$after_fix" | make sim TARGET=core_shell OUTPUT_DIR="$OUTPUT_DIR" CYCLE="$CLOCK_PERIOD" USER_DEFINES="$SIM_DEFINES"
+		echo "$after_fix" | make sim TARGET="$SIM_TARGET" OUTPUT_DIR="$OUTPUT_DIR" CYCLE="$CLOCK_PERIOD" USER_DEFINES="$SIM_DEFINES"
 	fi
 }
 
@@ -179,9 +255,21 @@ INPUT_CONTENT=$(read_input)
 if echo "$INPUT_CONTENT" | grep -q '^[[:space:]]*fix_set[[:space:]]*$'; then
 	run_with_fix_set "$INPUT_CONTENT"
 else
-	# Simple mode: no fix_set, parse set VAR, filter, substitute, then run
+	# Simple mode: no fix_set, parse set_*, set VAR, filter, substitute, then run
 	if [[ -n "$INPUT_FILE" && -f "$INPUT_FILE" ]]; then
-		simple_content=$(echo "$INPUT_CONTENT" | grep -v '^[[:space:]]*#' | grep -v '^[[:space:]]*$' | grep -v '^set_output_dir' | grep -v '^set_sim_stage' | grep -v '^set_sim_define' | grep -v '^set_clock_period')
+		# Parse set_* from input (before filtering) to update SIM_TARGET etc.
+		while IFS= read -r ln; do
+			ln=$(echo "$ln" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+			[[ -z "$ln" || "$ln" == \#* ]] && continue
+			case "${ln%% *}" in
+				set_output_dir) OUTPUT_DIR="${ln#* }" ;;
+				set_sim_stage)  SIM_STAGE="${ln#* }" ;;
+				set_sim_target) SIM_TARGET="${ln#* }" ;;
+				set_sim_define) SIM_DEFINES="${ln#* }" ;;
+				set_clock_period) CLOCK_PERIOD="${ln#* }" ;;
+			esac
+		done <<< "$INPUT_CONTENT"
+		simple_content=$(echo "$INPUT_CONTENT" | grep -v '^[[:space:]]*#' | grep -v '^[[:space:]]*$' | grep -v '^set_output_dir' | grep -v '^set_sim_stage' | grep -v '^set_sim_target' | grep -v '^set_sim_define' | grep -v '^set_clock_period')
 		simple_filtered=""
 		while IFS= read -r ln; do
 			if [[ "$ln" == set\ * ]]; then
@@ -193,13 +281,14 @@ else
 				simple_filtered="$simple_filtered$ln"$'\n'
 			fi
 		done <<< "$simple_content"
+		simple_filtered=$(echo "$simple_filtered" | perl -pe 's/\$\(([A-Za-z_][A-Za-z0-9_]*)\)/\${\1}/g')
 		simple_filtered=$(echo "$simple_filtered" | envsubst 2>/dev/null || echo "$simple_filtered")
 		echo ""
-		echo ">>> Running: make sim TARGET=core_shell < $INPUT_FILE (comments filtered)"
-		echo "$simple_filtered" | make sim TARGET=core_shell
+		echo ">>> Running: make sim TARGET=$SIM_TARGET < $INPUT_FILE (comments filtered)"
+		echo "$simple_filtered" | make sim TARGET="$SIM_TARGET" OUTPUT_DIR="$OUTPUT_DIR" CYCLE="$CLOCK_PERIOD" USER_DEFINES="$SIM_DEFINES"
 	else
 		echo ""
-		echo ">>> Running: make sim TARGET=core_shell (interactive)"
-		make sim TARGET=core_shell
+		echo ">>> Running: make sim TARGET=$SIM_TARGET (interactive)"
+		make sim TARGET="$SIM_TARGET"
 	fi
 fi

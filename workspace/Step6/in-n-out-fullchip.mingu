@@ -1,0 +1,41 @@
+# =============================================================================
+#
+#   in-n-out-fullchip.mingu  —  RTL Simulation Command Script (fullchip_shell)
+#
+#   Dual-core fullchip: writeK0/writeK1 for separate K per core.
+#
+#   USAGE: ./sim_shell.sh -f in-n-out-fullchip.mingu
+#
+# =============================================================================
+
+set PATTERN sim/pattern
+set_output_dir sim/waveform
+set_sim_stage sim
+set_clock_period 1
+set_sim_define SFP_LONGDIV
+set_sim_target fullchip_shell
+fix_set
+
+# Test 1: Q*K^T
+set_exec_target CORE_MODE_MULT_save_to_PMEM
+writeQ $(PATTERN)/qdata.txt
+writeK0 $(PATTERN)/kdata_core0.txt
+writeK1 $(PATTERN)/kdata_core1.txt
+simulate
+verifypmem
+
+# Test 2: Norm(Q*K^T)
+reset
+set_exec_target CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM
+writeQ $(PATTERN)/qdata.txt
+simulate
+verifypmem
+
+# Test 3: V*Norm^T (KMEM has norm from Test 2)
+reset
+set_exec_target CORE_MODE_MULT_save_to_PMEM
+writeQ $(PATTERN)/vdata.txt
+simulate
+verifypmem
+
+exit

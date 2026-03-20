@@ -3,30 +3,20 @@
 `timescale 1ns/1ps
 `define CYCLE 1
 `define H_CYCLE 0.5
-`define TIME_OUT 100000
+`define TIME_OUT 1000
 
+`ifndef SFP_THRESHOLD
+  `define SFP_THRESHOLD 0
+`endif
 
 module core_tb;
 	parameter total_cycle = 8;
 	parameter bw = 8;
 	parameter bw_psum = 2*bw+4;
 	parameter pr = 8;
-    parameter col = 8;
-    parameter sfp_out_shift = 7;
-    parameter sfp_acc_lat = 1;
-	`ifdef SFP_LONGDIV
-		parameter sfp_div_lat = 8;  // div_longdiv: 1 input reg + 6 iter + 1
-	`else
-		parameter sfp_div_lat = 0;
-	`endif
-
-  // Sparsity-aware normalization: rows with small energy Si may skip normalization in hardware.
-  // Match Step6 sfp_row.v: Si = Σj |Qi×Kj|, skip if Si < SFP_THRESHOLD.
-  // Use the same macro; default 0 (no gating) if not defined.
-`ifndef SFP_THRESHOLD
-  `define SFP_THRESHOLD 'd400
-`endif
-  localparam integer SFP_THRESHOLD_TB = `SFP_THRESHOLD;
+	parameter col = 8;
+	parameter sfp_out_shift = 7;
+	parameter sfp_acc_lat = 1;
 
 	//================= integer / array storage =====================//
 	integer qkvn_file, qkvn_scan_file, captured_data;
@@ -35,14 +25,13 @@ module core_tb;
 	integer err, row_err, row;
 	integer sum_abs, divisor, unsigned_val;
 
-	integer K         [col-1:0][pr-1:0];
-	integer Q         [total_cycle-1:0][pr-1:0];
-	integer V_T       [total_cycle-1:0][pr-1:0];
-	integer result    [total_cycle-1:0][col-1:0];
-	integer sum       [total_cycle-1:0];
-	integer estimated [0:total_cycle*col-1];   // computed from mac_data (same formula as sfp_row)
-	integer          golden_col  [0:7];        // RTL col c -> golden result[t][golden_col[c]] (chain mapping)
-  	reg              skip_norm_row [0:total_cycle-1]; // rows where Si < threshold and HW may skip normalization
+	integer K        [col-1:0][pr-1:0];
+	integer Q        [total_cycle-1:0][pr-1:0];
+	integer V_T      [total_cycle-1:0][pr-1:0];
+	integer result   [total_cycle-1:0][col-1:0];
+	integer sum      [total_cycle-1:0];
+	integer estimated[0:total_cycle*col-1];   // computed from mac_data (same formula as sfp_row)
+	integer          golden_col [0:7];  // RTL col c -> golden result[t][golden_col[c]] (chain mapping)
 
 
 
@@ -52,6 +41,10 @@ module core_tb;
 
 	//================= timeout ======================//
 	initial #(`TIME_OUT) $finish;
+
+	//================= dual core =================//
+	reg sum_in_valid = 1'b1;       
+	reg [bw_psum+3:0] sum_in = 0; // unused in this testbench since we are not testing dual core, but core requires it to be connected
 
 	//============= Input to DUT  ===============//
 	reg               	reset = 1;
@@ -94,7 +87,11 @@ module core_tb;
 			.mode_in(mode_in),
 			.mem_in(mem_in),
 			.inst_ext(inst_ext),
-			.sum_out(),
+			.sum_in(sum_in),
+			.sum_in_valid(sum_in_valid),
+			.sum_in_fifo_pop(), // unused in single core mode
+			.sum_out(),			// unused in single core mode
+			.sum_out_valid(),	// unused in single core mode
 			.out(pmem_out),
 			.start(start),
 			.status(status)
@@ -295,17 +292,17 @@ Reset2Cyc;
         sum_abs = sum_abs + unsigned_val;
       end
       if (sum_abs == 0) sum_abs = 1;
-
-      // row-level sparsity: rows with small energy map to all-zero normalized outputs
-      if (sum_abs < SFP_THRESHOLD_TB) begin
-        $display("[TB][Norm] row %0d: sum_abs=%0d < threshold=%0d -> estimated row forced to 0", r, sum_abs, SFP_THRESHOLD_TB);
+      if (sum_abs < `SFP_THRESHOLD) begin
+        if (`SFP_THRESHOLD > 0)
+          $display("[TB][Norm gate] row %0d: row L1 sum (after zero-guard) = %0d < SFP_THRESHOLD=%0d -> golden estimated row forced to 0",
+              r, sum_abs, `SFP_THRESHOLD);
         for (c = 0; c < col; c = c + 1)
           estimated[r*col + c] = 0;
       end else begin
         for (c = 0; c < col; c = c + 1) begin
           unsigned_val = result[r][c];
           if (unsigned_val[bw_psum-1] == 1'b1)
-            unsigned_val = ~(unsigned_val-1'b1); 
+            unsigned_val = ~(unsigned_val-1'b1);
           estimated[r*col + c] = {unsigned_val, {sfp_out_shift{1'b0}}} / sum_abs;
         end
       end
@@ -363,6 +360,12 @@ CoreSetMode(CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM);
 
 //============		  Start the core & wait for done	==================
 Start1Cyc;
+
+/* Test if sum_in_valid properly delays div.
+repeat(100) @(negedge clk);
+sum_in_valid = 1'b1;
+*/
+
 wait(!busy); @(negedge clk);
 
 //============		  Pretty Verification Banner :D 	==================
@@ -387,7 +390,7 @@ wait(!busy); @(negedge clk);
 	addr_ext=4'd0;
 	@(negedge clk); //mem read has 1 cyc latency
 
-    for (q = 0; q < total_cycle; q = q+1) begin // sample before posedge: pmem_out = row being read (result[q]) 
+  	for (q = 0; q < total_cycle; q = q+1) begin // sample before posedge: pmem_out = row being read (result[q]) 
     	
 		row = q;
     	$display("   [%0d]   RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row,

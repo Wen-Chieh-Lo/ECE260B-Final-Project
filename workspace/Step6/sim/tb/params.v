@@ -25,11 +25,11 @@
 `define SFP_OUT_SHIFT  7
 `define SFP_ACC_LAT    1
 
-`ifdef SFP_LONGDIV
-  `define SFP_DIV_LAT  8   // div_longdiv: 1 input reg + 6 iter + 1
-`else
-  `define SFP_DIV_LAT  0
+// ----- Fullchip (dual-core) -----
+`ifdef TB_FULLCHIP
+  `define HALF_PR      `PR
 `endif
+
 
 // ----- Pattern folder (for Q/K/V_T) -----
 `define PATTERN_PATH "sim/pattern"
