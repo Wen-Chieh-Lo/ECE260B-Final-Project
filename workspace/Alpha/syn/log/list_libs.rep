@@ -1,0 +1,10 @@
+Logical Libraries:
+-------------------------------------------------------------------------
+Library		File			Path
+-------		----			----
+  tcbn65gplustc	tcbn65gplustc.db	/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db
+  tcbn65gpluswc	tcbn65gpluswc.db	/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db
+  tcbn65gplusbc	tcbn65gplusbc.db	/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/db
+  gtech		gtech.db		/software/nonrdist64/dc-2015.06-64/libraries/syn
+  standard.sldb	standard.sldb		/software/nonrdist64/dc-2015.06-64/libraries/syn
+1

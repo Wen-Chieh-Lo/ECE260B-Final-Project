@@ -18,7 +18,7 @@ TARGET = fullchip
 #   medium - standard optimization (compile -map_effort medium); balanced speed/quality
 #   high   - full compile_ultra with timing high-effort script; slowest, for pre-PnR
 # Built-in default: high
-SYN_EFFORT = low
+SYN_EFFORT = high
 
 
 
