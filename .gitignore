@@ -5,7 +5,6 @@
 # ----- Waveform files -----
 *.vcd.json
 waveformw.vcd.json
-**/waveform/
 
 # ----- Simulation / GLS executables -----
 **/sim/compiled
