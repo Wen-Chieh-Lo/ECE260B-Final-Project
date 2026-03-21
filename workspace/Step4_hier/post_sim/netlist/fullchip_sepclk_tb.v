@@ -187,7 +187,7 @@ module fullchip_sepclk_tb;
   // =========================================================================
   initial begin
     $dumpfile("../gls/waveform/fullchip_sepclk.vcd");
-    $dumpvars(0, fullchip_sepclk_tb_fixed);
+    $dumpvars(0, fullchip_sepclk_tb);
 
     mismatch_qk_core0 = 0; mismatch_qk_core1 = 0;
     mismatch_vn_core0 = 0; mismatch_vn_core1 = 0;
