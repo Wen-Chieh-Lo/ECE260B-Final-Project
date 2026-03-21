@@ -38,7 +38,7 @@ However, the associated matrix multiplication (MatMul) and Softmax normalization
 
 The proposed design leverages two independent cores communicating via asynchronous FIFOs, allowing flexible scheduling and increased throughput. To efficiently handle the Softmax operation, we developed a Sparsity-Aware Softmax (SFP) engine that skips redundant computations for zero or near-zero data, thereby saving power and cycles.
 
-Due to the immense complexity of the dual-core asynchronous design, a rigorous, step-by-step implementation and verification strategy was adopted. This incremental approach---ranging from basic single-core synthesis to full-chip hierarchical place-and-route (PnR)---ensured functional correctness at every stage. This report details both the theoretical architecture of the accelerator and the practical milestones achieved during its physical implementation.
+Due to the immense complexity of the dual-core asynchronous design, a rigorous, step-by-step implementation and verification strategy was adopted. This incremental approach, ranging from basic single-core synthesis to full-chip hierarchical place-and-route (PnR), ensured functional correctness at every stage. This report details both the theoretical architecture of the accelerator and the practical milestones achieved during its physical implementation.
 
 \section{Proposed Architecture}
 
