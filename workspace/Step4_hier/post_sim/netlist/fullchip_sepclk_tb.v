@@ -77,9 +77,7 @@ module fullchip_sepclk_tb;
   // clk0: 1ns period (matches SDC clk0_period = 1.0)
   task tick0; begin #0.5 clk0=1'b0; #0.5 clk0=1'b1; end endtask
 
-  // clk1: intentionally irrational ~6.28ns period to avoid phase lock with clk0.
-  // SDC says 1.2ns — this TB runs clk1 slower for CDC functional verification only.
-  // This is correct practice; timing closure was already done at 1.2ns by PnR.
+
   task tick1; begin
     #3.14159265358979323846 clk1=1'b0;
     #3.14159265358979323846 clk1=1'b1;
