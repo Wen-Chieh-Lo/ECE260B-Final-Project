@@ -1,0 +1,9 @@
+// --- Gate-level simulation: fullchip_shell (interactive, stdin commands) ---
+// TB (includes sim/tb/params.v, tb_utils.v)
+./sim/tb/fullchip_shell_tb.v
+
+// DUT: gate netlist
+./syn/gate/fullchip.out.v
+
+// Standard cell library
+/home/linux/ieng6/ECE260B_WI26_A00/public/course_contents/w5/full_flow/gate_sim/netlist/tcbn65gplus.v

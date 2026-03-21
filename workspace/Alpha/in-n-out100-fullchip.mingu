@@ -5,6 +5,7 @@
 #   Dual-core: writeK0/writeK1. Uses same kdata for both cores (or gen_random_patterns --dual_core).
 #
 #   USAGE: ./sim_shell.sh -f in-n-out100-fullchip.mingu
+#     (auto-runs make gen-patterns if sw/pattern/random100/ is missing)
 #
 # =============================================================================
 
@@ -14,6 +15,7 @@ set_sim_stage sim
 set_clock_period 1
 set_sim_define SFP_LONGDIV
 set_sim_target fullchip_shell
+set_dump_vcd 0
 fix_set
 
 for i = 0 to 99

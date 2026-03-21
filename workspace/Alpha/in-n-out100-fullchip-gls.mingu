@@ -1,0 +1,48 @@
+# =============================================================================
+#
+#   in-n-out100-fullchip-gls.mingu  —  Post-sim batch (xrun + fullchip_shell_tb, PnR netlist)
+#
+#   Uses set_sim_stage post_sim. Mingu commands piped to run_batch (xrun with fullchip_shell_tb).
+#
+#   USAGE: ./sim_shell.sh -f in-n-out100-fullchip-gls.mingu
+#     (auto-runs make gen-patterns if sw/pattern/random100/ is missing)
+#
+# =============================================================================
+
+set PATTERN sw/pattern/random100
+set_output_dir post_sim/waveform
+set_sim_stage post_sim
+set_sim_target fullchip_shell
+set_clock_period 1
+set_sim_define SFP_LONGDIV
+fix_set
+
+for i = 0 to 5
+
+	reset
+
+	# Test 1: Q*K^T
+	set_exec_target CORE_MODE_MULT_save_to_PMEM
+	writeQ $(PATTERN)/qdata_$(i).txt
+	writeK0 $(PATTERN)/kdata_$(i).txt
+	writeK1 $(PATTERN)/kdata_$(i).txt
+	simulate
+	verifypmem
+
+	# Test 2: Norm(Q*K^T)
+	set_exec_target CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM
+	writeQ $(PATTERN)/qdata_$(i).txt
+	writeK0 $(PATTERN)/kdata_$(i).txt
+	writeK1 $(PATTERN)/kdata_$(i).txt
+	simulate
+	verifypmem
+
+	# Test 3: V*Norm^T
+	set_exec_target CORE_MODE_MULT_save_to_PMEM
+	writeQ $(PATTERN)/vdata_$(i).txt
+	simulate
+	verifypmem
+
+endfor
+
+exit

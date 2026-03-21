@@ -7,8 +7,12 @@
 #   ./sim_shell.sh -f mingu.X   - feed X.mingu to interactive mode
 #
 # Shell-level commands (before fix_set): set_output_dir, set_sim_stage, set_sim_target, set_sim_define, set_clock_period, set <var> <value>
+#   set_sim_stage: sim (default) | gls | post_sim
+#     sim      - RTL sim (iverilog+vvp)
+#     gls      - Gate-level sim (iverilog+vvp, syn/gate + PDK)
+#     post_sim - Post-PnR sim (xrun via post_sim/run_gui; runs from post_sim/)
 #   set_sim_target: core_shell (default) | fullchip_shell
-# fix_set: lock settings, compile, start sim. After fix_set, TB commands go to vvp.
+# fix_set: lock settings, compile, start sim. After fix_set, TB commands go to vvp (except post_sim: runs xrun GUI).
 # User vars (set VAR value): use $(VAR) in later lines; substituted before passing to vvp.
 #
 # For-loop (TB block only, after fix_set):
@@ -216,6 +220,9 @@ run_with_fix_set() {
 	# Expand for loops (for var = start to end ... endfor) in TB block
 	after_fix=$(expand_for_loops "$after_fix")
 
+	# Path compatibility: post_sim runs from post_sim/, so PATTERN needs ../ prefix
+	[[ "$SIM_STAGE" == "post_sim" ]] && [[ "${PATTERN}" != ../* ]] && export PATTERN="../${PATTERN}"
+
 	# Process "set VAR value" in after_fix (export for envsubst) and remove from output.
 	# Do envsubst per-line so loop vars (set i 0; writeQ ...$i...; set i 1; ...) get correct values.
 	after_fix_filtered=""
@@ -234,11 +241,30 @@ run_with_fix_set() {
 	done <<< "$after_fix"
 	after_fix="$after_fix_filtered"
 
-	# Run make (sim or gls) with params; stdin to vvp
-	if [[ "$SIM_STAGE" == "gls" ]]; then
-		echo "$after_fix" | make gls TARGET="$SIM_TARGET" OUTPUT_DIR="$OUTPUT_DIR" CYCLE="$CLOCK_PERIOD" USER_DEFINES="$SIM_DEFINES"
+	# Run: make sim/gls, or post_sim (xrun with fullchip_shell_tb for batch mingu)
+	# Use temp file for sim/gls stdin to avoid pipe/newline issues.
+	if [[ "$SIM_STAGE" == "post_sim" ]]; then
+		POST_SIM_DIR="$PROJ_ROOT/post_sim"
+		if [[ -f "$POST_SIM_DIR/run_batch" ]]; then
+			echo ">>> Running post_sim/run_batch (xrun + fullchip_shell_tb) from $POST_SIM_DIR"
+			TMP_MINGU=$(mktemp) && printf '%s\n' "$after_fix" > "$TMP_MINGU"
+			(cd "$POST_SIM_DIR" && ./run_batch < "$TMP_MINGU")
+			rm -f "$TMP_MINGU"
+		elif [[ -f "$POST_SIM_DIR/run_gui" ]]; then
+			echo ">>> Running post_sim/run_gui (xrun GUI, no batch) from $POST_SIM_DIR"
+			(cd "$POST_SIM_DIR" && ./run_gui)
+		else
+			echo "Error: post_sim/run_batch or run_gui not found" >&2
+			exit 1
+		fi
+	elif [[ "$SIM_STAGE" == "gls" ]]; then
+		TMP_MINGU=$(mktemp) && printf '%s\n' "$after_fix" > "$TMP_MINGU"
+		make gls TARGET="$SIM_TARGET" OUTPUT_DIR="$OUTPUT_DIR" CYCLE="$CLOCK_PERIOD" USER_DEFINES="$SIM_DEFINES" < "$TMP_MINGU"
+		rm -f "$TMP_MINGU"
 	else
-		echo "$after_fix" | make sim TARGET="$SIM_TARGET" OUTPUT_DIR="$OUTPUT_DIR" CYCLE="$CLOCK_PERIOD" USER_DEFINES="$SIM_DEFINES"
+		TMP_MINGU=$(mktemp) && printf '%s\n' "$after_fix" > "$TMP_MINGU"
+		make sim TARGET="$SIM_TARGET" OUTPUT_DIR="$OUTPUT_DIR" CYCLE="$CLOCK_PERIOD" USER_DEFINES="$SIM_DEFINES" < "$TMP_MINGU"
+		rm -f "$TMP_MINGU"
 	fi
 }
 
@@ -250,6 +276,14 @@ fi
 
 # Read input once
 INPUT_CONTENT=$(read_input)
+
+# Auto-run make gen-patterns when mingu uses sw/pattern/random100 and files are missing
+if echo "$INPUT_CONTENT" | grep -qE 'set[[:space:]]+PATTERN[[:space:]]+sw/pattern/random100|sw/pattern/random100'; then
+	if [[ ! -f "$PROJ_ROOT/sw/pattern/random100/qdata_0.txt" ]]; then
+		echo ">>> PATTERN=sw/pattern/random100 but pattern files missing; running make gen-patterns"
+		make gen-patterns
+	fi
+fi
 
 # If input has fix_set, do two-phase; else simple
 if echo "$INPUT_CONTENT" | grep -q '^[[:space:]]*fix_set[[:space:]]*$'; then
@@ -281,14 +315,65 @@ else
 				simple_filtered="$simple_filtered$ln"$'\n'
 			fi
 		done <<< "$simple_content"
+		# Path compatibility: post_sim runs from post_sim/, so PATTERN needs ../ prefix
+		[[ "$SIM_STAGE" == "post_sim" ]] && [[ "${PATTERN}" != ../* ]] && export PATTERN="../${PATTERN}"
 		simple_filtered=$(echo "$simple_filtered" | perl -pe 's/\$\(([A-Za-z_][A-Za-z0-9_]*)\)/\${\1}/g')
 		simple_filtered=$(echo "$simple_filtered" | envsubst 2>/dev/null || echo "$simple_filtered")
 		echo ""
-		echo ">>> Running: make sim TARGET=$SIM_TARGET < $INPUT_FILE (comments filtered)"
-		echo "$simple_filtered" | make sim TARGET="$SIM_TARGET" OUTPUT_DIR="$OUTPUT_DIR" CYCLE="$CLOCK_PERIOD" USER_DEFINES="$SIM_DEFINES"
+		if [[ "$SIM_STAGE" == "post_sim" ]]; then
+			POST_SIM_DIR="$PROJ_ROOT/post_sim"
+			if [[ -f "$POST_SIM_DIR/run_batch" ]]; then
+				echo ">>> Running post_sim/run_batch (xrun) from $POST_SIM_DIR"
+				TMP_MINGU=$(mktemp) && printf '%s\n' "$simple_filtered" > "$TMP_MINGU"
+				(cd "$POST_SIM_DIR" && ./run_batch < "$TMP_MINGU")
+				rm -f "$TMP_MINGU"
+			elif [[ -f "$POST_SIM_DIR/run_gui" ]]; then
+				echo ">>> Running post_sim/run_gui (xrun) from $POST_SIM_DIR"
+				(cd "$POST_SIM_DIR" && ./run_gui)
+			else
+				echo "Error: post_sim/run_batch or run_gui not found" >&2
+				exit 1
+			fi
+		elif [[ "$SIM_STAGE" == "gls" ]]; then
+			echo ">>> Running: make gls TARGET=$SIM_TARGET < $INPUT_FILE"
+			TMP_MINGU=$(mktemp) && printf '%s\n' "$simple_filtered" > "$TMP_MINGU"
+			make gls TARGET="$SIM_TARGET" OUTPUT_DIR="$OUTPUT_DIR" CYCLE="$CLOCK_PERIOD" USER_DEFINES="$SIM_DEFINES" < "$TMP_MINGU"
+			rm -f "$TMP_MINGU"
+		else
+			echo ">>> Running: make sim TARGET=$SIM_TARGET < $INPUT_FILE (comments filtered)"
+			TMP_MINGU=$(mktemp) && printf '%s\n' "$simple_filtered" > "$TMP_MINGU"
+			make sim TARGET="$SIM_TARGET" OUTPUT_DIR="$OUTPUT_DIR" CYCLE="$CLOCK_PERIOD" USER_DEFINES="$SIM_DEFINES" < "$TMP_MINGU"
+			rm -f "$TMP_MINGU"
+		fi
 	else
+		# Interactive (no file): parse set_* from stdin content
+		while IFS= read -r ln; do
+			ln=$(echo "$ln" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+			[[ -z "$ln" || "$ln" == \#* ]] && continue
+			case "${ln%% *}" in
+				set_output_dir) OUTPUT_DIR="${ln#* }" ;;
+				set_sim_stage)  SIM_STAGE="${ln#* }" ;;
+				set_sim_target) SIM_TARGET="${ln#* }" ;;
+				set_sim_define) SIM_DEFINES="${ln#* }" ;;
+				set_clock_period) CLOCK_PERIOD="${ln#* }" ;;
+			esac
+		done <<< "$INPUT_CONTENT"
 		echo ""
-		echo ">>> Running: make sim TARGET=$SIM_TARGET (interactive)"
-		make sim TARGET="$SIM_TARGET"
+		if [[ "$SIM_STAGE" == "post_sim" ]]; then
+			POST_SIM_DIR="$PROJ_ROOT/post_sim"
+			if [[ -f "$POST_SIM_DIR/run_gui" ]]; then
+				echo ">>> Running post_sim/run_gui (xrun, interactive) from $POST_SIM_DIR"
+				(cd "$POST_SIM_DIR" && ./run_gui)
+			else
+				echo "Error: post_sim/run_gui not found" >&2
+				exit 1
+			fi
+		elif [[ "$SIM_STAGE" == "gls" ]]; then
+			echo ">>> Running: make gls TARGET=$SIM_TARGET (interactive)"
+			make gls TARGET="$SIM_TARGET"
+		else
+			echo ">>> Running: make sim TARGET=$SIM_TARGET (interactive)"
+			make sim TARGET="$SIM_TARGET"
+		fi
 	fi
 fi
