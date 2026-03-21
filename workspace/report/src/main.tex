@@ -218,6 +218,16 @@ Initial synthesis results highlighted a massive timing violation (Worst Negative
     \item \textbf{Multi-cycle Path Constraint:} Multi-cycle path constraints were applied to the divider to correctly model its multi-cycle behavior during timing analysis , and the RTL design adjust accordingly by using a FSM to control multicycle path state. (\texttt{div\_MCP}). 
 
     \item \textbf{Adder Tree Optimization:} The row energy accumulator was split into a 2-stage pipeline (\texttt{sum8\_2stage}).
+
+    \item \textbf{Chip interface and controller design: } Chip interface(picture + example usage of QK-Norm-VN), Chip mem external access control(FSM+block diagram), Chip internal data flow control(FSM+block diagram), SFP calculation handshake design(waveform)
+
+    \item \textbf{Production system set up: } (We have brilliant makefile-powered developing environment :D)
+
+    \item \textbf{Randomised input generation: }
+
+    \item \textbf{Dual Core Verification on both Lockstep \& Non-Lockstep Clock Pair: }
+    
+
 \end{itemize}
 These architectural optimizations successfully reduced the data arrival time from $\sim$25.0\,ns down to 0.97\,ns, eliminating all timing violations. Furthermore, the total cell area of the SFP row was reduced by 54\% as the costly combinational divider was replaced.
 
