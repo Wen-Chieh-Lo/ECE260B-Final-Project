@@ -2,14 +2,14 @@
 *	Innovus 15.23-s045_1 (64bit) 04/22/2016 12:32 (Linux 2.6.18-194.el5)
 *	
 *
-* 	Date & Time:	2026-Mar-20 17:54:16 (2026-Mar-21 00:54:16 GMT)
+* 	Date & Time:	2026-Mar-21 11:34:46 (2026-Mar-21 18:34:46 GMT)
 *
 *----------------------------------------------------------------------------------------
 *
 *	Design: fullchip
 *
 *	Liberty Libraries used: 
-*	        TC_VIEW: /home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata/lib/tcbn65gplustc.lib
+*	        TC_VIEW: /home/linux/ieng6/ECE260B_WI26_A00/sabhonsle/ECE260BProject/ECE260B-Final-Project/workspace/Alpha/pnr/scripts/cts.enc.dat/libs/mmmc/tcbn65gplustc.lib
 *
 *	Power Domain used: 
 *		Rail:        VDD 	Voltage:          1 
@@ -43,10 +43,10 @@
 
 Total Power 
 -----------------------------------------------------------------------------------------
-Total Internal Power:      156.12976836 	   68.6686%
-Total Switching Power:      69.55163521 	   30.5900%
-Total Leakage Power:         1.68550426 	    0.7413%
-Total Power:               227.36690827 
+Total Internal Power:      156.12975944 	   68.6686%
+Total Switching Power:      69.55163066 	   30.5900%
+Total Leakage Power:         1.68550428 	    0.7413%
+Total Power:               227.36689485 
 -----------------------------------------------------------------------------------------
 
 

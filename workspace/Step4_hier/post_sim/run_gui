@@ -14,7 +14,7 @@ xrun \
 -v ./netlist/sram_w16.pnr.v \
 -v ./netlist/sram_160b_w16.pnr.v \
 -v ./netlist/fullchip.pnr.v \
-./netlist/fullchip_sepclk_tb.v
+./netlist/fullchip_lockstep_tb.v
 
 
 
