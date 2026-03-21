@@ -1,29 +1,6 @@
-// fullchip_sepclk_tb_fixed.v
-// Post-PnR GLS testbench — fixes applied over original fullchip_sepclk_tb.v:
+// fullchip_sepclk_tb.v
+// Post-PnR GLS testbench — fullchip_sepclk_tb.v:
 //
-// FIX 1 — DFQD1 has no reset pin: sfp_sum_in_0_r / sfp_sum_in_1_r FFs
-//   DC eliminated the reset because it synthesized the enable as an AO22D0 mux
-//   on the D input (fifo_empty ? hold : new_data). During reset fifo_empty=1,
-//   so the mux selects Q feedback — the FFs hold whatever they started at.
-//   Simulation passes because -xminitialize 0 starts all FFs at 0, which is
-//   exactly the correct reset value, so the hold path is harmless.
-//   force/release cannot be used here — sfp_sum_in_0_r/1_r are `tri` nets
-//   driven by DFQD1 cell outputs in the PnR netlist; forcing a cell-driven net
-//   is illegal in gate-level sim and the signal name may not survive PnR anyway.
-//   THE REAL SILICON FIX: add set_reset_don't_touch or restructure RTL so DC
-//   cannot eliminate the reset (e.g. use an explicit mux before the FF D input).
-//
-// FIX 2 — wait_guard timeouts re-enabled on all while(fifo_empty) spin loops.
-//   The original guards were commented out, risking infinite hang on CDC glitch.
-//
-// FIX 3 — reset is driven from a single always block coordinated via flags,
-//   eliminating the multi-initial-block write race on the shared `reset` reg.
-//
-// FIX 4 — post-posedge sampling delay added where pmem_out is read after a
-//   tick, ensuring the 20ps UDP gate delay has propagated before $display.
-//
-// FIX 5 — `tick1` comment documents the intentional irrational period (~6.28ns)
-//   vs SDC 1.2ns. This is correct for functional CDC sim; documented clearly.
 
 `timescale 1ns/1ps
 
@@ -59,12 +36,12 @@ module fullchip_sepclk_tb;
   integer j, k, t, q, c;
   integer golden_col [0:7];
   integer q0, q1, row0, row1, c0, c1, row_err0, row_err1;
-  integer guard0, guard1;                 // FIX 2: timeout counters
+  integer guard0, guard1;                 
 
   reg [bw_psum-1:0]     temp5b;
   reg [bw_psum*col-1:0] temp16b;
 
-  // ── FIX 3: single reset register, driven by one arbiter always block ──────
+  
   // Flags set by Initial 2; arbiter drives `reset` accordingly.
   reg data_ready_flag       = 0;
   reg do_qk_reset           = 0;   // pulse: Initial 2 requests QK reset

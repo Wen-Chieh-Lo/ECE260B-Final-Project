@@ -1,4 +1,5 @@
 xrun \
++gui \
 +access+rwc \
 +xm64bit \
 +xmstatus \
