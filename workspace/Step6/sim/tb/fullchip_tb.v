@@ -126,35 +126,36 @@ module fullchip_tb;
 		$display("");
 
 		//########################################################################
-		//  data.txt -> Integer Arrays: Q, K_c0, K_c1, V_T
+		//  data_99.txt -> Integer Arrays: Q, K_c0, K_c1, V_T
 		//########################################################################
 		$display("##### Q data txt reading #####");
-		qkvn_file = $fopen("sim/pattern/qdata.txt", "r");
-		if (qkvn_file == 0) begin $display("ERROR: cannot open qdata.txt"); $finish; end
+		qkvn_file = $fopen("sw/pattern/random100/qdata_99.txt", "r");
+		if (qkvn_file == 0) begin $display("ERROR: cannot open qdata_99.txt"); $finish; end
 		for (q = 0; q < total_cycle; q = q+1)
 			for (j = 0; j < pr; j = j+1) begin
 				qkvn_scan_file = $fscanf(qkvn_file, "%d", captured_data);
 				Q[q][j] = captured_data;
 			end
 		$display("##### K data core0 txt reading #####");
-		qkvn_file = $fopen("sim/pattern/kdata_core0.txt", "r");
-		if (qkvn_file == 0) begin $display("ERROR: cannot open kdata_core0.txt"); $finish; end
+		qkvn_file = $fopen("sw/pattern/random100/kdata_core0_99.txt", "r");
+		if (qkvn_file == 0) begin $display("ERROR: cannot open kdata_core0_99.txt"); $finish; end
 		for (q = 0; q < col; q = q+1)
 			for (j = 0; j < pr; j = j+1) begin
 				qkvn_scan_file = $fscanf(qkvn_file, "%d", captured_data);
 				K_c0[q][j] = captured_data;
 			end
 		$display("##### K data core1 txt reading #####");
-		qkvn_file = $fopen("sim/pattern/kdata_core1.txt", "r");
-		if (qkvn_file == 0) begin $display("ERROR: cannot open kdata_core1.txt"); $finish; end
+		qkvn_file = $fopen("sw/pattern/random100/kdata_core1_99.txt", "r");
+		if (qkvn_file == 0) begin $display("ERROR: cannot open kdata_core1_99.txt"); $finish; end
 		for (q = 0; q < col; q = q+1)
 			for (j = 0; j < pr; j = j+1) begin
 				qkvn_scan_file = $fscanf(qkvn_file, "%d", captured_data);
 				K_c1[q][j] = captured_data;
 			end
 		$display("##### V data txt reading #####");
-		qkvn_file = $fopen("sim/pattern/vdata.txt", "r");
-		if (qkvn_file == 0) begin $display("ERROR: cannot open vdata.txt"); $finish; end
+		// qkvn_file = $fopen("sw/pattern/random100/vdata_99.txt", "r");
+		qkvn_file = $fopen("sw/pattern/random100/vdata_99.txt", "r");
+		if (qkvn_file == 0) begin $display("ERROR: cannot open vdata_99.txt"); $finish; end
 		for (q = 0; q < col; q = q+1)
 			for (j = 0; j < pr; j = j+1) begin
 				qkvn_scan_file = $fscanf(qkvn_file, "%d", captured_data);
