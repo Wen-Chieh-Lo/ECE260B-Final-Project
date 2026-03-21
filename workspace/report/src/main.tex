@@ -90,17 +90,19 @@ In addition, minor modifications were made to the professor-provided testbench t
     \label{fig:s1_layout}
 \end{figure}
 
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=0.30\textwidth]{Step1_images/Step1TO.png}}
+    \caption{Single-Core GLS Terminal Output.}
+    \label{fig:s1_term}
+\end{figure}
+
 \begin{figure*}[htbp]
     \centerline{\includegraphics[width=1.0\textwidth]{Step1_images/Step1waveform.png}}
     \caption{Single-Core GLS Waveform.}
     \label{fig:s1_wave}
 \end{figure*}
 
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.30\textwidth]{Step1_images/Step1TO.png}}
-    \caption{Single-Core GLS Terminal Output.}
-    \label{fig:s1_term}
-\end{figure}
+
 
 \begin{table}[htbp]
     \caption{Step 1 Synthesis \& PnR Results}
@@ -212,6 +214,9 @@ The design was expanded to a full dual-core architecture. This step focused on n
 Initial synthesis results highlighted a massive timing violation (Worst Negative Slack $\approx$ -23.9\,ns) primarily due to deep combinational logic in the SFP row's absolute sum and division calculations. To achieve timing closure for a 1.0\,ns clock period, aggressive RTL repipelining was implemented:
 \begin{itemize}
     \item \textbf{Divider Optimization:} The combinational divider was replaced with a multi-cycle long division FSM (\texttt{div\_longdiv}).
+
+    \item \textbf{Multi-cycle Path Constraint:} Multi-cycle path constraints were applied to the divider to correctly model its multi-cycle behavior during timing analysis , and the RTL design adjust accordingly by using a FSM to control multicycle path state. (\texttt{div\_MCP}). 
+
     \item \textbf{Adder Tree Optimization:} The row energy accumulator was split into a 2-stage pipeline (\texttt{sum8\_2stage}).
 \end{itemize}
 These architectural optimizations successfully reduced the data arrival time from $\sim$25.0\,ns down to 0.97\,ns, eliminating all timing violations. Furthermore, the total cell area of the SFP row was reduced by 54\% as the costly combinational divider was replaced.
