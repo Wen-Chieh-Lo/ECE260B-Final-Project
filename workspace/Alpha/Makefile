@@ -57,7 +57,7 @@ SYNDIR            := syn
 # ----- Lookup tables -----
 # target -> filelist filename (shared between sim and syn for filelist name lookup)
 TARGET_FILELIST_table := \
-	fullchip:filelist_fullchip_shell \
+	fullchip:filelist \
 	controller:filelist_controller \
 	core:filelist_core \
 	core_shell:filelist_core_shell \

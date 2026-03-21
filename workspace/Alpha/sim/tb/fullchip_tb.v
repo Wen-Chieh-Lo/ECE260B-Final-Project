@@ -1,6 +1,6 @@
 // Core Verification - CDC 3-initial architecture (ref: fullchip_sepclk_tb)
 // Initial 1: data + golden (no timing). Initial 2: clk0 domain (C0). Initial 3: clk1 domain (C1).
-// C0 inputs driven by tick0; C1 inputs driven by tick1.
+// C0 inputs driven by @(negedge clk0); C1 inputs driven by @(negedge clk1);.
 
 `timescale 1ns/1ps
 `define CYCLE 1
@@ -51,8 +51,8 @@ module fullchip_tb;
 	//================= clk (CDC: tick-based, different freq) ==========//
 	reg                clk0  = 0;
 	reg                clk1  = 0;
-	task tick0; begin #(`H_CYCLE0) clk0=1'b0; #(`H_CYCLE0) clk0=1'b1; end endtask
-	task tick1; begin #(`H_CYCLE1) clk1=1'b0; #(`H_CYCLE1) clk1=1'b1; end endtask
+	always #(`H_CYCLE0) clk0 = ~clk0;
+	always #(`H_CYCLE1) clk1 = ~clk1;
 
 	//================= CDC sync flags (ref: fullchip_sepclk_tb) =================//
 	reg data_ready_flag = 0;
@@ -256,19 +256,20 @@ module fullchip_tb;
 
 	// ========== Initial 2: clk0 domain (C0 stimulus) ==========
 	initial begin
-		while (!data_ready_flag) tick0;
+		wait (data_ready_flag); @(negedge clk0);
+
 
 		// Reset C0
 		reset0 = 1;
-		repeat(3) tick0;
+		repeat(3) @(negedge clk0);
 		reset0 = 0;
 		reset_done_c0_flag = 1;
-		tick0;
+		@(negedge clk0);
 
 		// ===== Test 1 =====
 		set_mode0 = 1'b1; mode_in0 = CORE_MODE_MULT_save_to_PMEM;
-		repeat(2) tick0;
-		set_mode0 = 1'b0; mode_in0 = 3'b000; tick0;
+		repeat(2) @(negedge clk0);
+		set_mode0 = 1'b0; mode_in0 = 3'b000; @(negedge clk0);
 
 		mem_cmd_ext0 = EXT_CMD_KMEM_WR; addr_ext0 = 0;
 		for (q0 = 0; q0 < col; q0 = q0+1) begin
@@ -276,9 +277,9 @@ module fullchip_tb;
 			mem_in0[3*bw-1:2*bw] = K_c0[q0][5]; mem_in0[4*bw-1:3*bw] = K_c0[q0][4];
 			mem_in0[5*bw-1:4*bw] = K_c0[q0][3]; mem_in0[6*bw-1:5*bw] = K_c0[q0][2];
 			mem_in0[7*bw-1:6*bw] = K_c0[q0][1]; mem_in0[8*bw-1:7*bw] = K_c0[q0][0];
-			tick0; addr_ext0 = addr_ext0 + 4'd1;
+			@(negedge clk0); addr_ext0 = addr_ext0 + 4'd1;
 		end
-		mem_cmd_ext0 = EXT_CMD_NO_OP; addr_ext0 = 0; tick0;
+		mem_cmd_ext0 = EXT_CMD_NO_OP; addr_ext0 = 0; @(negedge clk0);
 
 		mem_cmd_ext0 = EXT_CMD_QMEM_WR; addr_ext0 = 0;
 		for (q0 = 0; q0 < total_cycle; q0 = q0+1) begin
@@ -286,15 +287,15 @@ module fullchip_tb;
 			mem_in0[3*bw-1:2*bw] = Q[q0][5]; mem_in0[4*bw-1:3*bw] = Q[q0][4];
 			mem_in0[5*bw-1:4*bw] = Q[q0][3]; mem_in0[6*bw-1:5*bw] = Q[q0][2];
 			mem_in0[7*bw-1:6*bw] = Q[q0][1]; mem_in0[8*bw-1:7*bw] = Q[q0][0];
-			tick0; addr_ext0 = addr_ext0 + 4'd1;
+			@(negedge clk0); addr_ext0 = addr_ext0 + 4'd1;
 		end
-		mem_cmd_ext0 = EXT_CMD_NO_OP; addr_ext0 = 0; tick0;
+		mem_cmd_ext0 = EXT_CMD_NO_OP; addr_ext0 = 0; @(negedge clk0);
 
 		start0 = 1;
-		repeat(2) tick0;
-		start0 = 0; tick0;
-		while (busy0) tick0;
-		repeat(2) tick0;  // margin for PMEM output
+		repeat(2) @(negedge clk0);
+		start0 = 0; @(negedge clk0);
+		wait (!busy0); @(negedge clk0);
+		repeat(2) @(negedge clk0);  // margin for PMEM output
 
 		$display("################################################################## ");
 		$display("      Test 1   |  Dual-core Matrix Multiplication (PMEM = Q*K)   ");
@@ -304,7 +305,7 @@ module fullchip_tb;
 		$display("         golden:  ----  ----  ----  ----  ----  ----  ----  ----");
 		err0 = 0;
 		mem_cmd_ext0 = EXT_CMD_PMEM_RD; addr_ext0 = 0;
-		repeat(2) tick0;  // PMEM read latency
+		repeat(2) @(negedge clk0);  // PMEM read latency
 		for (q0 = 0; q0 < total_cycle; q0 = q0+1) begin
 			row0 = q0;
 			$display("   [%0d]   RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row0,
@@ -323,7 +324,7 @@ module fullchip_tb;
 					err0 = err0 + 1; row_err0 = row_err0 + 1;
 				end
 			$display("       %s", (row_err0 == 0) ? "[OK]" : "[MISMATCH]");
-			addr_ext0 = addr_ext0 + 1; repeat(2) tick0;
+			addr_ext0 = addr_ext0 + 1; repeat(2) @(negedge clk0);
 		end
 		mem_cmd_ext0 = EXT_CMD_NO_OP;
 		mismatch_t1_c0 = err0;
@@ -333,12 +334,12 @@ module fullchip_tb;
 		$display("------------------------------------------------------------");
 		$display("");
 		test1_done_c0_flag = 1;
-		while (!test1_done_c1_flag) tick0;
+		wait (test1_done_c1_flag); @(negedge clk0);
 
 		// ===== Test 2 =====
-		reset0 = 1; repeat(3) tick0; reset0 = 0; tick0;
+		reset0 = 1; repeat(3) @(negedge clk0); reset0 = 0; @(negedge clk0);
 		set_mode0 = 1'b1; mode_in0 = CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM;
-		repeat(2) tick0; set_mode0 = 1'b0; mode_in0 = 3'b000; tick0;
+		repeat(2) @(negedge clk0); set_mode0 = 1'b0; mode_in0 = 3'b000; @(negedge clk0);
 
 		mem_cmd_ext0 = EXT_CMD_KMEM_WR; addr_ext0 = 0;
 		for (q0 = 0; q0 < col; q0 = q0+1) begin
@@ -346,9 +347,9 @@ module fullchip_tb;
 			mem_in0[3*bw-1:2*bw] = K_c0[q0][5]; mem_in0[4*bw-1:3*bw] = K_c0[q0][4];
 			mem_in0[5*bw-1:4*bw] = K_c0[q0][3]; mem_in0[6*bw-1:5*bw] = K_c0[q0][2];
 			mem_in0[7*bw-1:6*bw] = K_c0[q0][1]; mem_in0[8*bw-1:7*bw] = K_c0[q0][0];
-			tick0; addr_ext0 = addr_ext0 + 4'd1;
+			@(negedge clk0); addr_ext0 = addr_ext0 + 4'd1;
 		end
-		mem_cmd_ext0 = EXT_CMD_NO_OP; addr_ext0 = 0; tick0;
+		mem_cmd_ext0 = EXT_CMD_NO_OP; addr_ext0 = 0; @(negedge clk0);
 
 		mem_cmd_ext0 = EXT_CMD_QMEM_WR; addr_ext0 = 0;
 		for (q0 = 0; q0 < total_cycle; q0 = q0+1) begin
@@ -356,12 +357,12 @@ module fullchip_tb;
 			mem_in0[3*bw-1:2*bw] = Q[q0][5]; mem_in0[4*bw-1:3*bw] = Q[q0][4];
 			mem_in0[5*bw-1:4*bw] = Q[q0][3]; mem_in0[6*bw-1:5*bw] = Q[q0][2];
 			mem_in0[7*bw-1:6*bw] = Q[q0][1]; mem_in0[8*bw-1:7*bw] = Q[q0][0];
-			tick0; addr_ext0 = addr_ext0 + 4'd1;
+			@(negedge clk0); addr_ext0 = addr_ext0 + 4'd1;
 		end
-		mem_cmd_ext0 = EXT_CMD_NO_OP; addr_ext0 = 0; tick0;
+		mem_cmd_ext0 = EXT_CMD_NO_OP; addr_ext0 = 0; @(negedge clk0);
 
-		start0 = 1; repeat(2) tick0; start0 = 0; tick0;
-		while (busy0) tick0; repeat(2) tick0;
+		start0 = 1; repeat(2) @(negedge clk0); start0 = 0; @(negedge clk0);
+		wait (!busy0); @(negedge clk0); repeat(2) @(negedge clk0);
 
 		$display("################################################################## ");
 		$display("     Test 2   |  Dual-core MatMul + Norm (cross-core sum FIFO)    ");
@@ -371,7 +372,7 @@ module fullchip_tb;
 		$display("         golden:  ----  ----  ----  ----  ----  ----  ----  ----");
 		err0 = 0;
 		mem_cmd_ext0 = EXT_CMD_PMEM_RD; addr_ext0 = 0;
-		repeat(2) tick0;  // PMEM read latency
+		repeat(2) @(negedge clk0);  // PMEM read latency
 		for (q0 = 0; q0 < total_cycle; q0 = q0+1) begin
 			row0 = q0;
 			$display("   [%0d]   RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row0,
@@ -390,7 +391,7 @@ module fullchip_tb;
 					err0 = err0 + 1; row_err0 = row_err0 + 1;
 				end
 			$display("       %s", (row_err0 == 0) ? "[OK]" : "[MISMATCH]");
-			addr_ext0 = addr_ext0 + 1; repeat(2) tick0;
+			addr_ext0 = addr_ext0 + 1; repeat(2) @(negedge clk0);
 		end
 		mem_cmd_ext0 = EXT_CMD_NO_OP;
 		mismatch_t2_c0 = err0;
@@ -400,12 +401,12 @@ module fullchip_tb;
 		$display("------------------------------------------------------------");
 		$display("");
 		test2_done_c0_flag = 1;
-		while (!test2_done_c1_flag) tick0;
+		wait (test2_done_c1_flag); @(negedge clk0);
 
 		// ===== Test 3 =====
-		reset0 = 1; repeat(3) tick0; reset0 = 0; tick0;
+		reset0 = 1; repeat(3) @(negedge clk0); reset0 = 0; @(negedge clk0);
 		set_mode0 = 1'b1; mode_in0 = CORE_MODE_MULT_save_to_PMEM;
-		repeat(2) tick0; set_mode0 = 1'b0; mode_in0 = 3'b000; tick0;
+		repeat(2) @(negedge clk0); set_mode0 = 1'b0; mode_in0 = 3'b000; @(negedge clk0);
 
 		mem_cmd_ext0 = EXT_CMD_QMEM_WR; addr_ext0 = 0;
 		for (q0 = 0; q0 < col; q0 = q0+1) begin
@@ -413,12 +414,12 @@ module fullchip_tb;
 			mem_in0[3*bw-1:2*bw] = V_T[q0][5]; mem_in0[4*bw-1:3*bw] = V_T[q0][4];
 			mem_in0[5*bw-1:4*bw] = V_T[q0][3]; mem_in0[6*bw-1:5*bw] = V_T[q0][2];
 			mem_in0[7*bw-1:6*bw] = V_T[q0][1]; mem_in0[8*bw-1:7*bw] = V_T[q0][0];
-			tick0; addr_ext0 = addr_ext0 + 4'd1;
+			@(negedge clk0); addr_ext0 = addr_ext0 + 4'd1;
 		end
-		mem_cmd_ext0 = EXT_CMD_NO_OP; addr_ext0 = 0; tick0;
+		mem_cmd_ext0 = EXT_CMD_NO_OP; addr_ext0 = 0; @(negedge clk0);
 
-		start0 = 1; repeat(2) tick0; start0 = 0; tick0;
-		while (busy0) tick0; repeat(2) tick0;
+		start0 = 1; repeat(2) @(negedge clk0); start0 = 0; @(negedge clk0);
+		wait (!busy0); @(negedge clk0); repeat(2) @(negedge clk0);
 
 		$display("################################################################## ");
 		$display("     Test 3   |  Full pipeline VN (PMEM = V * N from Test2 KMEM)  ");
@@ -428,7 +429,7 @@ module fullchip_tb;
 		$display("         golden:  ----  ----  ----  ----  ----  ----  ----  ----");
 		err0 = 0;
 		mem_cmd_ext0 = EXT_CMD_PMEM_RD; addr_ext0 = 0;
-		repeat(2) tick0;  // PMEM read latency
+		repeat(2) @(negedge clk0);  // PMEM read latency
 		for (q0 = 0; q0 < total_cycle; q0 = q0+1) begin
 			row0 = q0;
 			$display("   [%0d]   RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row0,
@@ -447,7 +448,7 @@ module fullchip_tb;
 					err0 = err0 + 1; row_err0 = row_err0 + 1;
 				end
 			$display("       %s", (row_err0 == 0) ? "[OK]" : "[MISMATCH]");
-			addr_ext0 = addr_ext0 + 1; repeat(2) tick0;
+			addr_ext0 = addr_ext0 + 1; repeat(2) @(negedge clk0);
 		end
 		mem_cmd_ext0 = EXT_CMD_NO_OP;
 		mismatch_t3_c0 = err0;
@@ -457,26 +458,25 @@ module fullchip_tb;
 		$display("------------------------------------------------------------");
 		$display("");
 		test3_done_c0_flag = 1;
-		while (!test3_done_c1_flag) tick0;
+		wait (test3_done_c1_flag); @(negedge clk0);
 
-		while (1) tick0;  // keep clk0 running
 	end
 
 	// ========== Initial 3: clk1 domain (C1 stimulus) ==========
 	initial begin
-		while (!data_ready_flag) tick1;
-		while (!reset_done_c0_flag) tick1;
+		wait (data_ready_flag); @(negedge clk1);
+		wait (reset_done_c0_flag); @(negedge clk1);
 
 		// Reset C1
 		reset1 = 1;
-		repeat(3) tick1;
+		repeat(3) @(negedge clk1);
 		reset1 = 0;
-		tick1;
+		@(negedge clk1);
 
 		// ===== Test 1 =====
 		set_mode1 = 1'b1; mode_in1 = CORE_MODE_MULT_save_to_PMEM;
-		repeat(2) tick1;
-		set_mode1 = 1'b0; mode_in1 = 3'b000; tick1;
+		repeat(2) @(negedge clk1);
+		set_mode1 = 1'b0; mode_in1 = 3'b000; @(negedge clk1);
 
 		mem_cmd_ext1 = EXT_CMD_KMEM_WR; addr_ext1 = 0;
 		for (q1 = 0; q1 < col; q1 = q1+1) begin
@@ -484,9 +484,9 @@ module fullchip_tb;
 			mem_in1[3*bw-1:2*bw] = K_c1[q1][5]; mem_in1[4*bw-1:3*bw] = K_c1[q1][4];
 			mem_in1[5*bw-1:4*bw] = K_c1[q1][3]; mem_in1[6*bw-1:5*bw] = K_c1[q1][2];
 			mem_in1[7*bw-1:6*bw] = K_c1[q1][1]; mem_in1[8*bw-1:7*bw] = K_c1[q1][0];
-			tick1; addr_ext1 = addr_ext1 + 4'd1;
+			@(negedge clk1); addr_ext1 = addr_ext1 + 4'd1;
 		end
-		mem_cmd_ext1 = EXT_CMD_NO_OP; addr_ext1 = 0; tick1;
+		mem_cmd_ext1 = EXT_CMD_NO_OP; addr_ext1 = 0; @(negedge clk1);
 
 		mem_cmd_ext1 = EXT_CMD_QMEM_WR; addr_ext1 = 0;
 		for (q1 = 0; q1 < total_cycle; q1 = q1+1) begin
@@ -494,15 +494,15 @@ module fullchip_tb;
 			mem_in1[3*bw-1:2*bw] = Q[q1][5]; mem_in1[4*bw-1:3*bw] = Q[q1][4];
 			mem_in1[5*bw-1:4*bw] = Q[q1][3]; mem_in1[6*bw-1:5*bw] = Q[q1][2];
 			mem_in1[7*bw-1:6*bw] = Q[q1][1]; mem_in1[8*bw-1:7*bw] = Q[q1][0];
-			tick1; addr_ext1 = addr_ext1 + 4'd1;
+			@(negedge clk1); addr_ext1 = addr_ext1 + 4'd1;
 		end
-		mem_cmd_ext1 = EXT_CMD_NO_OP; addr_ext1 = 0; tick1;
+		mem_cmd_ext1 = EXT_CMD_NO_OP; addr_ext1 = 0; @(negedge clk1);
 
 		start1 = 1;
-		repeat(2) tick1;
-		start1 = 0; tick1;
-		while (busy1) tick1;
-		repeat(2) tick1;  // margin for PMEM output (clk1 domain)
+		repeat(2) @(negedge clk1);
+		start1 = 0; @(negedge clk1);
+		wait (!busy1); @(negedge clk1);
+		repeat(2) @(negedge clk1);  // margin for PMEM output (clk1 domain)
 
 		$display("################################################################## ");
 		$display("      Test 1   |  Dual-core Matrix Multiplication (PMEM = Q*K)   ");
@@ -512,7 +512,7 @@ module fullchip_tb;
 		$display("         golden:  ----  ----  ----  ----  ----  ----  ----  ----");
 		err1 = 0;
 		mem_cmd_ext1 = EXT_CMD_PMEM_RD; addr_ext1 = 0;
-		repeat(2) tick1;  // PMEM read latency
+		repeat(2) @(negedge clk1);  // PMEM read latency
 		for (q1 = 0; q1 < total_cycle; q1 = q1+1) begin
 			row1 = q1;
 			$display("   [%0d]   RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row1,
@@ -531,7 +531,7 @@ module fullchip_tb;
 					err1 = err1 + 1; row_err1 = row_err1 + 1;
 				end
 			$display("       %s", (row_err1 == 0) ? "[OK]" : "[MISMATCH]");
-			addr_ext1 = addr_ext1 + 1; repeat(2) tick1;
+			addr_ext1 = addr_ext1 + 1; repeat(2) @(negedge clk1);
 		end
 		mem_cmd_ext1 = EXT_CMD_NO_OP;
 		mismatch_t1_c1 = err1;
@@ -541,12 +541,12 @@ module fullchip_tb;
 		$display("------------------------------------------------------------");
 		$display("");
 		test1_done_c1_flag = 1;
-		while (!test1_done_c0_flag) tick1;
+		wait (test1_done_c0_flag); @(negedge clk1);
 
 		// ===== Test 2 =====
-		reset1 = 1; repeat(3) tick1; reset1 = 0; tick1;
+		reset1 = 1; repeat(3) @(negedge clk1); reset1 = 0; @(negedge clk1);
 		set_mode1 = 1'b1; mode_in1 = CORE_MODE_MULT_NORM_save_to_PMEM_and_KMEM;
-		repeat(2) tick1; set_mode1 = 1'b0; mode_in1 = 3'b000; tick1;
+		repeat(2) @(negedge clk1); set_mode1 = 1'b0; mode_in1 = 3'b000; @(negedge clk1);
 
 		mem_cmd_ext1 = EXT_CMD_KMEM_WR; addr_ext1 = 0;
 		for (q1 = 0; q1 < col; q1 = q1+1) begin
@@ -554,9 +554,9 @@ module fullchip_tb;
 			mem_in1[3*bw-1:2*bw] = K_c1[q1][5]; mem_in1[4*bw-1:3*bw] = K_c1[q1][4];
 			mem_in1[5*bw-1:4*bw] = K_c1[q1][3]; mem_in1[6*bw-1:5*bw] = K_c1[q1][2];
 			mem_in1[7*bw-1:6*bw] = K_c1[q1][1]; mem_in1[8*bw-1:7*bw] = K_c1[q1][0];
-			tick1; addr_ext1 = addr_ext1 + 4'd1;
+			@(negedge clk1); addr_ext1 = addr_ext1 + 4'd1;
 		end
-		mem_cmd_ext1 = EXT_CMD_NO_OP; addr_ext1 = 0; tick1;
+		mem_cmd_ext1 = EXT_CMD_NO_OP; addr_ext1 = 0; @(negedge clk1);
 
 		mem_cmd_ext1 = EXT_CMD_QMEM_WR; addr_ext1 = 0;
 		for (q1 = 0; q1 < total_cycle; q1 = q1+1) begin
@@ -564,12 +564,12 @@ module fullchip_tb;
 			mem_in1[3*bw-1:2*bw] = Q[q1][5]; mem_in1[4*bw-1:3*bw] = Q[q1][4];
 			mem_in1[5*bw-1:4*bw] = Q[q1][3]; mem_in1[6*bw-1:5*bw] = Q[q1][2];
 			mem_in1[7*bw-1:6*bw] = Q[q1][1]; mem_in1[8*bw-1:7*bw] = Q[q1][0];
-			tick1; addr_ext1 = addr_ext1 + 4'd1;
+			@(negedge clk1); addr_ext1 = addr_ext1 + 4'd1;
 		end
-		mem_cmd_ext1 = EXT_CMD_NO_OP; addr_ext1 = 0; tick1;
+		mem_cmd_ext1 = EXT_CMD_NO_OP; addr_ext1 = 0; @(negedge clk1);
 
-		start1 = 1; repeat(2) tick1; start1 = 0; tick1;
-		while (busy1) tick1; repeat(2) tick1;
+		start1 = 1; repeat(2) @(negedge clk1); start1 = 0; @(negedge clk1);
+		wait (!busy1); @(negedge clk1); repeat(2) @(negedge clk1);
 
 		$display("################################################################## ");
 		$display("     Test 2   |  Dual-core MatMul + Norm (cross-core sum FIFO)    ");
@@ -579,7 +579,7 @@ module fullchip_tb;
 		$display("         golden:  ----  ----  ----  ----  ----  ----  ----  ----");
 		err1 = 0;
 		mem_cmd_ext1 = EXT_CMD_PMEM_RD; addr_ext1 = 0;
-		repeat(2) tick1;  // PMEM read latency
+		repeat(2) @(negedge clk1);  // PMEM read latency
 		for (q1 = 0; q1 < total_cycle; q1 = q1+1) begin
 			row1 = q1;
 			$display("   [%0d]   RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row1,
@@ -598,7 +598,7 @@ module fullchip_tb;
 					err1 = err1 + 1; row_err1 = row_err1 + 1;
 				end
 			$display("       %s", (row_err1 == 0) ? "[OK]" : "[MISMATCH]");
-			addr_ext1 = addr_ext1 + 1; repeat(2) tick1;
+			addr_ext1 = addr_ext1 + 1; repeat(2) @(negedge clk1);
 		end
 		mem_cmd_ext1 = EXT_CMD_NO_OP;
 		mismatch_t2_c1 = err1;
@@ -608,12 +608,12 @@ module fullchip_tb;
 		$display("------------------------------------------------------------");
 		$display("");
 		test2_done_c1_flag = 1;
-		while (!test2_done_c0_flag) tick1;
+		wait (test2_done_c0_flag); @(negedge clk1);
 
 		// ===== Test 3 =====
-		reset1 = 1; repeat(3) tick1; reset1 = 0; tick1;
+		reset1 = 1; repeat(3) @(negedge clk1); reset1 = 0; @(negedge clk1);
 		set_mode1 = 1'b1; mode_in1 = CORE_MODE_MULT_save_to_PMEM;
-		repeat(2) tick1; set_mode1 = 1'b0; mode_in1 = 3'b000; tick1;
+		repeat(2) @(negedge clk1); set_mode1 = 1'b0; mode_in1 = 3'b000; @(negedge clk1);
 
 		mem_cmd_ext1 = EXT_CMD_QMEM_WR; addr_ext1 = 0;
 		for (q1 = 0; q1 < col; q1 = q1+1) begin
@@ -621,12 +621,12 @@ module fullchip_tb;
 			mem_in1[3*bw-1:2*bw] = V_T[q1][5]; mem_in1[4*bw-1:3*bw] = V_T[q1][4];
 			mem_in1[5*bw-1:4*bw] = V_T[q1][3]; mem_in1[6*bw-1:5*bw] = V_T[q1][2];
 			mem_in1[7*bw-1:6*bw] = V_T[q1][1]; mem_in1[8*bw-1:7*bw] = V_T[q1][0];
-			tick1; addr_ext1 = addr_ext1 + 4'd1;
+			@(negedge clk1); addr_ext1 = addr_ext1 + 4'd1;
 		end
-		mem_cmd_ext1 = EXT_CMD_NO_OP; addr_ext1 = 0; tick1;
+		mem_cmd_ext1 = EXT_CMD_NO_OP; addr_ext1 = 0; @(negedge clk1);
 
-		start1 = 1; repeat(2) tick1; start1 = 0; tick1;
-		while (busy1) tick1; repeat(2) tick1;
+		start1 = 1; repeat(2) @(negedge clk1); start1 = 0; @(negedge clk1);
+		wait (!busy1); @(negedge clk1); repeat(2) @(negedge clk1);
 
 		$display("################################################################## ");
 		$display("     Test 3   |  Full pipeline VN (PMEM = V * N from Test2 KMEM)  ");
@@ -636,7 +636,7 @@ module fullchip_tb;
 		$display("         golden:  ----  ----  ----  ----  ----  ----  ----  ----");
 		err1 = 0;
 		mem_cmd_ext1 = EXT_CMD_PMEM_RD; addr_ext1 = 0;
-		repeat(2) tick1;  // PMEM read latency
+		repeat(2) @(negedge clk1);  // PMEM read latency
 		for (q1 = 0; q1 < total_cycle; q1 = q1+1) begin
 			row1 = q1;
 			$display("   [%0d]   RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row1,
@@ -655,7 +655,7 @@ module fullchip_tb;
 					err1 = err1 + 1; row_err1 = row_err1 + 1;
 				end
 			$display("       %s", (row_err1 == 0) ? "[OK]" : "[MISMATCH]");
-			addr_ext1 = addr_ext1 + 1; repeat(2) tick1;
+			addr_ext1 = addr_ext1 + 1; repeat(2) @(negedge clk1);
 		end
 		mem_cmd_ext1 = EXT_CMD_NO_OP;
 		mismatch_t3_c1 = err1;
@@ -665,9 +665,8 @@ module fullchip_tb;
 		$display("------------------------------------------------------------");
 		$display("");
 		test3_done_c1_flag = 1;
-		while (!test3_done_c0_flag) tick1;
+		wait (test3_done_c0_flag); @(negedge clk1);
 
-		while (1) tick1;  // keep clk1 running
 	end
 
 endmodule
