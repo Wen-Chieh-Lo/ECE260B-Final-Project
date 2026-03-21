@@ -58,7 +58,6 @@ SYNDIR            := syn
 # target -> filelist filename (shared between sim and syn for filelist name lookup)
 TARGET_FILELIST_table := \
 	fullchip:filelist \
-	fullchip_shell:filelist_fullchip_shell \
 	controller:filelist_controller \
 	core:filelist_core \
 	core_shell:filelist_core_shell \
@@ -69,7 +68,6 @@ TARGET_FILELIST_table := \
 # target -> waveform filename
 TARGET_WAVEFORM_table := \
 	fullchip:fullchip.vcd \
-	fullchip_shell:fullchip_shell.vcd \
 	controller:controller.vcd \
 	core:core.vcd \
 	core_shell:core.vcd \
@@ -85,7 +83,7 @@ TARGET_TOP_MODULE_table := \
 	mac:mac_array \
 	sfp_row:sfp_row
 
-SIM_TARGETS := fullchip fullchip_shell controller core core_shell mac sfp_row sfp_row_dual
+SIM_TARGETS := fullchip controller core core_shell mac sfp_row sfp_row_dual
 SYN_TARGETS := fullchip  sfp_row controller core mac
 
 $(foreach p,$(TARGET_FILELIST_table),$(eval $(firstword $(subst :, ,$(p))): FILELIST_NAME := $(word 2,$(subst :, ,$(p)))))
@@ -170,12 +168,6 @@ sim-shell:
 parse:  ## Parse syn/log/*.rep and print summary (uses shell script; no Python needed)
 	@bash $(SYNDIR)/parse_reports.sh $(SYNDIR)/log
 
-# Generate random pattern files for in-n-out100-*.mingu (for i = 0 to 99)
-# Required before: ./sim_shell.sh -f in-n-out100-fullchip.mingu
-gen-patterns:
-	@cd sw && sh gen_random_patterns.sh --bw 8 --pr 8 --col 8 --total_cycle 8 --num_sets 100
-	@echo ">>> sw/pattern/random100/{qdata,kdata,vdata}_{0..99}.txt created <<<"
-
 clean:
 	rm -f $(addprefix $(OUT_DIR)/,$(SIM_TARGETS)) $(addprefix $(GLS_OUT_DIR)/,$(SIM_TARGETS))
 	@echo "Removed $(OUT_DIR)/* $(GLS_OUT_DIR)/*"
@@ -202,7 +194,6 @@ help:
 	@echo "  Applied to both sim (iverilog -D) and syn (DC -define)"
 	@echo ""
 	@echo "  make sim-shell  - Interactive sim menu (run sim, view waveform, clean)"
-	@echo "  make gen-patterns - Generate sw/pattern/random100/ for in-n-out100-*.mingu (auto-run by sim_shell if missing)"
 	@echo "  make parse  - Parse syn/log/*.rep summary (shell script, no Python)"
 	@echo ""
 	@echo "SystemVerilog: sim/gls use IVERILOG_SV=-g2012 by default. Set IVERILOG_SV= to disable."
