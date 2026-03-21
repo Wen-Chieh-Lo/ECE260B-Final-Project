@@ -1,13 +1,15 @@
 catch { setDesignMode -process 65 }
-catch { setAnalysisMode -analysisType bcwc }
+catch { setAnalysisMode -analysisType onChipVariation }
 catch { setAnalysisMode -checkType setup }
 catch { setAnalysisMode -clkSrcPath true }
 catch { setAnalysisMode -clockPropagation sdcControl }
+catch { setAnalysisMode -cppr both }
 catch { setAnalysisMode -usefulSkew true }
 catch { setOptMode -activeHoldViews { BC_VIEW } }
 catch { setOptMode -activeSetupViews { WC_VIEW } }
 catch { setOptMode -autoHoldViews { BC_VIEW } }
 catch { setOptMode -autoSetupViews { WC_VIEW} }
+catch { setOptMode -deleteInst true }
 catch { setOptMode -drcMargin 0 }
 catch { setOptMode -effort high }
 catch { setOptMode -fixDrc true }
@@ -22,12 +24,13 @@ catch { setOptMode -verbose true }
 setExtractRCMode  -engine postRoute -total_c_th 0 -relative_c_th 1 -coupling_c_th 0.1 -minNetTermNrToBeInMem 50
 catch { setCTSMode -moveGateLimit 25 }
 catch {setNanoRouteMode -quiet -drouteAllowMergedWireAtPin false}
+catch {setNanoRouteMode -quiet -drouteAntennaFactor 1.000000}
 catch {setNanoRouteMode -quiet -drouteAutoStop false}
 catch {setNanoRouteMode -quiet -drouteFixAntenna true}
-catch {setNanoRouteMode -quiet -drouteUseMinSpacingForBlockage auto}
-catch {setNanoRouteMode -quiet -routeExpSignatureEco false}
+catch {setNanoRouteMode -quiet -droutePostRouteSpreadWire "false"}
+catch {setNanoRouteMode -quiet -drouteStartIteration 0}
+catch {setNanoRouteMode -quiet -routeExpPreserveConstraints true}
 catch {setNanoRouteMode -quiet -routeSiEffort "high"}
-catch {setNanoRouteMode -quiet -routeStrictlyHonorNonDefaultRule "false"}
 catch {setNanoRouteMode -quiet -routeWithSiDriven true}
 catch {setNanoRouteMode -quiet -routeWithSiPostRouteFix true}
 catch {setNanoRouteMode -quiet -routeWithTimingDriven true}
@@ -45,4 +48,7 @@ catch { setDelayCalMode -SIAware true }
 catch { setPinAssignMode -pinEditInBatch false }
 catch { setTrialRouteMode -handlePreroute true }
 catch { setTrialRouteMode -keepMarkedOptRoutes true }
+catch { setHierMode -disableArt false }
+catch { setHierMode -reportPostRouteArtTiming false }
+catch { setHierMode -trialRouteHonorReadOnly false }
 catch { setAddStripeMode -break_at block_ring }

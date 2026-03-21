@@ -18,4 +18,4 @@ addStripe -number_of_sets 2  -spacing 6 -layer M4 -width 2 -nets { VSS VDD }
 
 sroute
 
-
+verifyConnectivity
