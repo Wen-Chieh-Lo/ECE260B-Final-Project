@@ -76,6 +76,13 @@ module fullchip_sepclk_tb;
   reg vn_done_c0_flag       = 0;
   reg vn_done_c1_flag       = 0;
 
+  // Per-row SFP handshake:
+  //   c0_sfp_wrote[r] = C0 has written row r's sum into fifo0 (C0->C1)
+  //   c1_sfp_wrote[r] = C1 has written row r's sum into fifo1 (C1->C0)
+  // This enforces the protocol: C0 writes first each row, C1 follows.
+  reg [total_cycle-1:0] c0_sfp_wrote = 0;
+  reg [total_cycle-1:0] c1_sfp_wrote = 0;
+
   reg reset = 1;                   // single driver
 
   // Reset arbiter: one always block owns reset, responds to request flags
@@ -379,6 +386,11 @@ module fullchip_sepclk_tb;
     while (!c1_qk_done_flag) tick0;
 
     // ── SFP phase (C0) ──
+    // Protocol per row:
+    //   1. C0 acc + write sum to fifo0 (C0->C1)  → set c0_sfp_wrote[row]
+    //   2. C1 sees c0_sfp_wrote, acc + write sum to fifo1 (C1->C0)  → set c1_sfp_wrote[row]
+    //   3. C0 waits for c1_sfp_wrote[row], then div (uses both sums)
+    // This strict ordering prevents the deadlock where both cores wait simultaneously.
     $display("##### SFP (C0) #####");
     ofifo_rd_c0 = 1; pmem_rd_c0 = 1;
     pmem_add_c0 = 0; qkmem_add_c0 = 0;
@@ -389,26 +401,45 @@ module fullchip_sepclk_tb;
         qkmem_add_c0 = qkmem_add_c0 + 1;
       end
       tick0; tick0;
+
+      // Step 1: accumulate C0's partial sum
       acc_c0 = 1; tick0;
       acc_c0 = 0; tick0;
       tick0; tick0; tick0; tick0;
 
-      // FIX 2: Wait for C1's sum to arrive via async FIFO, with timeout
+      // Step 2: write C0's sum into fifo0 (C0->C1) via div pulse
+      // div triggers the core to push ext_fifo_in_0 into fifo_inst_ext_core0_1
+      div_c0 = 1; tick0;
+      div_c0 = 0; tick0;
+
+      // Signal C1 that row q0's C0 sum is now in the FIFO
+      c0_sfp_wrote[q0] = 1;
+
+      // Step 3: wait for C1 to write its sum for this row into fifo1 (C1->C0)
+      guard0 = 0;
+      while (!c1_sfp_wrote[q0] && guard0 < FIFO_TIMEOUT) begin
+        tick0; guard0 = guard0 + 1;
+      end
+      if (guard0 >= FIFO_TIMEOUT) begin
+        $display("TIMEOUT (C0 SFP row %0d): c1_sfp_wrote never set.", q0);
+        $finish;
+      end
+
+      // Step 4: wait for C1's sum to physically arrive in fifo1 (C1->C0)
       guard0 = 0;
       while (fifo1_empty !== 1'b0 && guard0 < FIFO_TIMEOUT) begin
         tick0; guard0 = guard0 + 1;
       end
       if (guard0 >= FIFO_TIMEOUT) begin
-        $display("TIMEOUT (C0 SFP row %0d): fifo1_empty never went low. CDC hang?", q0);
+        $display("TIMEOUT (C0 SFP row %0d): fifo1_empty never went low.", q0);
         $finish;
       end
 
-      div_c0 = 1; tick0;
-      div_c0 = 0; tick0;
+      // Step 5: write N into kmem (uses both sums now present)
       kmem_wr_c0 = 1; tick0;
       kmem_wr_c0 = 0; tick0;
 
-      // Wait for C0->C1 FIFO to drain before next row to avoid deadlock
+      // Wait for C0->C1 FIFO to drain before next row (avoid overflow)
       guard0 = 0;
       while (fifo0_empty !== 1'b1 && guard0 < FIFO_TIMEOUT) begin
         tick0; guard0 = guard0 + 1;
@@ -608,6 +639,8 @@ module fullchip_sepclk_tb;
     c1_qk_done_flag = 1;
 
     // ── SFP phase (C1) ──
+    // C1 follows C0's lead each row:
+    //   wait for c0_sfp_wrote[row] → acc → write sum to fifo1 → set c1_sfp_wrote[row]
     $display("##### SFP (C1) #####");
     ofifo_rd_c1 = 1; pmem_rd_c1 = 1;
     pmem_add_c1 = 0; qkmem_add_c1 = 0;
@@ -617,30 +650,49 @@ module fullchip_sepclk_tb;
         pmem_add_c1  = pmem_add_c1  + 1;
         qkmem_add_c1 = qkmem_add_c1 + 1;
       end
+
+      // Wait for C0 to have written its sum for this row first
+      guard1 = 0;
+      while (!c0_sfp_wrote[q1] && guard1 < FIFO_TIMEOUT) begin
+        tick1; guard1 = guard1 + 1;
+      end
+      if (guard1 >= FIFO_TIMEOUT) begin
+        $display("TIMEOUT (C1 SFP row %0d): c0_sfp_wrote never set.", q1);
+        $finish;
+      end
+
       tick1; tick1;
+
+      // Accumulate C1's partial sum
       acc_c1 = 1; tick1;
       acc_c1 = 0; tick1;
       tick1; tick1; tick1; tick1;
 
-      // FIX 2: Wait for C0's sum to arrive via async FIFO, with timeout
+      // Wait for C0's sum to arrive physically in fifo0 (C0->C1)
       guard1 = 0;
       while (fifo0_empty !== 1'b0 && guard1 < FIFO_TIMEOUT) begin
         tick1; guard1 = guard1 + 1;
       end
       if (guard1 >= FIFO_TIMEOUT) begin
-        $display("TIMEOUT (C1 SFP row %0d): fifo0_empty never went low. CDC hang?", q1);
+        $display("TIMEOUT (C1 SFP row %0d): fifo0_empty never went low.", q1);
         $finish;
       end
 
-      // Extra margin: sfp_sum_in_1 sample-and-hold needs clk1 edges to capture
+      // Extra margin: sfp_sum_in_1 sample-and-hold needs clk1 edges to latch
       tick1; tick1; tick1; tick1;
 
+      // Write C1's sum to fifo1 (C1->C0) via div pulse
       div_c1 = 1; tick1;
       div_c1 = 0; tick1;
+
+      // Signal C0 that C1's sum for this row is now in the FIFO
+      c1_sfp_wrote[q1] = 1;
+
+      // Write N into kmem
       kmem_wr_c1 = 1; tick1;
       kmem_wr_c1 = 0; tick1;
 
-      // FIX 2: Wait for C1's FIFO to drain, with timeout
+      // Wait for C1->C0 FIFO to drain before next row
       guard1 = 0;
       while (fifo0_empty !== 1'b1 && guard1 < FIFO_TIMEOUT) begin
         tick1; guard1 = guard1 + 1;
