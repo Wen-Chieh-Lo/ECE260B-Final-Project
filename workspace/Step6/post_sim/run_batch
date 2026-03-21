@@ -1,0 +1,21 @@
+#!/bin/sh
+# post_sim batch: xrun with fullchip_shell_tb (reads stdin for writeQ, simulate, verifypmem)
+# Called by sim_shell with mingu commands piped. Example: sim_shell pipes after_fix | (cd post_sim && ./run_batch)
+
+mkdir -p waveform
+xrun \
+-sv \
++incdir+.. \
++access+rwc \
++xm64bit \
++xmstatus \
++xmtimescale+1ns/1ps \
++xmoveride_timescale \
++define+INITIALIZE_MEMORY \
++define+SFP_THRESHOLD=169503 \
+-xminitialize 0 \
++xmseq_udp_delay+20ps \
+-nowarn CUVWSP \
+-v ./netlist/tcbn65gplus.v \
+-v ./netlist/fullchip.pnr.v \
+./netlist/fullchip_shell_tb.v

@@ -1,23 +1,21 @@
 # =============================================================================
 #
-#   in-n-out100-fullchip.mingu  —  Batch run random100 pattern sets (0..99) [fullchip_shell]
+#   in-n-out100-fullchip-gls.mingu  —  Post-sim batch (xrun + fullchip_shell_tb, PnR netlist)
 #
-#   Dual-core: writeK0/writeK1. Uses same kdata for both cores (or gen_random_patterns --dual_core).
+#   Uses set_sim_stage post_sim. Mingu commands piped to run_batch (xrun with fullchip_shell_tb).
 #
-#   USAGE: ./sim_shell.sh -f in-n-out100-fullchip.mingu
-#
-#   set_clock_period <ns0> [ns1] — clk0 / clk1 period (ns)
-#   set_dump_vcd 0 — disable VCD
+#   USAGE: ./sim_shell.sh -f in-n-out100-fullchip-gls.mingu
+#     (auto-runs make gen-patterns if sw/pattern/random100/ is missing)
 #
 # =============================================================================
 
 set PATTERN sw/pattern/random100
-set_output_dir sim/waveform
-set_sim_stage sim
+set_output_dir post_sim/waveform
+set_sim_stage post_sim
+set_scope fullchip
 set_dump_vcd 0
 set_clock_period 1 1.2
 set_sim_define SFP_LONGDIV SFP_THRESHOLD=169503
-set_scope fullchip
 fix_set
 
 for i = 0 to 100

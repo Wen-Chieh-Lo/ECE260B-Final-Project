@@ -7,6 +7,8 @@
 #   ./sim_shell.sh -f mingu.X   - feed X.mingu to interactive mode
 #
 # Shell-level commands (before fix_set): set_scope, set_output_dir, set_sim_stage, set_sim_target, set_sim_define, set_clock_period, set_dump_vcd, set <var> <value>
+#   set_sim_stage: sim (default) | gls | post_sim
+#     post_sim - Post-PnR sim (xrun via post_sim/run_batch; batch mingu piped to stdin)
 #   set_dump_vcd 0|1|off|on — 0/off: no VCD (compile with -DNO_DUMP_VCD); default 1 (emit waveform)
 #   set_clock_period <ns0> [ns1] — fullchip: clk0 / clk1 period in ns (default ns1=ns0); passed as CYCLE/CYCLE1 + H_CYCLE0/H_CYCLE1
 #   set_scope: core -> core_shell | fullchip -> fullchip_shell (same as Makefile TARGET)
@@ -306,6 +308,9 @@ run_with_fix_set() {
 	# Expand for loops (for var = start to end ... endfor) in TB block
 	after_fix=$(expand_for_loops "$after_fix")
 
+	# Path compatibility: post_sim runs from post_sim/, so PATTERN needs ../ prefix
+	[[ "$SIM_STAGE" == "post_sim" ]] && [[ -n "${PATTERN:-}" ]] && [[ "${PATTERN}" != ../* ]] && export PATTERN="../${PATTERN}"
+
 	# Process "set VAR value" in after_fix (export for envsubst) and remove from output.
 	# Do envsubst per-line so loop vars (set i 0; writeQ ...$i...; set i 1; ...) get correct values.
 	after_fix_filtered=""
@@ -329,11 +334,29 @@ run_with_fix_set() {
 
 	ensure_sw_random_patterns
 
-	# Run make (sim or gls) with params; stdin to vvp
-	if [[ "$SIM_STAGE" == "gls" ]]; then
-		echo "$after_fix" | make gls TARGET="$SIM_TARGET" OUTPUT_DIR="$OUTPUT_DIR" $(make_clock_makefile_args) USER_DEFINES="$SIM_DEFINES$(dump_vcd_make_suffix)"
+	# Run: make sim/gls, or post_sim (xrun with fullchip_shell_tb for batch mingu)
+	if [[ "$SIM_STAGE" == "post_sim" ]]; then
+		POST_SIM_DIR="$PROJ_ROOT/post_sim"
+		if [[ -f "$POST_SIM_DIR/run_batch" ]]; then
+			echo ">>> Running post_sim/run_batch (xrun + fullchip_shell_tb) from $POST_SIM_DIR"
+			TMP_MINGU=$(mktemp) && printf '%s\n' "$after_fix" > "$TMP_MINGU"
+			(cd "$POST_SIM_DIR" && ./run_batch < "$TMP_MINGU")
+			rm -f "$TMP_MINGU"
+		elif [[ -f "$POST_SIM_DIR/run_gui" ]]; then
+			echo ">>> Running post_sim/run_gui (xrun GUI, no batch) from $POST_SIM_DIR"
+			(cd "$POST_SIM_DIR" && ./run_gui)
+		else
+			echo "Error: post_sim/run_batch or run_gui not found" >&2
+			exit 1
+		fi
+	elif [[ "$SIM_STAGE" == "gls" ]]; then
+		TMP_MINGU=$(mktemp) && printf '%s\n' "$after_fix" > "$TMP_MINGU"
+		make gls TARGET="$SIM_TARGET" OUTPUT_DIR="$OUTPUT_DIR" $(make_clock_makefile_args) USER_DEFINES="$SIM_DEFINES$(dump_vcd_make_suffix)" < "$TMP_MINGU"
+		rm -f "$TMP_MINGU"
 	else
-		echo "$after_fix" | make sim TARGET="$SIM_TARGET" OUTPUT_DIR="$OUTPUT_DIR" $(make_clock_makefile_args) USER_DEFINES="$SIM_DEFINES$(dump_vcd_make_suffix)"
+		TMP_MINGU=$(mktemp) && printf '%s\n' "$after_fix" > "$TMP_MINGU"
+		make sim TARGET="$SIM_TARGET" OUTPUT_DIR="$OUTPUT_DIR" $(make_clock_makefile_args) USER_DEFINES="$SIM_DEFINES$(dump_vcd_make_suffix)" < "$TMP_MINGU"
+		rm -f "$TMP_MINGU"
 	fi
 }
 
