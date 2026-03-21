@@ -1,10 +1,14 @@
 // Fullchip Shell - Interactive verification (SystemVerilog)
-// Dual-core: C0 (clk0) and C1 (clk1). Same clock in shell for simplicity.
+// Dual-core: C0 (clk0) and C1 (clk1). Independent clocks; tb_utils syncs both domains.
 
 `timescale 1ns/1ps
 `define TB_TOP fullchip_shell_tb
 `define TB_FULLCHIP
 `include "sim/tb/params.v"
+
+`ifndef SFP_THRESHOLD
+  `define SFP_THRESHOLD 0
+`endif
 
 module fullchip_shell_tb;
 	`include "sim/tb/tb_utils.v"
@@ -16,6 +20,10 @@ module fullchip_shell_tb;
 	int total_mismatches;
 	int verify_count;
 	int verify_err[0:1023];
+
+	// Norm gate (TB golden): cumulative across all simulate() / ComputeEstimatedFullchip calls
+	int norm_gate_skip_total_all;
+	int norm_gate_row_total_all;
 
 	int sum_abs, divisor, unsigned_val;
 
@@ -43,12 +51,10 @@ module fullchip_shell_tb;
 	logic map_ok;
 	string cmd, arg;
 
-	// Same clock for both cores in shell (simplifies interactive use)
-	logic clk = 0;
-	always #(`H_CYCLE) clk = ~clk;
-	logic clk0, clk1;
-	assign clk0 = clk;
-	assign clk1 = clk;
+	// Independent clk0 / clk1 (periods H_CYCLE0, H_CYCLE1 from params / set_clock_period).
+	logic clk0 = 0, clk1 = 0;
+	always #(`H_CYCLE0) clk0 = ~clk0;
+	always #(`H_CYCLE1) clk1 = ~clk1;
 
 	logic reset = 1;
 	logic start0 = 0, start1 = 0;
@@ -82,12 +88,16 @@ module fullchip_shell_tb;
 	);
 
 	initial begin
+`ifndef NO_DUMP_VCD
 		DumpVCD("sim/waveform/fullchip.vcd");
+`endif
 		MonitorStatusFullchip;
 		current_mode = `CORE_MODE_MULT_save_to_PMEM;
 		last_writeQ_was_vdata = 0;
 		total_mismatches = 0;
 		verify_count = 0;
+		norm_gate_skip_total_all = 0;
+		norm_gate_row_total_all = 0;
 		Reset2CycFullchip;
 
 		$display(">>> Fullchip shell. Type: set_exec_target, writeQ, writeK0, writeK1, simulate, verifypmem, reset, exit, help");

@@ -4,6 +4,10 @@
 `define TB_TOP core_shell_tb
 `include "sim/tb/params.v"
 
+`ifndef SFP_THRESHOLD
+  `define SFP_THRESHOLD 0
+`endif
+
 module core_shell_tb;
 	`include "sim/tb/tb_utils.v"
 
@@ -15,6 +19,7 @@ module core_shell_tb;
 	int verify_count;      // number of verifypmem calls
 	int verify_err[0:1023]; // mismatch count per verifypmem call (1-based index in report)
 	int sum_abs, divisor, unsigned_val;
+	int mac_sum4, mac_s1, mac_s2;  // mac_8in two-stage reference (match verilog/mac/mac_8in.v)
 
 	int K        [`COL-1:0][`PR-1:0];
 	int Q        [`TOTAL_CYCLE-1:0][`PR-1:0];
@@ -56,6 +61,13 @@ module core_shell_tb;
 	assign kmem_locked  = status[1];
 	assign pmem_locked  = status[0];
 
+	// Single-core shell: no partner core — drive sum_in=0, sum_in_valid=1 so norm (div) can
+	// complete (core.v gates div_start on sum_in_valid; see core_tb.v same tie-off).
+	logic [`BW_PSUM+3:0] sum_in_tb;
+	logic                  sum_in_valid_tb;
+	assign sum_in_tb       = {(`BW_PSUM+4){1'b0}};
+	assign sum_in_valid_tb = 1'b1;
+
 	core #(.bw(`BW), .bw_psum(`BW_PSUM), .col(`COL), .pr(`PR)) core_instance (
 		.reset(reset),
 		.clk(clk),
@@ -63,14 +75,20 @@ module core_shell_tb;
 		.mode_in(mode_in),
 		.mem_in(mem_in),
 		.inst_ext(inst_ext),
+		.sum_in(sum_in_tb),
+		.sum_in_valid(sum_in_valid_tb),
+		.sum_in_fifo_pop(),
 		.sum_out(),
+		.sum_out_valid(),
 		.out(pmem_out),
 		.start(start),
 		.status(status)
 	);
 
 	initial begin
+`ifndef NO_DUMP_VCD
 		DumpVCD("sim/waveform/core.vcd");
+`endif
 		MonitorStatus;
 		current_mode = `CORE_MODE_MULT_save_to_PMEM;
 		last_writeQ_was_vdata = 0;

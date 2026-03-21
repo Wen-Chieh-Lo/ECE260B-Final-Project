@@ -8,18 +8,19 @@
 # =============================================================================
 #
 #   USAGE: ./sim_shell.sh -f in-n-out.mingu
-#   SHELL: set_output_dir | set_sim_stage | set_sim_target | set_clock_period | set_sim_define | set <var> <val> | fix_set
+#   SHELL: set_scope core|fullchip | set_output_dir | set_sim_stage | set_sim_target | set_clock_period | set_sim_define | set <var> <val> | fix_set
+#   set_clock_period <ns> — core_shell: one clock period (ns). fullchip can use two: <ns0> [ns1].
 #   TB (core_shell): set_exec_target | writeQ | writeK | simulate | verifypmem | reset | exit | help
 #   TB (fullchip_shell): set_exec_target | writeQ | writeK0 | writeK1 | simulate | verifypmem | reset | exit | help
 #
 # =============================================================================
 
 set PATTERN sim/pattern
-set_sim_target core_shell
+set_scope core
 set_output_dir sim/waveform
 set_sim_stage sim
 set_clock_period 1
-set_sim_define SFP_LONGDIV
+set_sim_define SFP_LONGDIV SFP_THRESHOLD=169503
 fix_set
 
 # Test 1: Q*K^T

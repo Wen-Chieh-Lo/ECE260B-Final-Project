@@ -74,9 +74,9 @@ Design assumes dual-core context; sum_in/sum_out for cross-core communication.
 - Valid only when div_done is high (1 cycle).
 
 ### Summary
-- acc, div 各拉一 cycle
-- acc_done, div_done 由 DUT 算完後拉高
-- acc_latency, div_latency 為參數
+- acc and div each run for one cycle (per handshake)
+- acc_done, div_done asserted by DUT when that stage completes
+- acc_latency, div_latency are parameters
 
 ---
 

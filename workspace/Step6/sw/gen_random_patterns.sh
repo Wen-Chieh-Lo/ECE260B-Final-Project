@@ -11,8 +11,13 @@
 # - kdata: col rows x pr cols (K).
 # - vdata: total_cycle rows x pr cols (V^T layout for tb).
 #
-# USAGE (run from workspace/Alpha/sw)
-# -----------------------------------
+# USAGE
+# -----
+# From workspace/Step6 (or Alpha) project root:
+#   make gen-random-patterns
+#   NUM_SETS=500 make gen-random-patterns
+#
+# Or from this directory (sw/):
 #   sh gen_random_patterns.sh --bw 8 --pr 8 --col 8 --total_cycle 8 --num_sets 100
 #
 #   - bw          : bitwidth of each element (e.g. 8 -> range -128..127).

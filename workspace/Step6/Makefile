@@ -50,6 +50,8 @@ SYN_FILELISTS_DIR := syn/filelists
 IVERILOG          := iverilog
 IVERILOG_SV       ?= -g2012
 VVP               := vvp
+# -n: do not read stdin as vvp commands (required when piping sim_shell.mingu into vvp; stdin goes to $fscanf in TB)
+VVP_FLAGS         ?= -n
 OUT_DIR           := sim/compiled
 GLS_OUT_DIR       := gls/compiled
 SYNDIR            := syn
@@ -100,7 +102,7 @@ $(foreach p,$(TARGET_FILELIST_table),$(eval gls_$(firstword $(subst :, ,$(p))): 
 $(foreach p,$(TARGET_WAVEFORM_table),$(eval gls_$(firstword $(subst :, ,$(p))): WAVEFORM     := $(word 2,$(subst :, ,$(p)))))
 
 # ----- Phony declarations -----
-.PHONY: all clean help default sim syn gls sim-shell parse $(SIM_TARGETS) $(addprefix gls_,$(SIM_TARGETS))
+.PHONY: all clean help default sim syn gls sim-shell parse gen-random-patterns $(SIM_TARGETS) $(addprefix gls_,$(SIM_TARGETS))
 
 default: sim
 
@@ -114,7 +116,7 @@ gls: gls_$(TARGET)
 $(addprefix gls_,$(SIM_TARGETS)):
 	@mkdir -p gls gls/waveform gls/pattern $(GLS_OUT_DIR)
 	$(IVERILOG) $(IVERILOG_SV) $(IVERILOG_DEFINES) -o $(GLS_OUT_DIR)/$(patsubst gls_%,%,$@) -f $(GLS_FILELISTS_DIR)/$(FILELIST_NAME)
-	$(VVP) $(GLS_OUT_DIR)/$(patsubst gls_%,%,$@)
+	$(VVP) $(VVP_FLAGS) $(GLS_OUT_DIR)/$(patsubst gls_%,%,$@)
 	@echo ""
 	@echo ">>> Gate sim waveform: gls/waveform/$(WAVEFORM) <<<"
 
@@ -133,6 +135,15 @@ endif
 ifneq ($(H_CYCLE),)
   IVERILOG_DEFINES += -DH_CYCLE=$(H_CYCLE)
 endif
+ifneq ($(CYCLE1),)
+  IVERILOG_DEFINES += -DCYCLE1=$(CYCLE1)
+endif
+ifneq ($(H_CYCLE0),)
+  IVERILOG_DEFINES += -DH_CYCLE0=$(H_CYCLE0)
+endif
+ifneq ($(H_CYCLE1),)
+  IVERILOG_DEFINES += -DH_CYCLE1=$(H_CYCLE1)
+endif
 ifneq ($(OUTPUT_DIR),)
   IVERILOG_DEFINES += -DOUTPUT_DIR=\"$(OUTPUT_DIR)\"
 endif
@@ -140,7 +151,7 @@ endif
 $(SIM_TARGETS):
 	@mkdir -p sim sim/waveform $(OUT_DIR)
 	$(IVERILOG) $(IVERILOG_SV) $(IVERILOG_DEFINES) -o $(OUT_DIR)/$@ -f $(SIM_FILELISTS_DIR)/$(FILELIST_NAME)
-	$(VVP) $(OUT_DIR)/$@
+	$(VVP) $(VVP_FLAGS) $(OUT_DIR)/$@
 	@echo ""
 	@echo ">>> Waveform: sim/waveform/$(WAVEFORM) (GTKWave or any VCD viewer) <<<"
 
@@ -166,6 +177,12 @@ sim-shell:
 	@./sim_shell.sh
 
 # ----- Utilities -----
+# Batch mingu (in-n-out100*.mingu, in-n-out500*.mingu) needs sw/pattern/random100 — gitignored; generate with:
+#   make gen-random-patterns     or     NUM_SETS=500 make gen-random-patterns
+NUM_SETS ?= 100
+gen-random-patterns:
+	@sh sw/gen_random_patterns.sh --bw 8 --pr 8 --col 8 --total_cycle 8 --num_sets $(NUM_SETS)
+
 parse:  ## Parse syn/log/*.rep and print summary (uses shell script; no Python needed)
 	@bash $(SYNDIR)/parse_reports.sh $(SYNDIR)/log
 
@@ -195,6 +212,7 @@ help:
 	@echo "  Applied to both sim (iverilog -D) and syn (DC -define)"
 	@echo ""
 	@echo "  make sim-shell  - Interactive sim menu (run sim, view waveform, clean)"
+	@echo "  make gen-random-patterns  - Generate sw/pattern/random100 for batch mingu (NUM_SETS=100 default)"
 	@echo "  make parse  - Parse syn/log/*.rep summary (shell script, no Python)"
 	@echo ""
 	@echo "SystemVerilog: sim/gls use IVERILOG_SV=-g2012 by default. Set IVERILOG_SV= to disable."
