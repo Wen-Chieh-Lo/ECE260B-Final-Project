@@ -2,15 +2,16 @@
 // Post-PnR GLS testbench — fixes applied over original fullchip_sepclk_tb.v:
 //
 // FIX 1 — DFQD1 has no reset pin: sfp_sum_in_0_r / sfp_sum_in_1_r FFs
-//   power up to random in silicon (DC eliminated reset despite synchronous RTL).
-//   In post-PnR GLS we force them to 0 by driving the D-mux inputs correctly
-//   during reset: the AO22D0 mux selects hold (Q feedback) when fifo_empty=1,
-//   so as long as reset deasserts AFTER the FIFO is empty (which the TB already
-//   guarantees), the FFs self-clear on the first clk edge after reset via the
-//   AO22 mux. But to be safe and document intent, we add a `force/release` on
-//   sfp_sum_in during the reset window so simulation matches silicon intent.
-//   NOTE: on real silicon this is a REAL BUG — the FFs may not be 0 at power-up.
-//   You need to re-synthesize with set_dont_touch or force_to_zero constraints.
+//   DC eliminated the reset because it synthesized the enable as an AO22D0 mux
+//   on the D input (fifo_empty ? hold : new_data). During reset fifo_empty=1,
+//   so the mux selects Q feedback — the FFs hold whatever they started at.
+//   Simulation passes because -xminitialize 0 starts all FFs at 0, which is
+//   exactly the correct reset value, so the hold path is harmless.
+//   force/release cannot be used here — sfp_sum_in_0_r/1_r are `tri` nets
+//   driven by DFQD1 cell outputs in the PnR netlist; forcing a cell-driven net
+//   is illegal in gate-level sim and the signal name may not survive PnR anyway.
+//   THE REAL SILICON FIX: add set_reset_don't_touch or restructure RTL so DC
+//   cannot eliminate the reset (e.g. use an explicit mux before the FF D input).
 //
 // FIX 2 — wait_guard timeouts re-enabled on all while(fifo_empty) spin loops.
 //   The original guards were commented out, risking infinite hang on CDC glitch.
@@ -70,6 +71,8 @@ module fullchip_sepclk_tb;
   reg qk_reset_done_flag    = 0;   // ack back to Initial 2
   reg do_vn_reset           = 0;   // pulse: Initial 2 requests VN reset
   reg vn_reset_done_flag    = 0;   // ack back to Initial 2
+  // C1 sets this after QK verify + SFP acc so C0 SFP knows C1's sum is ready
+  reg c1_qk_done_flag       = 0;
   reg vn_done_c0_flag       = 0;
   reg vn_done_c1_flag       = 0;
 
@@ -166,21 +169,6 @@ module fullchip_sepclk_tb;
     .fifo0_empty(fifo0_empty),
     .fifo1_empty(fifo1_empty)
   );
-
-  // ── FIX 1: Force sfp_sum_in to 0 during reset window ─────────────────────
-  // DFQD1 has no reset pin — without this, GLS starts with X if -xminitialize
-  // is not 0. The force covers the reset window so the AO22 mux (fifo_empty=1
-  // during reset → hold path) never holds a stale X value.
-  // On real silicon you MUST fix this in RTL/synthesis (see note at top).
-  always @(posedge reset) begin
-    force fullchip_instance.sfp_sum_in_0_r = 0;
-    force fullchip_instance.sfp_sum_in_1_r = 0;
-  end
-  always @(negedge reset) begin
-    #1; // one ns settling after reset deasserts before releasing force
-    release fullchip_instance.sfp_sum_in_0_r;
-    release fullchip_instance.sfp_sum_in_1_r;
-  end
 
   // =========================================================================
   // Initial 1: Data loading + golden computation (pure software, no timing)
@@ -354,14 +342,16 @@ module fullchip_sepclk_tb;
     ofifo_rd_c0 = 0; tick0;
     repeat(5) tick0;
 
-    // ── FIX 4: sample pmem after posedge + small settling delay ──
+    // pmem is synchronous-read: set pmem_rd+pmem_add, tick (posedge latches
+    // address), then sample out after 50ps settling.
+    // Address walks 0..7 — increment AFTER capture so row0 reads addr 0.
     $display("##### QK verification (C0) #####");
     $display("  [row]  RTL   :    col0    col1    col2    col3    col4    col5    col6    col7");
-    pmem_rd_c0 = 1; pmem_add_c0 = 4'd0; tick0;
+    pmem_rd_c0 = 1; pmem_add_c0 = 4'd0;
     for (q0 = 0; q0 < total_cycle; q0 = q0+1) begin
       row0 = q0;
-      pmem_add_c0 = pmem_add_c0 + 1; tick0;
-      #0.05; // 50ps settling — covers 20ps UDP delay + combinational path
+      tick0;          // posedge: pmem reads current pmem_add
+      #0.05;          // 50ps settling for 20ps UDP + output path
       $display("   [%0d]  RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", row0,
         $signed(out[7*bw_psum+:bw_psum]), $signed(out[6*bw_psum+:bw_psum]),
         $signed(out[5*bw_psum+:bw_psum]), $signed(out[4*bw_psum+:bw_psum]),
@@ -379,9 +369,14 @@ module fullchip_sepclk_tb;
         end
       end
       $display("       %s", (row_err0 == 0) ? "[OK]" : "[MISMATCH]");
+      pmem_add_c0 = pmem_add_c0 + 1;  // advance address AFTER capture
     end
     pmem_rd_c0 = 0; pmem_add_c0 = 0; tick0;
     $display("--- C0 QK: %0d mismatch(es) ---", mismatch_qk_core0);
+
+    // C0 SFP needs C1's QK sum to arrive via async FIFO.
+    // Wait until C1 has finished its QK execute+drain and asserted c1_qk_done_flag.
+    while (!c1_qk_done_flag) tick0;
 
     // ── SFP phase (C0) ──
     $display("##### SFP (C0) #####");
@@ -480,11 +475,11 @@ module fullchip_sepclk_tb;
     // ── VN verification (C0) ──
     $display("##### VN verification (C0) #####");
     $display("  [row]  RTL   :    col0    col1    col2    col3    col4    col5    col6    col7");
-    pmem_rd_c0 = 1; pmem_add_c0 = 4'd0; tick0;
+    pmem_rd_c0 = 1; pmem_add_c0 = 4'd0;
     for (q0 = 0; q0 < total_cycle; q0 = q0+1) begin
       row0 = q0;
-      pmem_add_c0 = pmem_add_c0 + 1; tick0;
-      #0.05; // FIX 4: 50ps settling after posedge
+      tick0;
+      #0.05; // FIX 4: 50ps settling
       $display("   [%0d]  RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", row0,
         $signed(out[7*bw_psum+:bw_psum]), $signed(out[6*bw_psum+:bw_psum]),
         $signed(out[5*bw_psum+:bw_psum]), $signed(out[4*bw_psum+:bw_psum]),
@@ -504,6 +499,7 @@ module fullchip_sepclk_tb;
         end
       end
       $display("       %s", (row_err0 == 0) ? "[OK]" : "[MISMATCH]");
+      pmem_add_c0 = pmem_add_c0 + 1;
     end
     pmem_rd_c0 = 0; pmem_add_c0 = 0; tick0;
     $display("--- C0 VN: %0d mismatch(es) ---", mismatch_vn_core0);
@@ -577,10 +573,10 @@ module fullchip_sepclk_tb;
     // ── QK verification (C1) ──
     $display("##### QK verification (C1) #####");
     $display("  [row]  RTL   :    col0    col1    col2    col3    col4    col5    col6    col7");
-    pmem_rd_c1 = 1; pmem_add_c1 = 4'd0; tick1;
+    pmem_rd_c1 = 1; pmem_add_c1 = 4'd0;
     for (q1 = 0; q1 < total_cycle; q1 = q1+1) begin
       row1 = q1;
-      pmem_add_c1 = pmem_add_c1 + 1; tick1;
+      tick1;
       #0.05; // FIX 4: 50ps settling
       $display("   [%0d]  RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", row1,
         $signed(out[col*bw_psum+7*bw_psum+:bw_psum]),
@@ -603,9 +599,13 @@ module fullchip_sepclk_tb;
         end
       end
       $display("       %s", (row_err1 == 0) ? "[OK]" : "[MISMATCH]");
+      pmem_add_c1 = pmem_add_c1 + 1;
     end
     pmem_rd_c1 = 0; pmem_add_c1 = 0; tick1;
     $display("--- C1 QK: %0d mismatch(es) ---", mismatch_qk_core1);
+
+    // Signal C0 that C1's QK sum is now accumulated and ready in the async FIFO
+    c1_qk_done_flag = 1;
 
     // ── SFP phase (C1) ──
     $display("##### SFP (C1) #####");
@@ -703,10 +703,10 @@ module fullchip_sepclk_tb;
     // ── VN verification (C1) ──
     $display("##### VN verification (C1) #####");
     $display("  [row]  RTL   :    col0    col1    col2    col3    col4    col5    col6    col7");
-    pmem_rd_c1 = 1; pmem_add_c1 = 4'd0; tick1;
+    pmem_rd_c1 = 1; pmem_add_c1 = 4'd0;
     for (q1 = 0; q1 < total_cycle; q1 = q1+1) begin
       row1 = q1;
-      pmem_add_c1 = pmem_add_c1 + 1; tick1;
+      tick1;
       #0.05; // FIX 4: 50ps settling
       $display("   [%0d]  RTL   : %7d %7d %7d %7d %7d %7d %7d %7d", row1,
         $signed(out[col*bw_psum+7*bw_psum+:bw_psum]),
@@ -731,6 +731,7 @@ module fullchip_sepclk_tb;
         end
       end
       $display("       %s", (row_err1 == 0) ? "[OK]" : "[MISMATCH]");
+      pmem_add_c1 = pmem_add_c1 + 1;
     end
     pmem_rd_c1 = 0; pmem_add_c1 = 0; tick1;
     $display("--- C1 VN: %0d mismatch(es) ---", mismatch_vn_core1);
