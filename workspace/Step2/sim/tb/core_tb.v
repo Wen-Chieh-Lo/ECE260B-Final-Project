@@ -41,7 +41,7 @@ module core_tb;
 
   reg reset = 1;
   reg clk = 0;
-  reg [pr*bw-1:0] mem_in;
+  reg [pr*bw-1:0] mem_in=0;
   reg sfp_processing = 0;
   reg sfp_div=0, sfp_acc=0;
   reg VN_mode = 0;

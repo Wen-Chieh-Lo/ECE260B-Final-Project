@@ -46,7 +46,8 @@ wire  pmem_wr, ext_pmem_wr, int_pmem_wr;       // internal comes from controller
 wire  VN_mode;
 
 reg   [2:0] fifo_valid_cnt;
-
+reg pmem_rd_reg;
+reg [3:0] pmem_add_reg;
 
 wire sfp_acc;                         // SFP accumulating for normalization
 wire sfp_div;                         // SFP dividing for normalization
@@ -86,7 +87,7 @@ assign kmem_wr  = inst[2];
 // assign pmem_wr  = inst[0];
 
 assign mac_in  = inst[6] ? kmem_out : qmem_out;
-assign out = (pmem_rd && pmem_add < 9) ? pmem_out : 0;
+assign out = (pmem_rd_reg && (pmem_add_reg < col)) ? pmem_out : 0;
 
 
 mac_array #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) mac_array_instance (
@@ -167,6 +168,11 @@ sfp_row #(.col(col), .bw(bw), .bw_psum(bw_psum), .out_shift(sfp_out_shift)) sfp_
 			$signed(kmem_in[1*bw +: bw]), $signed(kmem_in[0*bw +: bw])
 		 ); 
 		 
+  end
+
+  always @(posedge clk) begin
+        pmem_rd_reg <= pmem_rd;
+        pmem_add_reg <= pmem_add;
   end
 
 
