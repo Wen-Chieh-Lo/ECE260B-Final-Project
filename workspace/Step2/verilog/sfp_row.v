@@ -135,29 +135,49 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
       .in(abs[bw_psum*8-1 : bw_psum*7]),
       .divisor(sum_2core), .out(div_out7)
     );
-    assign div_done = 1'b1;  // combinational div: always ready
+    assign div_done = div_start;  // combinational div: always ready
  
 
   always @ (posedge clk) begin
     if (reset) begin
-      fifo_wr <= 0;
-      div_start <= 0;
-      acc_d1 <= 0;
+      fifo_wr       <= 0;
+      div_start     <= 0;
+      acc_d1        <= 0;
+      div_q         <= 0;
+      sum_q         <= 0;
+      sfp_out_sign0 <= 0;
+      sfp_out_sign1 <= 0;
+      sfp_out_sign2 <= 0;
+      sfp_out_sign3 <= 0;
+      sfp_out_sign4 <= 0;
+      sfp_out_sign5 <= 0;
+      sfp_out_sign6 <= 0;
+      sfp_out_sign7 <= 0;
     end
     else begin
-       div_q <= div ;
-       acc_d1 <= acc;
-      //  $display("acc = %0d", acc);
-       if (acc) begin
-         sum_q <= sum8_out;
-       end
+       div_q   <= div;
+       acc_d1  <= acc;
        fifo_wr <= acc_d1;  // write 1 cycle after sum_q updates (aligns sum8/sum8_2stage)
-       if (!acc) begin
-   
+
+       if (acc) begin
+         sum_q         <= sum8_out;
+         div_start     <= div_start;
+         sfp_out_sign0 <= sfp_out_sign0;
+         sfp_out_sign1 <= sfp_out_sign1;
+         sfp_out_sign2 <= sfp_out_sign2;
+         sfp_out_sign3 <= sfp_out_sign3;
+         sfp_out_sign4 <= sfp_out_sign4;
+         sfp_out_sign5 <= sfp_out_sign5;
+         sfp_out_sign6 <= sfp_out_sign6;
+         sfp_out_sign7 <= sfp_out_sign7;
+       end
+       else begin
+         sum_q <= sum_q;
+         
          if (div) begin
-           div_start     <= 1'b1;
+           div_start <= 1'b1;
          end else begin
-           div_start     <= 1'b0;
+           div_start <= 1'b0;
          end
 
          if (div_done) begin
@@ -169,8 +189,16 @@ module sfp_row (clk, reset, acc, div, fifo_ext_rd, sum_in, sum_out, sfp_in, sfp_
            sfp_out_sign5 <= div_out5;
            sfp_out_sign6 <= div_out6;
            sfp_out_sign7 <= div_out7;
+         end else begin
+           sfp_out_sign0 <= sfp_out_sign0;
+           sfp_out_sign1 <= sfp_out_sign1;
+           sfp_out_sign2 <= sfp_out_sign2;
+           sfp_out_sign3 <= sfp_out_sign3;
+           sfp_out_sign4 <= sfp_out_sign4;
+           sfp_out_sign5 <= sfp_out_sign5;
+           sfp_out_sign6 <= sfp_out_sign6;
+           sfp_out_sign7 <= sfp_out_sign7;
          end
-
        end
    end
  end

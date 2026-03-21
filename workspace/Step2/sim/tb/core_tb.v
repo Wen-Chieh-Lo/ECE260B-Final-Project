@@ -124,7 +124,9 @@ module core_tb;
     end
 
     $display("QK Product Phase");
+    #0.5 clk = 1'b0;
     VN_mode = 1'b0;
+    #0.5 clk = 1'b1;
 
     $display("##### Qmem writing #####");
     for (q = 0; q < total_cycle; q = q+1) begin
@@ -287,23 +289,24 @@ module core_tb;
     $display("##### sfp processing #####");
     $display("estimated:        col0    col1    col2    col3    col4    col5    col6    col7 ");
     $display("to kmem  :       63:56   55:48   47:40   39:32   31:24   23:16   15: 8    7: 0 ");
+    #0.5 clk = 1'b0;
     sfp_processing = 1'b1;
     pmem_add = 0;
     qkmem_add = 0;
     pmem_rd = 1;
-
+    #0.5 clk = 1'b1;
     
     for (q = 0; q < col; q = q + 1) begin
       #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 1
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_acc = 1'b1; //posedge 2
+      #0.5 clk = 1'b0; sfp_acc = 1'b1; #0.5 clk = 1'b1;  //posedge 2
       #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 3
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_acc = 1'b0; //posedge 4
+      #0.5 clk = 1'b0; sfp_acc = 1'b0; #0.5 clk = 1'b1;  //posedge 4
       for (s = 0; s < sfp_acc_lat; s = s + 1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_div = 1'b1; //posedge 5
+      #0.5 clk = 1'b0; sfp_div = 1'b1; #0.5 clk = 1'b1;  //posedge 5
       #0.5 clk = 1'b0; #0.5 clk = 1'b1;                 //posedge 6
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; sfp_div = 1'b0; //posedge 7
+      #0.5 clk = 1'b0; sfp_div = 1'b0; #0.5 clk = 1'b1;  //posedge 7
       for (s = 0; s < sfp_div_lat; s = s + 1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; kmem_wr = 1'b1; //posedge 8
+      #0.5 clk = 1'b0; kmem_wr = 1'b1; #0.5 clk = 1'b1;  //posedge 8
       $display("");
       $display("estimated:     %7d %7d %7d %7d %7d %7d %7d %7d ", 
                                 estimated[q*col + 0], estimated[q*col + 1], 
@@ -311,14 +314,17 @@ module core_tb;
                                 estimated[q*col + 4], estimated[q*col + 5], 
                                 estimated[q*col + 6], estimated[q*col + 7]);
 
-      #0.5 clk = 1'b0; #0.5 clk = 1'b1; kmem_wr = 1'b0; //posedge 9
+      #0.5 clk = 1'b0; kmem_wr = 1'b0; //posedge 9
       pmem_add = pmem_add + 1;
       qkmem_add = qkmem_add + 1;
+      #0.5 clk = 1'b1; 
     end
 
     for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+    #0.5 clk = 1'b0; 
     sfp_processing = 1'b0;
     pmem_rd = 1'b0;
+    #0.5 clk = 1'b1; 
    
     $display("------------------------------------------------------------");
     $display("Please check manually, since there's no output port for kmem.");
@@ -334,11 +340,14 @@ module core_tb;
 
     $display("");
     $display("VN Product Phase");
+    #0.5 clk = 1'b0;
     VN_mode = 1'b1;
     reset = 1'b1;
+    #0.5 clk = 1'b1;
     for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
+    #0.5 clk = 1'b0; 
     reset = 1'b0;
-    
+    #0.5 clk = 1'b1; 
 
 
   ///// V data txt reading /////
@@ -355,8 +364,10 @@ module core_tb;
 
   ///// Norm data txt reading /////
   $display("##### norm data txt reading #####");
-  for (q=0; q<10; q=q+1) #0.5 clk = 1'b0; #0.5 clk = 1'b1;   
+  for (q=0; q<10; q=q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end   
+  #0.5 clk = 1'b0; 
   reset = 0;
+  #0.5 clk = 1'b1; 
   
 
   `ifdef LOAD_OTHER_NORM_FILE
@@ -401,10 +412,13 @@ module core_tb;
 
 ///// Qmem writing  /////
 $display("##### Qmem writing  #####");
+  #0.5 clk = 1'b0;
   qkmem_add = 0;
+  #0.5 clk = 1'b1;
+  
   for (q=0; q<total_cycle; q=q+1) begin
 
-    #0.5 clk = 1'b0;  
+    #0.5 clk = 1'b0; 
     qmem_wr = 1;  if (q>0) qkmem_add = qkmem_add + 1; 
     
     mem_in[1*bw-1:0*bw] = V_T[q][7];
@@ -415,7 +429,7 @@ $display("##### Qmem writing  #####");
     mem_in[6*bw-1:5*bw] = V_T[q][2];
     mem_in[7*bw-1:6*bw] = V_T[q][1];
     mem_in[8*bw-1:7*bw] = V_T[q][0];
-
+     
     #0.5 clk = 1'b1;  
 
   end

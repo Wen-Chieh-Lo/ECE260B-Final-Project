@@ -119,12 +119,19 @@ In addition, minor modifications were made to the professor-provided testbench t
 \end{table}
 
 \subsection{Step 2: Output Normalization}
-The single-core MAC array was integrated with the SFP row block. Behavioral simulations verified that the accumulated sums were correctly utilized to normalize the partial sums.
-(Replace \texttt{temp.png} when the final waveform is finalized).
+The single-core MAC array was integrated with the SFP (Softmax with Fixed-Point) row block. The SFP block normalizes the partial sums row by row in two phases: \textit{accumulation} and \textit{division}. 
+
+During the \textbf{accumulation (acc)} phase, the block calculates the row energy by summing the absolute values of the incoming partial sums from the MAC array ($S_i = \sum |sfp\_in[j]|$). 
+
+In the \textbf{division (div)} phase, each absolute partial sum is divided by the global row sum to produce the normalized output. To support multi-core scaling, the global sum combines the local core's sum ($S_i$) with the sum from the other core ($sum\_in$). 
+
+Since the theoretical output of the normalization falls within the range $[0, 1]$, integer division would yield zero for almost all values. To address this, a fixed-point scaling mechanism is introduced using the \texttt{out\_shift} parameter. The numerator is logically left-shifted by \texttt{out\_shift} bits before division: 
+\[ sfp\_div\_out[c] = \text{truncate}\left(\frac{|sfp\_in[c]| \ll out\_shift}{S_i + sum\_in}\right) \]
+This shift defines the fractional precision of the output. For example, a default \texttt{out\_shift = 7} allocates 7 bits for the fractional part, mapping the $[0, 1]$ range to $[0, 128]$ in the 8-bit output. Behavioral simulations verified that these calculations correctly normalize the partial sums. Figure~\ref{fig:s2_wave} shows the simulation waveform demonstrating the functional correctness of the Step 2 design, with the output matching the expected normalized values.
 
 \begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.30\textwidth]{temp.png}}
-    \caption{Behavioral Simulation Waveform / TB for Output Normalization.}
+    \centerline{\includegraphics[width=0.45\textwidth]{Step2_images/waveform.png}}
+    \caption{Step 2 Simulation Waveform demonstrating functional correctness of Output Normalization.}
     \label{fig:s2_wave}
 \end{figure}
 

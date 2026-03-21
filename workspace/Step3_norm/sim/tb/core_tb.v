@@ -362,7 +362,7 @@ module core_tb;
 
   ///// Norm data txt reading /////
   $display("##### norm data txt reading #####");
-  for (q=0; q<10; q=q+1) #0.5 clk = 1'b0; #0.5 clk = 1'b1;   
+  for (q=0; q<10; q=q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end   
   reset = 0;
   
 

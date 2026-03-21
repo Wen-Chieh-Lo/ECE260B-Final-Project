@@ -86,7 +86,7 @@ assign kmem_wr  = inst[2];
 // assign pmem_wr  = inst[0];
 
 assign mac_in  = inst[6] ? kmem_out : qmem_out;
-assign out = pmem_out;
+assign out = (pmem_rd && pmem_add < 9) ? pmem_out : 0;
 
 
 mac_array #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) mac_array_instance (
