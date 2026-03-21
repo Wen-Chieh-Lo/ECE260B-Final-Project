@@ -218,13 +218,13 @@ The design was expanded to a full dual-core architecture. This step focused on n
 \end{table}
 
 \subsection{Step 5: Alphas (Architecture Optimization)}
-Initial synthesis results highlighted a massive timing violation (Worst Negative Slack $\approx$ -23.9\,ns) primarily due to deep combinational logic in the SFP row's absolute sum and division calculations. To achieve timing closure for a 1.0\,ns clock period, aggressive RTL repipelining was implemented:
+Initial synthesis results highlighted a massive timing violation (Worst Negative Slack $\approx$ -23.9\,ns) primarily due to deep combinational logic in the SFP row's absolute sum and division calculations. To achieve timing closure for a 1.0\,ns clock period, we added 3-stage pipeline in the accumulation and also add \texttt{-retime} to meet the timing requirement:
 \begin{itemize}
     \item \textbf{Divider Optimization:} The combinational divider was replaced with a multi-cycle long division FSM (\texttt{div\_longdiv}).
 
     \item \textbf{Multi-cycle Path Constraint:} Multi-cycle path constraints were applied to the divider to correctly model its multi-cycle behavior during timing analysis , and the RTL design adjust accordingly by using a FSM to control multicycle path state. (\texttt{div\_MCP}). 
 
-    \item \textbf{Pipelining: Adder Tree Optimization:} The row energy accumulator was split into a 2-stage pipeline (\texttt{sum8\_2stage}).
+    \item \textbf{Pipelining: Adder Tree Optimization:} The row energy accumulator was redesigned as a 3-stage pipelined reduction tree. After the 8 parallel multipliers, one pipeline stage captures the multiplication results, the next stage performs four pairwise additions, and the final stage reduces the partial sums to produce the accumulated row energy.
 
     \item \textbf{Chip interface and controller design: } Chip interface(picture + example usage of QK-Norm-VN), Chip mem external access control(FSM+block diagram), Chip internal data flow control(FSM+block diagram), SFP calculation handshake design(waveform)
 
@@ -277,7 +277,7 @@ ensuring approximately 30\% of rows satisfy $S_i < T$. The sparsity is defined a
 In RTL, the accumulation from both cores is combined as \texttt{sum\_2core}, and the skip condition is evaluated via \texttt{sum\_2core < SFP\_THRESHOLD}. When triggered, the divisor is gated to zero (\texttt{sum\_2core\_gated}) and fed into the divider (e.g., \texttt{div\_longdiv}), allowing its FSM to bypass computation and force zero outputs without modifying the control flow. The same criterion is replicated in the testbench to count skipped rows and compute sparsity.
 
 \textbf{Results.}
-Using 10{,}000 samples for calibration and 1{,}000 independent datasets for evaluation, the measured sparsity is 34.975\%, close to the 30\% target. The deviation is attributed to distribution variance, demonstrating that the threshold generalizes well and that the RTL correctly implements sparsity-aware skipping.
+Using 10{,}000 samples for searching threshold, the threshold for sparsity we get is 169503. With this threhold, we test test with 1000 other random generated data ,and the measured sparsity we get is 34.975\%, close to the 30\% target. The deviation is attributed to distribution variance, demonstrating that the threshold generalizes well and that the RTL correctly implements sparsity-aware skipping.
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=0.30\textwidth]{Step6_images/Step6corelayout.png}}
     \caption{Sparsity-Aware Attention Dual-Core Layout.}
