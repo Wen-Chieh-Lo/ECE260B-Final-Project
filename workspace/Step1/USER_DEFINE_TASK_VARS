@@ -10,7 +10,7 @@
 # sim / gls options: fullchip | core | mac | sfp_row | sfp_row_dual  (built-in default: fullchip)
 # syn options: core | sfp_row | mac                           (built-in default: core)
 # If TARGET is a sim-only value (e.g. fullchip), syn falls back to its built-in default.
-TARGET = mac
+TARGET = core
 
 # Synthesis effort level (make syn / make all)
 # Options: low | medium | high

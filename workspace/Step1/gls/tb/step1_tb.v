@@ -54,7 +54,7 @@ module step1_tb;
   );
 
   initial begin
-    $dumpfile("sim/waveform/step1.vcd");
+    $dumpfile("gls/waveform/step1.vcd");
     $dumpvars(0, step1_tb);
 
     $display("##### Q data txt reading #####");
