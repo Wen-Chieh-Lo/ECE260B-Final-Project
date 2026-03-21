@@ -402,20 +402,16 @@ module fullchip_sepclk_tb;
       end
       tick0; tick0;
 
-      // Step 1: accumulate C0's partial sum
+      // Step 1: accumulate C0's partial sum from pmem
       acc_c0 = 1; tick0;
       acc_c0 = 0; tick0;
       tick0; tick0; tick0; tick0;
 
-      // Step 2: write C0's sum into fifo0 (C0->C1) via div pulse
-      // div triggers the core to push ext_fifo_in_0 into fifo_inst_ext_core0_1
-      div_c0 = 1; tick0;
-      div_c0 = 0; tick0;
-
-      // Signal C1 that row q0's C0 sum is now in the FIFO
+      // Step 2: signal C1 that C0 is ready — C1 can now acc and push its sum
+      // (C0 has not yet pushed to fifo0; we signal intent so C1 starts in parallel)
       c0_sfp_wrote[q0] = 1;
 
-      // Step 3: wait for C1 to write its sum for this row into fifo1 (C1->C0)
+      // Step 3: wait for C1 to have pushed its sum into fifo1 (C1->C0)
       guard0 = 0;
       while (!c1_sfp_wrote[q0] && guard0 < FIFO_TIMEOUT) begin
         tick0; guard0 = guard0 + 1;
@@ -425,7 +421,7 @@ module fullchip_sepclk_tb;
         $finish;
       end
 
-      // Step 4: wait for C1's sum to physically arrive in fifo1 (C1->C0)
+      // Step 4: wait for C1's sum to physically appear in fifo1 (CDC latency)
       guard0 = 0;
       while (fifo1_empty !== 1'b0 && guard0 < FIFO_TIMEOUT) begin
         tick0; guard0 = guard0 + 1;
@@ -435,11 +431,16 @@ module fullchip_sepclk_tb;
         $finish;
       end
 
-      // Step 5: write N into kmem (uses both sums now present)
+      // Step 5: NOW div — sfp_sum_in_0 has latched C1's sum, denominator is correct
+      // div also pushes C0's accumulated sum into fifo0 (C0->C1)
+      div_c0 = 1; tick0;
+      div_c0 = 0; tick0;
+
+      // Step 6: store computed N into kmem
       kmem_wr_c0 = 1; tick0;
       kmem_wr_c0 = 0; tick0;
 
-      // Wait for C0->C1 FIFO to drain before next row (avoid overflow)
+      // Wait for fifo0 (C0->C1) to drain before next row to avoid overflow
       guard0 = 0;
       while (fifo0_empty !== 1'b1 && guard0 < FIFO_TIMEOUT) begin
         tick0; guard0 = guard0 + 1;
@@ -651,7 +652,7 @@ module fullchip_sepclk_tb;
         qkmem_add_c1 = qkmem_add_c1 + 1;
       end
 
-      // Wait for C0 to have written its sum for this row first
+      // Wait for C0 to signal it has accumulated (c0_sfp_wrote means C0 is ready)
       guard1 = 0;
       while (!c0_sfp_wrote[q1] && guard1 < FIFO_TIMEOUT) begin
         tick1; guard1 = guard1 + 1;
@@ -678,27 +679,28 @@ module fullchip_sepclk_tb;
         $finish;
       end
 
-      // Extra margin: sfp_sum_in_1 sample-and-hold needs clk1 edges to latch
+      // Extra margin: sfp_sum_in_1 sample-and-hold needs clk1 edges to latch C0's sum
       tick1; tick1; tick1; tick1;
 
-      // Write C1's sum to fifo1 (C1->C0) via div pulse
+      // div: sfp_sum_in_1 now holds C0's sum; denominator = sum_C1 + sum_C0 (correct)
+      // Also pushes C1's accumulated sum into fifo1 (C1->C0)
       div_c1 = 1; tick1;
       div_c1 = 0; tick1;
 
-      // Signal C0 that C1's sum for this row is now in the FIFO
+      // Signal C0 that C1's sum is now in fifo1 and div has fired with correct denom
       c1_sfp_wrote[q1] = 1;
 
-      // Write N into kmem
+      // Store N into kmem
       kmem_wr_c1 = 1; tick1;
       kmem_wr_c1 = 0; tick1;
 
-      // Wait for C1->C0 FIFO to drain before next row
+      // Wait for fifo1 (C1->C0) to drain before next row to avoid overflow
       guard1 = 0;
-      while (fifo0_empty !== 1'b1 && guard1 < FIFO_TIMEOUT) begin
+      while (fifo1_empty !== 1'b1 && guard1 < FIFO_TIMEOUT) begin
         tick1; guard1 = guard1 + 1;
       end
       if (guard1 >= FIFO_TIMEOUT) begin
-        $display("TIMEOUT (C1 SFP drain row %0d): fifo0_empty never went high.", q1);
+        $display("TIMEOUT (C1 SFP drain row %0d): fifo1_empty never went high.", q1);
         $finish;
       end
     end
