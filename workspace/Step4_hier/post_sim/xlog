@@ -1,0 +1,211 @@
+TOOL:	xrun(64)	20.09-s017: Started on Mar 21, 2026 at 02:23:43 PDT
+xrun(64): 20.09-s017: (c) Copyright 1995-2021 Cadence Design Systems, Inc.
+Loading snapshot worklib.fullchip_sepclk_tb:v .................... Done
+xcelium> source /software/ECE/XCELIUM-2009/tools/xcelium/files/xmsimrc
+xcelium> run
+##### Q data reading #####
+##### K data reading #####
+##### V data reading #####
+xmsim: *W,VCDFOP: Unable to open VCD file ../gls/waveform/fullchip_sepclk.vcd (check file permissions).
+            Time: 0 FS + 1
+
+##### Qmem writing (C0) #####
+##### Qmem writing (C1) #####
+##### Kmem writing (C0) #####
+##### K loading (C0) #####
+##### Execute QK (C0) #####
+##### ofifo -> pmem (C0 QK) #####
+##### Kmem writing (C1) #####
+##### QK verification (C0) #####
+  [row]  RTL   :    col0    col1    col2    col3    col4    col5    col6    col7
+   [0]  RTL   :      52     -24     -21     -49     -73     -67      24     -24
+         golden:      93     -76     -20     -43      -7     -92      94      51
+       >>> col0 MISMATCH (RTL      -24 != golden       51)
+       >>> col1 MISMATCH (RTL       24 != golden       94)
+       >>> col2 MISMATCH (RTL      -67 != golden      -92)
+       >>> col3 MISMATCH (RTL      -73 != golden       -7)
+       >>> col4 MISMATCH (RTL      -49 != golden      -43)
+       >>> col5 MISMATCH (RTL      -21 != golden      -20)
+       >>> col6 MISMATCH (RTL      -24 != golden      -76)
+       >>> col7 MISMATCH (RTL       52 != golden       93)
+       [MISMATCH]
+   [1]  RTL   :      38     -84      27     -65      50     -93      63       3
+         golden:      52     -24     -21     -49     -73     -67      24     -24
+       >>> col0 MISMATCH (RTL        3 != golden      -24)
+       >>> col1 MISMATCH (RTL       63 != golden       24)
+       >>> col2 MISMATCH (RTL      -93 != golden      -67)
+       >>> col3 MISMATCH (RTL       50 != golden      -73)
+       >>> col4 MISMATCH (RTL      -65 != golden      -49)
+       >>> col5 MISMATCH (RTL       27 != golden      -21)
+       >>> col6 MISMATCH (RTL      -84 != golden      -24)
+       >>> col7 MISMATCH (RTL       38 != golden       52)
+       [MISMATCH]
+   [2]  RTL   :      33      71     -74     168      17      71     125     258
+         golden:      38     -84      27     -65      50     -93      63       3
+       >>> col0 MISMATCH (RTL      258 != golden        3)
+       >>> col1 MISMATCH (RTL      125 != golden       63)
+       >>> col2 MISMATCH (RTL       71 != golden      -93)
+       >>> col3 MISMATCH (RTL       17 != golden       50)
+       >>> col4 MISMATCH (RTL      168 != golden      -65)
+       >>> col5 MISMATCH (RTL      -74 != golden       27)
+       >>> col6 MISMATCH (RTL       71 != golden      -84)
+       >>> col7 MISMATCH (RTL       33 != golden       38)
+       [MISMATCH]
+   [3]  RTL   :      80      22     -10     -60     -10      -8      13      78
+         golden:      33      71     -74     168      17      71     125     258
+       >>> col0 MISMATCH (RTL       78 != golden      258)
+       >>> col1 MISMATCH (RTL       13 != golden      125)
+       >>> col2 MISMATCH (RTL       -8 != golden       71)
+       >>> col3 MISMATCH (RTL      -10 != golden       17)
+       >>> col4 MISMATCH (RTL      -60 != golden      168)
+       >>> col5 MISMATCH (RTL      -10 != golden      -74)
+       >>> col6 MISMATCH (RTL       22 != golden       71)
+       >>> col7 MISMATCH (RTL       80 != golden       33)
+       [MISMATCH]
+   [4]  RTL   :      42     -97       1     -45      26     -98      68      18
+         golden:      80      22     -10     -60     -10      -8      13      78
+       >>> col0 MISMATCH (RTL       18 != golden       78)
+       >>> col1 MISMATCH (RTL       68 != golden       13)
+       >>> col2 MISMATCH (RTL      -98 != golden       -8)
+       >>> col3 MISMATCH (RTL       26 != golden      -10)
+       >>> col4 MISMATCH (RTL      -45 != golden      -60)
+       >>> col5 MISMATCH (RTL        1 != golden      -10)
+       >>> col6 MISMATCH (RTL      -97 != golden       22)
+       >>> col7 MISMATCH (RTL       42 != golden       80)
+       [MISMATCH]
+   [5]  RTL   :     -19     -99      48       1      99      19      -7      48
+         golden:      42     -97       1     -45      26     -98      68      18
+       >>> col0 MISMATCH (RTL       48 != golden       18)
+       >>> col1 MISMATCH (RTL       -7 != golden       68)
+       >>> col2 MISMATCH (RTL       19 != golden      -98)
+       >>> col3 MISMATCH (RTL       99 != golden       26)
+       >>> col4 MISMATCH (RTL        1 != golden      -45)
+       >>> col5 MISMATCH (RTL       48 != golden        1)
+       >>> col6 MISMATCH (RTL      -99 != golden      -97)
+       >>> col7 MISMATCH (RTL      -19 != golden       42)
+       [MISMATCH]
+   [6]  RTL   :     -63      46      41       2     128      87     -46     -51
+         golden:     -19     -99      48       1      99      19      -7      48
+       >>> col0 MISMATCH (RTL      -51 != golden       48)
+       >>> col1 MISMATCH (RTL      -46 != golden       -7)
+       >>> col2 MISMATCH (RTL       87 != golden       19)
+       >>> col3 MISMATCH (RTL      128 != golden       99)
+       >>> col4 MISMATCH (RTL        2 != golden        1)
+       >>> col5 MISMATCH (RTL       41 != golden       48)
+       >>> col6 MISMATCH (RTL       46 != golden      -99)
+       >>> col7 MISMATCH (RTL      -63 != golden      -19)
+       [MISMATCH]
+   [7]  RTL   :       x       x       x       x       x       x       x       x
+         golden:     -63      46      41       2     128      87     -46     -51
+       >>> col0 MISMATCH (RTL        x != golden      -51)
+       >>> col1 MISMATCH (RTL        x != golden      -46)
+       >>> col2 MISMATCH (RTL        x != golden       87)
+       >>> col3 MISMATCH (RTL        x != golden      128)
+       >>> col4 MISMATCH (RTL        x != golden        2)
+       >>> col5 MISMATCH (RTL        x != golden       41)
+       >>> col6 MISMATCH (RTL        x != golden       46)
+       >>> col7 MISMATCH (RTL        x != golden      -63)
+       [MISMATCH]
+--- C0 QK: 64 mismatch(es) ---
+##### SFP (C0) #####
+##### K loading (C1) #####
+##### Execute QK (C1) #####
+##### ofifo -> pmem (C1 QK) #####
+##### QK verification (C1) #####
+  [row]  RTL   :    col0    col1    col2    col3    col4    col5    col6    col7
+   [0]  RTL   :      -5     -71     -33     -48     -41     -19     -23     -52
+         golden:     -48     -49     -45     -43     -63     -33     -86     -86
+       >>> col0 MISMATCH (RTL      -52 != golden      -86)
+       >>> col1 MISMATCH (RTL      -23 != golden      -86)
+       >>> col2 MISMATCH (RTL      -19 != golden      -33)
+       >>> col3 MISMATCH (RTL      -41 != golden      -63)
+       >>> col4 MISMATCH (RTL      -48 != golden      -43)
+       >>> col5 MISMATCH (RTL      -33 != golden      -45)
+       >>> col6 MISMATCH (RTL      -71 != golden      -49)
+       >>> col7 MISMATCH (RTL       -5 != golden      -48)
+       [MISMATCH]
+   [1]  RTL   :     -28     -49      21     -43      -3     -85     -55    -105
+         golden:      -5     -71     -33     -48     -41     -19     -23     -52
+       >>> col0 MISMATCH (RTL     -105 != golden      -52)
+       >>> col1 MISMATCH (RTL      -55 != golden      -23)
+       >>> col2 MISMATCH (RTL      -85 != golden      -19)
+       >>> col3 MISMATCH (RTL       -3 != golden      -41)
+       >>> col4 MISMATCH (RTL      -43 != golden      -48)
+       >>> col5 MISMATCH (RTL       21 != golden      -33)
+       >>> col6 MISMATCH (RTL      -49 != golden      -71)
+       >>> col7 MISMATCH (RTL      -28 != golden       -5)
+       [MISMATCH]
+   [2]  RTL   :     -37     143     -17      34     -27     120     -51      95
+         golden:     -28     -49      21     -43      -3     -85     -55    -105
+       >>> col0 MISMATCH (RTL       95 != golden     -105)
+       >>> col1 MISMATCH (RTL      -51 != golden      -55)
+       >>> col2 MISMATCH (RTL      120 != golden      -85)
+       >>> col3 MISMATCH (RTL      -27 != golden       -3)
+       >>> col4 MISMATCH (RTL       34 != golden      -43)
+       >>> col5 MISMATCH (RTL      -17 != golden       21)
+       >>> col6 MISMATCH (RTL      143 != golden      -49)
+       >>> col7 MISMATCH (RTL      -37 != golden      -28)
+       [MISMATCH]
+   [3]  RTL   :    -138     -80     -37      75     -90      81     -56     -35
+         golden:     -37     143     -17      34     -27     120     -51      95
+       >>> col0 MISMATCH (RTL      -35 != golden       95)
+       >>> col1 MISMATCH (RTL      -56 != golden      -51)
+       >>> col2 MISMATCH (RTL       81 != golden      120)
+       >>> col3 MISMATCH (RTL      -90 != golden      -27)
+       >>> col4 MISMATCH (RTL       75 != golden       34)
+       >>> col5 MISMATCH (RTL      -37 != golden      -17)
+       >>> col6 MISMATCH (RTL      -80 != golden      143)
+       >>> col7 MISMATCH (RTL     -138 != golden      -37)
+       [MISMATCH]
+   [4]  RTL   :       7     -16       7     -88      -8     -92     -45     -61
+         golden:    -138     -80     -37      75     -90      81     -56     -35
+       >>> col0 MISMATCH (RTL      -61 != golden      -35)
+       >>> col1 MISMATCH (RTL      -45 != golden      -56)
+       >>> col2 MISMATCH (RTL      -92 != golden       81)
+       >>> col3 MISMATCH (RTL       -8 != golden      -90)
+       >>> col4 MISMATCH (RTL      -88 != golden       75)
+       >>> col5 MISMATCH (RTL        7 != golden      -37)
+       >>> col6 MISMATCH (RTL      -16 != golden      -80)
+       >>> col7 MISMATCH (RTL        7 != golden     -138)
+       [MISMATCH]
+   [5]  RTL   :      -1      22      23     -34      46     -40     -20      44
+         golden:       7     -16       7     -88      -8     -92     -45     -61
+       >>> col0 MISMATCH (RTL       44 != golden      -61)
+       >>> col1 MISMATCH (RTL      -20 != golden      -45)
+       >>> col2 MISMATCH (RTL      -40 != golden      -92)
+       >>> col3 MISMATCH (RTL       46 != golden       -8)
+       >>> col4 MISMATCH (RTL      -34 != golden      -88)
+       >>> col5 MISMATCH (RTL       23 != golden        7)
+       >>> col6 MISMATCH (RTL       22 != golden      -16)
+       >>> col7 MISMATCH (RTL       -1 != golden        7)
+       [MISMATCH]
+   [6]  RTL   :      -1      86      78     127      74      16      37     -22
+         golden:      -1      22      23     -34      46     -40     -20      44
+       >>> col0 MISMATCH (RTL      -22 != golden       44)
+       >>> col1 MISMATCH (RTL       37 != golden      -20)
+       >>> col2 MISMATCH (RTL       16 != golden      -40)
+       >>> col3 MISMATCH (RTL       74 != golden       46)
+       >>> col4 MISMATCH (RTL      127 != golden      -34)
+       >>> col5 MISMATCH (RTL       78 != golden       23)
+       >>> col6 MISMATCH (RTL       86 != golden       22)
+       [MISMATCH]
+   [7]  RTL   :       x       x       x       x       x       x       x       x
+         golden:      -1      86      78     127      74      16      37     -22
+       >>> col0 MISMATCH (RTL        x != golden      -22)
+       >>> col1 MISMATCH (RTL        x != golden       37)
+       >>> col2 MISMATCH (RTL        x != golden       16)
+       >>> col3 MISMATCH (RTL        x != golden       74)
+       >>> col4 MISMATCH (RTL        x != golden      127)
+       >>> col5 MISMATCH (RTL        x != golden       78)
+       >>> col6 MISMATCH (RTL        x != golden       86)
+       >>> col7 MISMATCH (RTL        x != golden       -1)
+       [MISMATCH]
+--- C1 QK: 63 mismatch(es) ---
+##### SFP (C1) #####
+TIMEOUT (C0 SFP row 1): fifo1_empty never went low. CDC hang?
+Simulation complete via $finish(1) at time 1149400 PS + 0
+./netlist/fullchip_sepclk_tb.v:408         $finish;
+xcelium> exit
+xmsim: Memory Usage - Final: 369.3M, Peak: 369.3M, Peak virtual: 485.6M
+xmsim: CPU Usage - 0.3s system + 2.1s user = 2.3s total (2.4s, 97.6% cpu)
+TOOL:	xrun(64)	20.09-s017: Exiting on Mar 21, 2026 at 02:23:46 PDT  (total: 00:00:03)
