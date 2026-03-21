@@ -4,102 +4,10 @@
 	$display("");
   endtask
 
-`ifndef TB_FULLCHIP
-	integer skip_count_c0;
-	integer skip_count_c1;
-	integer skip_count_total;
-	integer skip_total_count;
-	real    skip_percent;
-	integer skip_count_c0_all;
-	integer skip_count_c1_all;
-	integer skip_count_total_all;
-	integer skip_total_count_all;
-	real    skip_percent_all;	
-	`define SKIP_SIG_C0 `TB_TOP.fullchip_instance.core_instance0.sfp_instance.skip
-	`define SKIP_SIG_C1 `TB_TOP.fullchip_instance.core_instance1.sfp_instance.skip
-	task ResetSkipCountFullchip;
-	begin
-		skip_count_c0    = 0;
-		skip_count_c1    = 0;
-		skip_count_total = 0;
-		skip_total_count = 0;
-		skip_percent     = 0.0;
-		
-	end
-	endtask
-	task SampleSkipFullchip;
-		begin
-		if (`SKIP_SIG_C0)
-			skip_count_c0 = skip_count_c0 + 1;
+// (optional) fullchip skip stats — was under TB_FULLCHIP; use fullchip tasks below when TB_FULLCHIP defined
+// 	integer skip_count_c0;
+// 	...
 
-		if (`SKIP_SIG_C1)
-			skip_count_c1 = skip_count_c1 + 1;
-		end
-	endtask
-	task AccumulateSkipCountAllFullchip;
-	begin
-	skip_count_c0_all    = skip_count_c0_all + skip_count_c0;
-	skip_count_c1_all    = skip_count_c1_all + skip_count_c1;
-	skip_count_total_all = skip_count_total_all + skip_count_total;
-	skip_total_count_all = skip_total_count_all + skip_total_count;
-	end
-	endtask
-	task PrintSkipSummaryAllFullchip;
-	begin
-	if (skip_total_count_all > 0)
-		skip_percent_all = (100.0 * skip_count_total_all) / skip_total_count_all;
-	else
-		skip_percent_all = 0.0;
-
-	$display("======= OVERALL SKIP SUMMARY =======");
-	$display("  C0 total skip : %0d", skip_count_c0_all);
-	$display("  C1 total skip : %0d", skip_count_c1_all);
-	$display("  Total skip    : %0d / %0d", skip_count_total_all, skip_total_count_all);
-	$display("  Skip percent  : %0f%%", skip_percent_all);
-	$display("====================================");
-	$display("");
-	end
-	endtask
-  task LoadAndWriteQ(input string path, output logic was_vdata);
-	integer fd, i;
-	logic is_vdata;
-	begin
-	  is_vdata = 0;
-	  for (i = 0; i + 5 <= path.len(); i = i + 1)
-	    if (path.substr(i, i+4) == "vdata") is_vdata = 1;
-	  was_vdata = is_vdata;
-	  fd = $fopen(path, "r");
-	  if (fd != 0) begin
-	    for (q = 0; q < `TOTAL_CYCLE; q++)
-	      for (j = 0; j < `PR; j++) begin
-	        qkvn_scan_file = $fscanf(fd, "%d\n", captured_data);
-	        if (is_vdata) V_T[j][q] = captured_data; else Q[q][j] = captured_data;
-	      end
-	    $fclose(fd);
-	    WriteMemToCore(`EXT_CMD_QMEM_WR, is_vdata ? "V_T" : "Q");
-	  end else
-	    $display("LoadAndWriteQ: not found: %s", path);
-	end
-  endtask
-
-  task LoadAndWriteK(input string path);
-	integer fd;
-	begin
-	  fd = $fopen(path, "r");
-	  if (fd != 0) begin
-	    for (q = 0; q < `TOTAL_CYCLE; q++)
-	      for (j = 0; j < `PR; j++) begin
-	        qkvn_scan_file = $fscanf(fd, "%d\n", captured_data);
-	        K[q][j] = captured_data;
-	      end
-	    $fclose(fd);
-	    WriteMemToCore(`EXT_CMD_KMEM_WR, "K");
-	  end else
-	    $display("LoadAndWriteK: not found: %s", path);
-	end
-  endtask
-
-  `endif
   task MapModeToValue(input string arg, output logic [2:0] mode, output logic ok);
 	integer parsed;
 	begin
@@ -287,6 +195,45 @@
 	@(negedge clk);
   endtask
 
+  task LoadAndWriteQ(input string path, output logic was_vdata);
+	integer fd, i;
+	logic is_vdata;
+	begin
+	  is_vdata = 0;
+	  for (i = 0; i + 5 <= path.len(); i = i + 1)
+	    if (path.substr(i, i+4) == "vdata") is_vdata = 1;
+	  was_vdata = is_vdata;
+	  fd = $fopen(path, "r");
+	  if (fd != 0) begin
+	    for (q = 0; q < `TOTAL_CYCLE; q++)
+	      for (j = 0; j < `PR; j++) begin
+	        qkvn_scan_file = $fscanf(fd, "%d\n", captured_data);
+	        if (is_vdata) V_T[j][q] = captured_data; else Q[q][j] = captured_data;
+	      end
+	    $fclose(fd);
+	    WriteMemToCore(`EXT_CMD_QMEM_WR, is_vdata ? "V_T" : "Q");
+	  end else
+	    $display("LoadAndWriteQ: not found: %s", path);
+	end
+  endtask
+
+  task LoadAndWriteK(input string path);
+	integer fd;
+	begin
+	  fd = $fopen(path, "r");
+	  if (fd != 0) begin
+	    for (q = 0; q < `TOTAL_CYCLE; q++)
+	      for (j = 0; j < `PR; j++) begin
+	        qkvn_scan_file = $fscanf(fd, "%d\n", captured_data);
+	        K[q][j] = captured_data;
+	      end
+	    $fclose(fd);
+	    WriteMemToCore(`EXT_CMD_KMEM_WR, "K");
+	  end else
+	    $display("LoadAndWriteK: not found: %s", path);
+	end
+  endtask
+
   task WaitCoreDone;
 	begin
 		wait (!status[3]);
@@ -331,11 +278,18 @@
 				if (unsigned_val[`BW_PSUM-1]) unsigned_val = ~(unsigned_val - 1'b1);
 				sum_abs += unsigned_val;
 			end
-			if (sum_abs == 0) sum_abs = 1;
-			for (c = 0; c < `COL; c++) begin
-				unsigned_val = estimated2_t1[r][c];
-				if (unsigned_val[`BW_PSUM-1]) unsigned_val = ~(unsigned_val - 1'b1);
-				estimated1[r*`COL + c] = {unsigned_val, {`SFP_OUT_SHIFT{1'b0}}} / sum_abs;
+			if (sum_abs < `SFP_THRESHOLD) begin
+				if (`SFP_THRESHOLD > 0)
+					$display("[TB][Norm gate] row %0d: sum = %0d < SFP_THRESHOLD=%0d -> golden N_est forced to 0", r, sum_abs, `SFP_THRESHOLD);
+				for (c = 0; c < `COL; c++)
+					estimated1[r*`COL + c] = 0;
+			end else begin
+				if (sum_abs == 0) sum_abs = 1;
+				for (c = 0; c < `COL; c++) begin
+					unsigned_val = estimated2_t1[r][c];
+					if (unsigned_val[`BW_PSUM-1]) unsigned_val = ~(unsigned_val - 1'b1);
+					estimated1[r*`COL + c] = {unsigned_val, {`SFP_OUT_SHIFT{1'b0}}} / sum_abs;
+				end
 			end
 		end
 		for (t = 0; t < `TOTAL_CYCLE; t++)
@@ -353,6 +307,14 @@
 
   // ========== Fullchip-specific tasks (when TB_FULLCHIP defined) ==========
   `ifdef TB_FULLCHIP
+  // clk0 / clk1 may differ (period/phase); TB must not use a single clk tied to one domain.
+  task WaitNegedgeBothClk;
+    fork
+      @(negedge clk0);
+      @(negedge clk1);
+    join
+  endtask
+
   task LoadAndWriteQFullchip(input string path, output logic was_vdata);
 	integer fd, i;
 	logic is_vdata;
@@ -410,7 +372,7 @@
   endtask
 
   task WriteMemToCore0Fullchip(input [1:0] cmd, input string src);
-	@(negedge clk);
+	@(negedge clk0);
 	mem_cmd_ext0 = cmd; addr_ext0 = 0;
 	for (q = 0; q < `COL; q++) begin
 	  if (src == "K_c0") begin
@@ -429,15 +391,15 @@
 	    mem_in0[5*`BW-1:4*`BW] = V_T[q][3]; mem_in0[6*`BW-1:5*`BW] = V_T[q][2];
 	    mem_in0[7*`BW-1:6*`BW] = V_T[q][1]; mem_in0[8*`BW-1:7*`BW] = V_T[q][0];
 	  end
-	  @(negedge clk);
+	  @(negedge clk0);
 	  addr_ext0 = addr_ext0 + 4'd1;
 	end
 	mem_cmd_ext0 = `EXT_CMD_NO_OP; addr_ext0 = 0;
-	@(negedge clk);
+	@(negedge clk0);
   endtask
 
   task WriteMemToCore1Fullchip(input [1:0] cmd, input string src);
-	@(negedge clk);
+	@(negedge clk1);
 	mem_cmd_ext1 = cmd; addr_ext1 = 0;
 	for (q = 0; q < `COL; q++) begin
 	  if (src == "K_c1") begin
@@ -456,15 +418,15 @@
 	    mem_in1[5*`BW-1:4*`BW] = V_T[q][3]; mem_in1[6*`BW-1:5*`BW] = V_T[q][2];
 	    mem_in1[7*`BW-1:6*`BW] = V_T[q][1]; mem_in1[8*`BW-1:7*`BW] = V_T[q][0];
 	  end
-	  @(negedge clk);
+	  @(negedge clk1);
 	  addr_ext1 = addr_ext1 + 4'd1;
 	end
 	mem_cmd_ext1 = `EXT_CMD_NO_OP; addr_ext1 = 0;
-	@(negedge clk);
+	@(negedge clk1);
   endtask
 
   task WriteMemToCoreFullchip(input [1:0] cmd, input string src0, input string src1);
-	@(negedge clk);
+	WaitNegedgeBothClk;
 	mem_cmd_ext0 = cmd; mem_cmd_ext1 = cmd;
 	addr_ext0 = 0; addr_ext1 = 0;
 	for (q = 0; q < `COL; q++) begin
@@ -500,27 +462,27 @@
 	    mem_in1[5*`BW-1:4*`BW] = V_T[q][3]; mem_in1[6*`BW-1:5*`BW] = V_T[q][2];
 	    mem_in1[7*`BW-1:6*`BW] = V_T[q][1]; mem_in1[8*`BW-1:7*`BW] = V_T[q][0];
 	  end
-	  @(negedge clk);
+	  WaitNegedgeBothClk;
 	  addr_ext0 = addr_ext0 + 4'd1; addr_ext1 = addr_ext1 + 4'd1;
 	end
 	mem_cmd_ext0 = `EXT_CMD_NO_OP; mem_cmd_ext1 = `EXT_CMD_NO_OP;
 	addr_ext0 = 0; addr_ext1 = 0;
-	@(negedge clk);
+	WaitNegedgeBothClk;
   endtask
 
   task VerifyPMEMGoldenFullchip(input int core_id);
 	begin
 	  for (c = 0; c < `COL; c++) golden_col[c] = 7 - c;
 	  err = 0;
-	  @(negedge clk);
-	  mem_cmd_ext0 = (core_id == 0) ? `EXT_CMD_PMEM_RD : `EXT_CMD_NO_OP;
-	  mem_cmd_ext1 = (core_id == 1) ? `EXT_CMD_PMEM_RD : `EXT_CMD_NO_OP;
-	  addr_ext0 = (core_id == 0) ? 4'd0 : 4'd0;
-	  addr_ext1 = (core_id == 1) ? 4'd0 : 4'd0;
-	  @(negedge clk);
-	  for (q = 0; q < `TOTAL_CYCLE; q++) begin
-	    row = q;
-	    if (core_id == 0) begin
+	  if (core_id == 0) begin
+	    @(negedge clk0);
+	    mem_cmd_ext0 = `EXT_CMD_PMEM_RD;
+	    mem_cmd_ext1 = `EXT_CMD_NO_OP;
+	    addr_ext0 = 4'd0;
+	    addr_ext1 = 4'd0;
+	    @(negedge clk0);
+	    for (q = 0; q < `TOTAL_CYCLE; q++) begin
+	      row = q;
 	      $display("  C0 [%0d] RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row,
 	        $signed(pmem_out0[7*`BW_PSUM +: `BW_PSUM]), $signed(pmem_out0[6*`BW_PSUM +: `BW_PSUM]),
 	        $signed(pmem_out0[5*`BW_PSUM +: `BW_PSUM]), $signed(pmem_out0[4*`BW_PSUM +: `BW_PSUM]),
@@ -536,7 +498,19 @@
 	          err++; row_err++;
 	        end
 	      end
-	    end else begin
+	      $display("     %s", (row_err == 0) ? "[OK]" : "[MISMATCH]");
+	      addr_ext0 = addr_ext0 + 1;
+	      @(negedge clk0);
+	    end
+	  end else begin
+	    @(negedge clk1);
+	    mem_cmd_ext0 = `EXT_CMD_NO_OP;
+	    mem_cmd_ext1 = `EXT_CMD_PMEM_RD;
+	    addr_ext0 = 4'd0;
+	    addr_ext1 = 4'd0;
+	    @(negedge clk1);
+	    for (q = 0; q < `TOTAL_CYCLE; q++) begin
+	      row = q;
 	      $display("  C1 [%0d] RTL   : %5d %5d %5d %5d %5d %5d %5d %5d", row,
 	        $signed(pmem_out1[7*`BW_PSUM +: `BW_PSUM]), $signed(pmem_out1[6*`BW_PSUM +: `BW_PSUM]),
 	        $signed(pmem_out1[5*`BW_PSUM +: `BW_PSUM]), $signed(pmem_out1[4*`BW_PSUM +: `BW_PSUM]),
@@ -552,10 +526,10 @@
 	          err++; row_err++;
 	        end
 	      end
+	      $display("     %s", (row_err == 0) ? "[OK]" : "[MISMATCH]");
+	      addr_ext1 = addr_ext1 + 1;
+	      @(negedge clk1);
 	    end
-	    $display("     %s", (row_err == 0) ? "[OK]" : "[MISMATCH]");
-	    if (core_id == 0) addr_ext0 = addr_ext0 + 1; else addr_ext1 = addr_ext1 + 1;
-	    @(negedge clk);
 	  end
 	  mem_cmd_ext0 = `EXT_CMD_NO_OP; mem_cmd_ext1 = `EXT_CMD_NO_OP;
 	  $display("------------------------------------------------------------");
@@ -587,15 +561,19 @@
 	  $display("  reset                   - Reset both cores");
 	  $display("  exit                    - Exit");
 	  $display("  help                    - Show this help");
+	  $display("  (mingu) set_clock_period <ns0> [ns1] - clk0/clk1 full period in ns before fix_set; ns1 defaults to ns0");
+	  $display("  (mingu) set_dump_vcd 0|1|off|on - disable/enable VCD file (default on)");
 	end
   endtask
 
   task PrintSummaryFullchip;
+	real norm_gate_pct_all;
 	begin
 	  $display("");
 	  $display("========== FULLCHIP SIMULATION SUMMARY ==========");
 	  $display("  Parameters: CYCLE=%0d  BW=%0d  PR=%0d  COL=%0d  TOTAL_CYCLE=%0d",
 	    `CYCLE, `BW, `PR, `COL, `TOTAL_CYCLE);
+	  $display("             CYCLE0/CYCLE1 (ns, clk0/clk1 period): %0f / %0f", `CYCLE, `CYCLE1);
 	  $display("             OUTPUT_DIR=%s", `OUTPUT_DIR);
 	  $display("  verifypmem calls: %0d", verify_count);
 	  if (total_mismatches == 0)
@@ -607,6 +585,15 @@
 	        $display("    #%0d: %0d mismatches", c + 1, verify_err[c]);
 	    $display("  Result: FAIL (%0d total mismatches in %0d verifypmem)", total_mismatches, verify_count);
 	  end
+	  if (norm_gate_row_total_all > 0)
+	    norm_gate_pct_all = (100.0 * norm_gate_skip_total_all) / norm_gate_row_total_all;
+	  else
+	    norm_gate_pct_all = 0.0;
+	  $display("------- NORM GATE (TB golden) SKIP (all simulate) -------");
+	  $display("  (rows with sum_c0+sum_c1 < SFP_THRESHOLD -> N_est forced 0)");
+	  $display("  Total skip    : %0d / %0d", norm_gate_skip_total_all, norm_gate_row_total_all);
+	  $display("  Skip percent  : %0f%%", norm_gate_pct_all);
+	  $display("---------------------------------------------------------");
 	  $display("==================================================");
 	  $display("");
 	end
@@ -614,41 +601,55 @@
 
   task Reset2CycFullchip;
 	begin
-	  @(negedge clk);
+	  WaitNegedgeBothClk;
 	  reset = 1;
-	  repeat(2) @(negedge clk);
+	  fork
+	    repeat(2) @(negedge clk0);
+	    repeat(2) @(negedge clk1);
+	  join
 	  reset = 0;
-	  @(negedge clk);
+	  WaitNegedgeBothClk;
 	end
   endtask
 
   task Start1CycFullchip;
 	begin
-	  @(negedge clk);
-	  start0 = 1; start1 = 1;
-	  @(negedge clk);
-	  start0 = 0; start1 = 0;
-	  @(negedge clk);
+	  fork
+	    begin
+	      @(negedge clk0);
+	      start0 = 1;
+	      @(negedge clk0);
+	      start0 = 0;
+	      @(negedge clk0);
+	    end
+	    begin
+	      @(negedge clk1);
+	      start1 = 1;
+	      @(negedge clk1);
+	      start1 = 0;
+	      @(negedge clk1);
+	    end
+	  join
 	end
   endtask
 
   task CoreSetModeFullchip(input [2:0] mode);
 	begin
 	  Reset2CycFullchip;
-	  @(negedge clk);
+	  WaitNegedgeBothClk;
 	  set_mode0 = 1'b1; set_mode1 = 1'b1;
 	  mode_in0 = mode; mode_in1 = mode;
-	  @(negedge clk);
+	  WaitNegedgeBothClk;
 	  set_mode0 = 1'b0; set_mode1 = 1'b0;
 	  mode_in0 = 3'b000; mode_in1 = 3'b000;
-	  @(negedge clk);
+	  WaitNegedgeBothClk;
 	end
   endtask
 
   task WaitCoreDoneFullchip;
 	begin
 	  wait (!busy0 && !busy1);
-	  @(negedge clk);
+	  WaitNegedgeBothClk;
 	end
   endtask
 
@@ -680,7 +681,9 @@
   endtask
 
   task ComputeEstimatedFullchip;
+	integer norm_gate_skip_cnt;
 	begin
+	  norm_gate_skip_cnt = 0;
 	  for (t = 0; t < `TOTAL_CYCLE; t++)
 	    for (q = 0; q < `COL; q++) begin
 	      result_c0[t][q] = 0;
@@ -701,12 +704,24 @@
 	      sum_c1[t] += abs_result_c1[t][q];
 	    end
 	    divisor = sum_c0[t] + sum_c1[t];
-	    if (divisor == 0) divisor = 1;
-	    for (q = 0; q < `COL; q++) begin
-	      N_est_c0[t][q] = (abs_result_c0[t][q] << `SFP_OUT_SHIFT) / divisor;
-	      N_est_c1[t][q] = (abs_result_c1[t][q] << `SFP_OUT_SHIFT) / divisor;
+	    if (divisor < `SFP_THRESHOLD) begin
+	      norm_gate_skip_cnt = norm_gate_skip_cnt + 1;
+	      if (`SFP_THRESHOLD > 0)
+	        $display("[TB][Norm gate] row %0d (dual-core): sum = %0d < SFP_THRESHOLD=%0d -> golden N_est forced to 0", t, divisor, `SFP_THRESHOLD);
+	      for (q = 0; q < `COL; q++) begin
+	        N_est_c0[t][q] = 0;
+	        N_est_c1[t][q] = 0;
+	      end
+	    end else begin
+	      if (divisor == 0) divisor = 1;
+	      for (q = 0; q < `COL; q++) begin
+	        N_est_c0[t][q] = (abs_result_c0[t][q] << `SFP_OUT_SHIFT) / divisor;
+	        N_est_c1[t][q] = (abs_result_c1[t][q] << `SFP_OUT_SHIFT) / divisor;
+	      end
 	    end
 	  end
+	  norm_gate_skip_total_all = norm_gate_skip_total_all + norm_gate_skip_cnt;
+	  norm_gate_row_total_all = norm_gate_row_total_all + `TOTAL_CYCLE;
 	  for (t = 0; t < `TOTAL_CYCLE; t++)
 	    for (q = 0; q < `COL; q++) begin
 	      vn_c0[t][q] = 0;

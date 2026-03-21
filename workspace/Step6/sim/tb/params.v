@@ -9,12 +9,23 @@
 `ifndef H_CYCLE
   `define H_CYCLE    0.5
 `endif
+// Fullchip dual clocks: half-period (ns) for clk0 / clk1. Override: -DH_CYCLE0=0.5 -DH_CYCLE1=0.6
+`ifndef H_CYCLE0
+  `define H_CYCLE0 `H_CYCLE
+`endif
+`ifndef H_CYCLE1
+  `define H_CYCLE1 `H_CYCLE0
+`endif
+`ifndef CYCLE1
+  `define CYCLE1 `CYCLE
+`endif
 `define TIME_OUT   100000
 
 // ----- Output (override with -DOUTPUT_DIR="sim/myout") -----
 `ifndef OUTPUT_DIR
   `define OUTPUT_DIR "sim/waveform"
 `endif
+// NO_DUMP_VCD: mingu / sim_shell "set_dump_vcd 0" adds -DNO_DUMP_VCD; shell TBs skip DumpVCD
 
 // ----- Core architecture -----
 `define TOTAL_CYCLE    8

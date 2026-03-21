@@ -6,14 +6,18 @@
 #
 #   USAGE: ./sim_shell.sh -f in-n-out100-fullchip.mingu
 #
+#   set_clock_period <ns0> [ns1] — clk0 / clk1 period (ns)
+#   set_dump_vcd 0 — disable VCD
+#
 # =============================================================================
 
 set PATTERN sw/pattern/random100
 set_output_dir sim/waveform
 set_sim_stage sim
-set_clock_period 1
+set_dump_vcd 0
+set_clock_period 1 1.2
 set_sim_define SFP_LONGDIV SFP_THRESHOLD=169503
-set_sim_target fullchip_shell
+set_scope fullchip
 fix_set
 
 for i = 0 to 99

@@ -121,7 +121,6 @@ module sfp_row(clk, reset, acc_start, div_start, acc_done, div_done, div_busy, s
   end
 
   assign sum_2core = sum_this_core_r + sum_in_r;
-  // 未達 threshold 的除數視為 0（div_longdiv 走除零 → 商 0）
   assign sum_2core_gated = (sum_2core < SFP_THRESHOLD_VAL)
       ? { (bw_psum+4){1'b0} } : sum_2core;
   assign skip = (sum_2core < SFP_THRESHOLD_VAL);
