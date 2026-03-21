@@ -9,6 +9,7 @@ xrun \
 -xminitialize 0 \
 +xmseq_udp_delay+20ps \
 -nowarn CUVWSP \
++define+SFP_THRESHOLD=169503 \
 -v ./netlist/tcbn65gplus.v \
 -v ./netlist/fullchip.pnr.v \
 ./netlist/fullchip_tb.v
