@@ -134,7 +134,7 @@ module mac_array_tb;
   );
 
   initial begin
-    $dumpfile("sim/waveform/mac_array.vcd");
+    $dumpfile("gls/waveform/mac_array.vcd");
     $dumpvars(0, mac_array_tb);
 
     $display("##### Q data txt reading #####");

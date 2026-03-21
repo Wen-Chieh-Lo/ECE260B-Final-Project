@@ -124,7 +124,7 @@ module fullchip_tb;
   endtask
 
   initial begin
-    $dumpfile("sim/waveform/fullchip.vcd");
+    $dumpfile("gls/waveform/fullchip.vcd");
     $dumpvars(0, fullchip_tb);
 
     mem_in = 0;

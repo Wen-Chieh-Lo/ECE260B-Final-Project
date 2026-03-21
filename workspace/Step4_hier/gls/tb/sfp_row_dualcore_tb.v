@@ -70,7 +70,7 @@ module sfp_row_dualcore_tb;
   always #5 clk = ~clk;
 
   initial begin
-    $dumpfile("sim/waveform/sfp_row_dualcore.vcd");
+    $dumpfile("gls/waveform/sfp_row_dualcore.vcd");
     $dumpvars(0, sfp_row_dualcore_tb);
 
     // Random sum_in (other core's sum) so divisor = sum_this_core + sum_in

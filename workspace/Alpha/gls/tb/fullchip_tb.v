@@ -118,7 +118,7 @@ module fullchip_tb;
 
 	// ========== Initial 1: Data + Golden (no timing) ==========
 	initial begin
-		$dumpfile("sim/waveform/fullchip.vcd");
+		$dumpfile("gls/waveform/fullchip.vcd");
 		$dumpvars(0, fullchip_tb);
 		$display("");
 

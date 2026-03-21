@@ -128,7 +128,7 @@ module fullchip_sepclk_tb;
 
   // ========== Initial 1: Data + Golden (no timing) ==========
   initial begin
-    $dumpfile("sim/waveform/fullchip_sepclk.vcd");
+    $dumpfile("gls/waveform/fullchip_sepclk.vcd");
     $dumpvars(0, fullchip_sepclk_tb);
 
     mismatch_qk_core0 = 0; mismatch_qk_core1 = 0;

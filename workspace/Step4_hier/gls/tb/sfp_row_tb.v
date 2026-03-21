@@ -73,7 +73,7 @@ module sfp_row_tb;
   always #5 clk = ~clk;
 
   initial begin
-    $dumpfile("sim/waveform/sfp_row.vcd");
+    $dumpfile("gls/waveform/sfp_row.vcd");
     $dumpvars(0, sfp_row_tb);
 
     // Clock a few cycles, then release reset
