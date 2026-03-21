@@ -51,7 +51,7 @@ module fullchip_sepclk_tb;
   reg  [pr*bw-1:0]   mem_in_core0;
   reg  [pr*bw-1:0]   mem_in_core1;
   wire [2*pr*bw-1:0] mem_in;
-  assign mem_in = {mem_in_core1, mem_in_core0};
+  //assign mem_in = {mem_in_core1, mem_in_core0};
 
   reg  VN_mode_c0  = 0, VN_mode_c1  = 0;
   reg  div_c0      = 0, div_c1      = 0;
@@ -68,7 +68,7 @@ module fullchip_sepclk_tb;
   reg  pmem_rd_c0  = 0, pmem_rd_c1  = 0;
 
   wire [19:0] inst0, inst1;
-  wire [39:0] inst;
+  //wire [39:0] inst;
 
   assign inst0[19]    = VN_mode_c0;
   assign inst0[18]    = div_c0;
@@ -100,7 +100,7 @@ module fullchip_sepclk_tb;
   assign inst1[1]     = pmem_rd_c1;
   assign inst1[0]     = 1'b0;
 
-  assign inst = {inst1, inst0};
+  //assign inst = {inst1, inst0};
 
   reg [bw_psum-1:0]     temp5b;
   reg [bw_psum*col-1:0] temp16b;
@@ -108,22 +108,27 @@ module fullchip_sepclk_tb;
   wire fifo0_empty, fifo1_empty;
 
   fullchip fullchip_instance (
-    .reset(reset),
+    .reset0(reset),          // core0 domain reset
+    .reset1(reset),          // core1 domain reset
     .clk0(clk0),
     .clk1(clk1),
-    .mem_in(mem_in),
-    .inst(inst),
-    .out(out),
+    .mem_in0(mem_in_core0),
+    .mem_in1(mem_in_core1),
+    .inst0(inst0),
+    .inst1(inst1),
+    .out0(out[bw_psum*col-1:0]),
+    .out1(out[2*bw_psum*col-1:bw_psum*col]),
     .fifo0_empty(fifo0_empty),
     .fifo1_empty(fifo1_empty)
   );
+
 
   task tick0; begin #0.5   clk0=1'b0; #0.5   clk0=1'b1; end endtask
   task tick1; begin #3.14159265358979323846   clk1=1'b0; #3.14159265358979323846 clk1=1'b1; end endtask
 
   // ========== Initial 1: Data + Golden (no timing) ==========
   initial begin
-    $dumpfile("../sim/waveform/fullchip_sepclk.vcd");
+    $dumpfile("../gls/waveform/fullchip_sepclk.vcd");
     $dumpvars(0, fullchip_sepclk_tb);
 
     mismatch_qk_core0 = 0; mismatch_qk_core1 = 0;

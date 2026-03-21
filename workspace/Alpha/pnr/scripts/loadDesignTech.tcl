@@ -1,9 +1,9 @@
 # Load design
-set desdir 		"./netlist"
+set desdir 		"../../syn/gate/"
 set libdir 		"/home/linux/ieng6/ECE260B_WI26_A00/public/PDKdata"
 set design 		"fullchip"
 set netlist 		"$desdir/$design.out.v"
-set sdc 		"./constraints/$design.sdc"
+set sdc 		"../constraints/$design.sdc"
 set best_timing_lib 	"$libdir/lib/tcbn65gplusbc.lib"
 set typical_timing_lib  "$libdir/lib/tcbn65gplustc.lib"
 set worst_timing_lib 	"$libdir/lib/tcbn65gpluswc.lib"
@@ -35,7 +35,7 @@ create_constraint_mode -name CON -sdc_file [list $sdc]
 create_analysis_view -name TC_VIEW -delay_corner TC -constraint_mode CON
 create_analysis_view -name WC_VIEW -delay_corner WC -constraint_mode CON
 create_analysis_view -name BC_VIEW -delay_corner BC -constraint_mode CON
-init_design -setup {TC_VIEW WC_VIEW} -hold {BC_VIEW}
+init_design -setup {TC_VIEW} -hold {BC_VIEW}
 
 set_interactive_constraint_modes {CON}
 setDesignMode -process 65

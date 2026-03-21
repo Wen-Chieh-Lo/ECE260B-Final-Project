@@ -57,12 +57,8 @@ module core_tb;
   reg [bw_psum*col-1:0] temp16b;
 
   wire [bw_psum*col-1:0] pmem_out;
-  wire [bw_psum+3:0] sum_in;
-  wire ext_fifo_wr, ext_fifo_rd;
-  wire [bw_psum+3:0] ext_fifo_in;
   integer golden_col [0:7];  // RTL col c -> golden result[t][golden_col[c]] (chain mapping)
 
-  assign sum_in = {(bw_psum+4){1'b0}};  // single core: no external sum
   assign inst[19] = VN_mode;
   assign inst[18] = sfp_div;            // set by tb so far. usage see sfp_row_tb.
   assign inst[17] = sfp_acc;            // set by tb so far. usage see sfp_row_tb.
@@ -78,25 +74,25 @@ module core_tb;
   assign inst[1] = pmem_rd;
   assign inst[0] = pmem_wr;
 
-  core core_instance (
-    .reset(reset),
+  core #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(pr)) core_instance (
     .clk(clk),
-    .sum_in(sum_in),
+    .sum_in({(bw_psum+4){1'b0}}),
     .mem_in(mem_in),
-    .inst(inst),
     .out(pmem_out),
-    .ext_fifo_wr(ext_fifo_wr),
-    .ext_fifo_in(ext_fifo_in),
-    .ext_fifo_rd(ext_fifo_rd)
+    .inst(inst),
+    .reset(reset),
+    .ext_fifo_wr(),
+    .ext_fifo_in(),
+    .ext_fifo_rd()
   );
 
   initial begin
-    $dumpfile("../gls/waveform/core.vcd");
+    $dumpfile("sim/waveform/core.vcd");
     $dumpvars(0, core_tb);
 
 
     $display("##### Q data txt reading #####");
-    qkvn_file = $fopen("../gls/pattern/qdata.txt", "r");
+    qkvn_file = $fopen("sim/pattern/qdata.txt", "r");
     for (q = 0; q < total_cycle; q = q+1)
       for (j = 0; j < pr; j = j+1) begin
         qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
@@ -109,7 +105,7 @@ module core_tb;
     for (q = 0; q < 10; q = q+1) begin #0.5 clk = 1'b0; #0.5 clk = 1'b1; end
     reset = 0;
 
-    qkvn_file = $fopen("../gls/pattern/kdata.txt", "r");
+    qkvn_file = $fopen("sim/pattern/kdata.txt", "r");
     for (q = 0; q < col; q = q+1)
       for (j = 0; j < pr; j = j+1) begin
         qkvn_scan_file = $fscanf(qkvn_file, "%d\n", captured_data);
@@ -350,7 +346,7 @@ module core_tb;
 
   ///// V data txt reading /////
   $display("##### V data txt reading #####");
-    qkvn_file = $fopen("../gls/pattern/vdata.txt", "r");
+    qkvn_file = $fopen("sim/pattern/vdata.txt", "r");
     // V_T := [pr-1:0][col-1:0]
     for (q=0; q<col; q=q+1) begin
       for (j=0; j<pr; j=j+1) begin
@@ -370,7 +366,7 @@ module core_tb;
   //**************************//
   //   LOAD_OTHER_NORM_FILE   //
   //**************************//
-  qkvn_file = $fopen("../gls/pattern/norm.txt", "r");
+  qkvn_file = $fopen("sim/pattern/norm.txt", "r");
   // N := [total_cycle-1:0][col-1:0]
   for (q=0; q<total_cycle; q=q+1) begin
     for (j=0; j<col; j=j+1) begin

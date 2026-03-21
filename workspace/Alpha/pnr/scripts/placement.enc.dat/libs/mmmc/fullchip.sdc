@@ -1,0 +1,1 @@
+/home/linux/ieng6/ECE260B_WI26_A00/sabhonsle/ECE260BProject/ECE260B-Final-Project/workspace/Alpha/pnr/constraints/fullchip.sdc

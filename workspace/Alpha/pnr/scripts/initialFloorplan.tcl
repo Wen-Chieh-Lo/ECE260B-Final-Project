@@ -1,21 +1,23 @@
-# Floorplan
-floorPlan -site core -r 1 0.50 10.0 10.0 10.0 10.0
+############################################
+# initialFloorplan.tcl — Step 5 FLAT Design
+############################################
 
-timeDesign -preplace -prefix preplace
+# ── Floorplan (adjust size based on area report) ──
+floorPlan -site core -s 3000 3000 20.0 20.0 20.0 20.0
 
+# ── Global power connections ──
 globalNetConnect VDD -type pgpin -pin VDD -inst * -verbose
 globalNetConnect VSS -type pgpin -pin VSS -inst * -verbose
 
-addRing -spacing {top 2 bottom 2 left 2 right 2} -width {top 3 bottom 3 left 3 right 3}  -layer {top M1 bottom M1 left M2 right M2} -center 1 -type core_rings -nets {VSS  VDD}
+# ── Core power ring ──
+addRing -spacing {top 2 bottom 2 left 2 right 2} -width   {top 4 bottom 4 left 4 right 4} -layer   {top M5 bottom M5 left M4 right M4} -center 1 -type core_rings -nets {VSS VDD}
 
+# ── Power stripes ──
 setAddStripeMode -break_at {block_ring}
 
-### Note: Change the number of strip  by looking at the layout #########
-addStripe -number_of_sets 2  -spacing 6 -layer M4 -width 2 -nets { VSS VDD }
-#################################################
+addStripe -nets {VDD VSS} -layer M5 -direction horizontal -width 1 -spacing 4 -number_of_sets 25 -start_offset 5 -stop_offset  5 -stacked_via_top_layer    M8 -stacked_via_bottom_layer M1
 
-#addStripe -nets {VDD VSS} -layer M4 -direction vertical -width 1.8 -spacing 1.8 -number_of_sets 5 -start_from left -start 80 -stop 180 
-
+fit
 sroute
-
+verifyConnectivity
 
