@@ -224,7 +224,7 @@ Initial synthesis results highlighted a massive timing violation (Worst Negative
 
     \item \textbf{Multi-cycle Path Constraint:} Multi-cycle path constraints were applied to the divider to correctly model its multi-cycle behavior during timing analysis , and the RTL design adjust accordingly by using a FSM to control multicycle path state. (\texttt{div\_MCP}). 
 
-    \item \textbf{Adder Tree Optimization:} The row energy accumulator was split into a 2-stage pipeline (\texttt{sum8\_2stage}).
+    \item \textbf{Pipelining: Adder Tree Optimization:} The row energy accumulator was split into a 2-stage pipeline (\texttt{sum8\_2stage}).
 
     \item \textbf{Chip interface and controller design: } Chip interface(picture + example usage of QK-Norm-VN), Chip mem external access control(FSM+block diagram), Chip internal data flow control(FSM+block diagram), SFP calculation handshake design(waveform)
 
