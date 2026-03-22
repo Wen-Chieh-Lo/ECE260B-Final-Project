@@ -230,9 +230,9 @@ Initial synthesis results highlighted a massive timing violation (Worst Negative
     Besides, the 2 designs share a common handshake interface with the core (\texttt{div\_start}, \texttt{div\_busy}, \texttt{div\_done}); macros (\texttt{SFP\_LONGDIV}, \texttt{SFP\_MCP}, \texttt{VANILLA}) are also defined to compile and synthesis the designs with ease.
     
     \textbf{Result.} 
-    Both designs passed the Hold/Setup time check and the gate-level simulation. Nonetheless, we have to select the optimal design for PnR. Hence, we compare the synthesis result in Table ?. 
+    Both designs passed the Hold/Setup time check and the gate-level simulation. Nonetheless, we have to select the optimal design for PnR. Hence, we compare the synthesis result in Figure~\ref{fig:s5_divComparison}. 
     The 6-staged pipelined long division hardware outperforms the 10 cycle MCP Verilog / divider with ($\sim$23\%) lower area, slightly lower power, and much shorter synthesis time (10 min vs. 45 min).
-    Thus, We select the pipelined long divider for PnR.
+    Thus, we select the pipelined long divider for PnR.
     \begin{figure}[htbp]
         \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/Div_comparison.png}}
         \caption{Synthesis result of core with different division module}
