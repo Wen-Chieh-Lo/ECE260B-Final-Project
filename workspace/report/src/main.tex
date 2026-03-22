@@ -308,16 +308,16 @@ Initial synthesis results highlighted a massive timing violation (Worst Negative
     The system detects missing pattern files and generates them on demand, allowing large-scale testing without manual data preparation. 
     This improves coverage and helps uncover corner-case bugs under diverse input conditions.
 
-    \item \textbf{Mingu Shell (Matrix INstruction Generation Utility):} 
-    We developed a custom simulation shell (“mingu shell”), named after \textit{Matrix INstruction Generation Utility}, on top of the Makefile flow. 
+    \item \textbf{.mingu Shell (Matrix INstruction Generation Utility):} 
+    We developed a custom simulation shell (“.mingu shell”), named after \textit{Matrix INstruction Generation Utility}, on top of the Makefile flow. 
     It provides a simple and scriptable interface for interacting with the system.
 
     Instead of manually controlling low-level signals in testbench, users can describe operations in a concise and structured form. 
-    For example: \texttt{in-n-out100-fullchip-gls.mingu} generates 100 randomized data patterns and verify the results.
+    For example: \texttt{in-n-out100-fullchip.mingu} generates 100 randomized data patterns and verify the results.
     \begin{figure}[htbp]
         \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/MinguVeri.png}}
         \caption{.mingu shell verification of 100 randomized input pattern}
-        \label{fig:s5_Controller_user_manual_spec}
+        \label{fig:s5_MinguVeri}
     \end{figure}
 
     More importantly, this shell is built upon the clean chip interface design. 
