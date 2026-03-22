@@ -70,10 +70,12 @@ module fullchip_shell_tb;
 
 	logic [3:0] status0, status1;
 	logic [`BW_PSUM*`COL-1:0] pmem_out0, pmem_out1;
+	logic [`BW_PSUM*`COL-1:0] out0, out1;
 	logic busy0, busy1;
 	assign busy0 = status0[3];
 	assign busy1 = status1[3];
-
+	assign pmem_out0 =  (^out0 === 1'bx)? 0 : out0;
+	assign pmem_out1 =  (^out1 === 1'bx)? 0 : out1;
 	fullchip fullchip_instance (
 		.reset0(reset), .reset1(reset),
 		.clk0(clk0), .clk1(clk1),
@@ -82,7 +84,7 @@ module fullchip_shell_tb;
 		.mode_in0(mode_in0), .mode_in1(mode_in1),
 		.mem_in0(mem_in0), .mem_in1(mem_in1),
 		.inst_ext0(inst_ext0), .inst_ext1(inst_ext1),
-		.out0(pmem_out0), .out1(pmem_out1),
+		.out0(out0), 		.out1(out1),
 		.status0(status0), .status1(status1)
 	);
 

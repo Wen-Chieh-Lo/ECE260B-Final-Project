@@ -96,6 +96,7 @@ module fullchip_tb;
 	//============= DUT's Output  ===============//
 	wire [3:0] 	status0, status1;      // {busy, qmem_locked, kmem_locked, pmem_locked} from controller
 	wire [bw_psum*col-1:0]	pmem_out0, pmem_out1;
+	wire [bw_psum*col-1:0]	out0, out1;
 	wire busy0, busy1, qmem_locked0, qmem_locked1, kmem_locked0, kmem_locked1, pmem_locked0, pmem_locked1;
 	assign busy0 = status0[3];
 	assign qmem_locked0 = status0[2];
@@ -105,7 +106,8 @@ module fullchip_tb;
 	assign qmem_locked1 = status1[2];
 	assign kmem_locked1 = status1[1];
 	assign pmem_locked1 = status1[0];
-
+	assign pmem_out0 =  (^out0 == 1'bx)? 0 : out0;
+	assign pmem_out1 =  (^out1 == 1'bx)? 0 : out1;
 
 	fullchip fullchip_instance(
 		.reset0(reset0), 		.reset1(reset1), 	
@@ -115,7 +117,7 @@ module fullchip_tb;
 		.mode_in0(mode_in0), 	.mode_in1(mode_in1),
 		.mem_in0(mem_in0), 		.mem_in1(mem_in1), 
 		.inst_ext0(inst_ext0), 	.inst_ext1(inst_ext1),
-		.out0(pmem_out0), 		.out1(pmem_out1),	
+		.out0(out0), 		.out1(out1),	
 		.status0(status0), 		.status1(status1)
 	);
 
