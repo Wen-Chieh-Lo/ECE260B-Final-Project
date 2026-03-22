@@ -1,8 +1,8 @@
 catch { setDesignMode -process 65 }
-catch { setAnalysisMode -analysisType onChipVariation }
+catch { setAnalysisMode -analysisType bcwc }
+catch { setAnalysisMode -checkType setup }
 catch { setAnalysisMode -clkSrcPath true }
 catch { setAnalysisMode -clockPropagation sdcControl }
-catch { setAnalysisMode -cppr both }
 catch { setAnalysisMode -usefulSkew true }
 catch { setOptMode -activeHoldViews { BC_VIEW } }
 catch { setOptMode -activeSetupViews { TC_VIEW } }
@@ -23,7 +23,6 @@ setExtractRCMode  -engine preRoute -total_c_th 0 -relative_c_th 1 -coupling_c_th
 catch { setCTSMode -moveGateLimit 25 }
 catch { setPlaceMode -congEffort medium }
 catch { setPlaceMode -modulePlan false }
-catch { setPlaceMode -placeIoPins false }
 catch { setPlaceMode -reorderScan false }
 catch { setPlaceMode -timingDriven true }
 catch { setIlmMode -keepHighFanoutPorts true -keepLoopBack false -keepFlatten true }
