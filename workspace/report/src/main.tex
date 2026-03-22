@@ -220,9 +220,26 @@ The design was expanded to a full dual-core architecture. This step focused on n
 \subsection{Step 5: Alphas (Architecture Optimization)}
 Initial synthesis results highlighted a massive timing violation (Worst Negative Slack $\approx$ -23.9\,ns) primarily due to deep combinational logic in the SFP row's absolute sum and division calculations. To achieve timing closure for a 1.0\,ns clock period, we added 3-stage pipeline in the accumulation and also add \texttt{-retime} to meet the timing requirement:
 \begin{itemize}
-    \item \textbf{Divider Optimization:} The combinational divider was replaced with a multi-cycle long division FSM (\texttt{div\_longdiv}).
+    \item \textbf{Divider Optimization:}
+    Previous synthesis timing reports indicate that the native Verilog / divider is the bottleneck of achieving 0 WNS. 
+    Therefore, we implemented 2 possible upgrades of our division module. 
+    \begin{enumerate}
+    \item 6-stage pipelined long divider
+    \item 10-cycle MCP native Verilog / divider
+    \end{enumerate}
+    Besides, the 2 designs share a common handshake interface with the core (\texttt{div\_start}, \texttt{div\_busy}, \texttt{div\_done}); macros (\texttt{SFP\_LONGDIV}, \texttt{SFP\_MCP}, \texttt{VANILLA}) are also defined to compile and synthesis the designs with ease.
+    
+    \textbf{Result.} 
+    Both designs passed the Hold/Setup time check and the gate-level simulation. Nonetheless, we have to select the optimal design for PnR. Hence, we compare the synthesis result in Table ?. 
+    The 6-staged pipelined long division hardware outperforms the 10 cycle MCP Verilog / divider with ($\sim$23\%) lower area, slightly lower power, and much shorter synthesis time (10 min vs. 45 min).
+    Thus, We select the pipelined long divider for PnR.
+    \begin{figure}[htbp]
+        \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/Div_comparison.png}}
+        \caption{Synthesis result of core with different division module}
+        \label{fig:s5_divComparison}
+    \end{figure}
 
-    \item \textbf{Multi-cycle Path Constraint:} Multi-cycle path constraints were applied to the divider to correctly model its multi-cycle behavior during timing analysis , and the RTL design adjust accordingly by using a FSM to control multicycle path state. (\texttt{div\_MCP}). 
+
 
     \item \textbf{Pipelining: Adder Tree Optimization:} The row energy accumulator was redesigned as a 3-stage pipelined reduction tree. After the 8 parallel multipliers, one pipeline stage captures the multiplication results, the next stage performs four pairwise additions, and the final stage reduces the partial sums to produce the accumulated row energy.
 
