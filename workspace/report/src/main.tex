@@ -115,22 +115,21 @@ Two single-core instances were integrated into a top-level fullchip module, with
 \subsection{\underline{\textnormal{Step 5: Architecture Optimisations}}}
 Initial synthesis results highlighted a massive timing violation (Worst Negative Slack $\approx$ -23.9\,ns) primarily due to deep combinational logic in the SFP row's absolute sum and division calculations. To achieve timing closure for a 1.0\,ns clock period, we added 3-stage pipeline in the accumulation and also added \texttt{-retime} to meet the timing requirement:
 
-\begin{table}[htbp]
+\begin{table*}[t]
+    \centering
     \caption{Timing Optimization Synthesis Results (Target Period = 1.0 ns)\label{tab:s5_timing}}
-    \begin{center}
-        \begin{tabular}{l c c c c c}
-            \toprule
-            \textbf{Design} & \multicolumn{2}{c}{\textbf{Before Repipelining}} & \multicolumn{2}{c}{\textbf{After Repipelining}} & \textbf{Area Reduction} \\
-            \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-6}
-            & \textbf{Area ($\mu\text{m}^2$)} & \textbf{WNS (ns)} & \textbf{Area ($\mu\text{m}^2$)} & \textbf{WNS (ns)} & \\
-            \midrule
-            Fullchip & 557{,}909 & $-9.11$ & 291{,}243 & $+0.04$ & $-47.8$\% \\
-            MAC Array & 116{,}808 & $-1.61$ & 69{,}490 & $+0.00$ & $-40.5$\% \\
-            SFP Row & 53{,}864 & $-23.92$ & 24{,}698 & $+0.00$ & $-54.1$\% \\
-            \bottomrule
-        \end{tabular}
-    \end{center}
-\end{table}
+    \begin{tabular}{l c c c c c}
+        \toprule
+        \textbf{Design} & \multicolumn{2}{c}{\textbf{Before Repipelining}} & \multicolumn{2}{c}{\textbf{After Repipelining}} & \textbf{Area Reduction} \\
+        \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-6}
+        & \textbf{Area ($\mu\text{m}^2$)} & \textbf{WNS (ns)} & \textbf{Area ($\mu\text{m}^2$)} & \textbf{WNS (ns)} & \\
+        \midrule
+        Fullchip  & 557{,}909 & $-9.11$  & 291{,}243 & $+0.04$ & $-47.8$\% \\
+        MAC Array & 116{,}808 & $-1.61$ & 69{,}490  & $+0.00$ & $-40.5$\% \\
+        SFP Row   & 53{,}864  & $-23.92$ & 24{,}698  & $+0.00$ & $-54.1$\% \\
+        \bottomrule
+    \end{tabular}
+\end{table*}
 
 \begin{itemize}
     \item \textbf{Divider Optimization:}
