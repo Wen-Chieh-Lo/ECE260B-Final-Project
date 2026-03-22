@@ -9,6 +9,10 @@
 \usepackage[justification=centering]{caption}
 \usepackage{booktabs}
 \usepackage{multirow}
+\usepackage{url}
+\usepackage{array}
+% TeX default float queue is small; many consecutive figures exceed it ("Too many unprocessed floats").
+\usepackage{morefloats}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
@@ -28,24 +32,20 @@
 \maketitle
 
 \begin{abstract}
-This report presents the design and implementation of a dual-core machine learning accelerator tailored for attention mechanisms, a core component of modern transformer models. The architecture features an asynchronous clocking scheme with a dual-core setup to parallelize the matrix multiplication and normalization phases. Furthermore, a hardware-optimized sparsity-aware Softmax (SFP) engine is introduced, utilizing row-energy accumulation and cross-core sum exchange to execute accurate fixed-point normalization. We also outline a comprehensive step-by-step verification methodology that spans from single-core RTL design to full-chip hierarchical physical design (PnR) using a 65nm process. Architectural optimizations, such as repipelining the divider and adder tree, dramatically reduced the critical path delay from over 24\,ns to under 1\,ns, achieving zero timing violations. Finally, our design achieves fully functional gate-level simulations and successful tape-out-ready physical layouts.
+This report presents the design and physical implementation of a dual-core machine learning accelerator tailored for the attention mechanisms in modern transformer models. The architecture features an asynchronous clocking scheme that distributes matrix multiplication and normalization across a dual-core setup. A hardware-optimized, sparsity-aware Softmax (SFP) engine is introduced, which utilizes cross-core sum exchange and bypasses redundant computations to improve energy efficiency. To overcome critical timing bottlenecks, we applied rigorous architectural optimizations—including a pipelined long divider and adder tree—reducing the critical path delay from over 24\,ns to under 1.0\,ns and shrinking the full-chip standard cell area by 47.8\%. Furthermore, we developed a highly scalable, Makefile-driven verification framework anchored by a custom \texttt{.mingu} shell. This framework seamlessly bridges behavioral RTL simulations with large-scale, automated post-PnR gate-level simulations. Validated through a TSMC 65nm hierarchical physical design flow, the accelerator achieves zero timing violations and demonstrates fully functional, tape-out-ready physical layouts.
 \end{abstract}
 
 \section{Introduction}
-Attention mechanisms have revolutionized natural language processing and computer vision by enabling models to dynamically weigh the importance of different input elements. At the core of the attention mechanism is the computation of attention scores, which determines how much focus a query should place on various keys. This is mathematically expressed as multiplying a Query matrix (Q) with a transposed Key matrix (K) to obtain raw attention scores. These raw scores are then normalized using a Softmax function, converting them into a valid probability distribution where all weights sum to one. Finally, the normalized attention weights are multiplied by a Value matrix (V) to produce the final output context vectors.
+Attention mechanisms form the computational backbone of modern transformer models, but their reliance on intensive matrix multiplications (MatMul) and row-wise Softmax normalizations presents significant throughput and memory bottlenecks. To address these challenges, this project proposes a dual-core hardware accelerator designed specifically for efficient attention computation.
 
-However, the associated matrix multiplication (MatMul) and Softmax normalization operations pose significant computational and memory bandwidth challenges. The Softmax function, in particular, requires global awareness of the entire row (or sequence) to compute the normalizing sum, creating a bottleneck in deeply pipelined hardware. To address these bottlenecks, this project proposes a dual-core hardware accelerator designed specifically for the attention mechanism.
-
-The proposed design leverages two independent cores communicating via asynchronous FIFOs, allowing flexible scheduling and increased throughput. To efficiently handle the Softmax operation, we developed a Sparsity-Aware Softmax (SFP) engine that skips redundant computations for zero or near-zero data, thereby saving power and cycles.
-
-Due to the immense complexity of the dual-core asynchronous design, a rigorous, step-by-step implementation and verification strategy was adopted. This incremental approach, ranging from basic single-core synthesis to full-chip hierarchical place-and-route (PnR), ensured functional correctness at every stage. This report details both the theoretical architecture of the accelerator and the practical milestones achieved during its physical implementation.
+The architecture partitions the workload across two independent cores communicating via asynchronous FIFOs, enabling flexible cross-domain scheduling. To alleviate the Softmax bottleneck, we developed a Sparsity-Aware Softmax (SFP) engine that dynamically skips computations for insignificant attention scores, reducing dynamic power and latency. Given the complexity of the asynchronous, dual-core architecture, we adopted a rigorous, incremental design methodology—progressing from basic single-core RTL to a tape-out-ready, full-chip hierarchical physical layout. This report details the architectural innovations and the physical implementation milestones that achieved zero timing violations under a 1.0\,ns clock constraint.
 
 \section{Proposed Architecture}
 
-\subsection{Dual-Core System \& Asynchronous Clocking}
+\subsection{\underline{\textnormal{Dual-Core System \& Asynchronous Clocking}}}
 To maximize throughput, the accelerator is partitioned into two distinct processing cores (Core 0 and Core 1). Each core operates in its own clock domain (\texttt{clk0} and \texttt{clk1}) to simulate realistic system-on-chip (SoC) environments where different functional blocks might run at different frequencies. Data and control signals are securely transferred between the two clock domains using asynchronous FIFOs (Async FIFO). This cross-domain communication (CDC) ensures that matrix chunks processed by one core can be synchronized with the other core without meta-stability issues, particularly during the global sum accumulation required for Softmax normalization.
 
-\subsection{Core Controller \& Data Flow}
+\subsection{\underline{\textnormal{Core Controller \& Data flow}}}
 Each core features an independent controller and a memory map (\texttt{reg\_map}) to handle top-level configurations. The controller manages the data flow between the Query Memory (QMEM), Key Memory (KMEM), the MAC array, and the SFP engine based on the defined operation mode (\texttt{op\_mode}):
 \begin{itemize}
     \item \textbf{Mode 1 (MatMul Only):} The core multiplies data from QMEM and KMEM using the MAC array, and directly stores the result into the Partial Sum Memory (PMEM).
@@ -53,7 +53,7 @@ Each core features an independent controller and a memory map (\texttt{reg\_map}
 \end{itemize}
 The controller automatically generates status flags (e.g., \texttt{qmem\_free}) to notify upper-level modules when memory banks are available for new data, enabling efficient cycle-saving data prefetching.
 
-\subsection{Sparsity-Aware Softmax (SFP) Engine}
+\subsection{\underline{\textnormal{Sparsity-Aware Softmax (SFP) Engine}}}
 The SFP row block is responsible for normalizing one row of the MAC array outputs. The normalization process is divided into two pipelined phases:
 \begin{enumerate}
     \item \textbf{Accumulation (acc):} When \texttt{acc\_start} is pulsed, the engine computes the row energy $S_{i} = \sum_{j} |sfp\_in[j]|$ using an adder tree. The sum is temporarily stored in an internal FIFO, and \texttt{acc\_done} is asserted upon completion.
@@ -65,15 +65,6 @@ The SFP row block is responsible for normalizing one row of the MAC array output
 \end{enumerate}
 To further optimize performance, a sparsity gating mechanism is implemented. If the computed row energy $S_{i}$ is strictly less than a configurable \texttt{SFP\_THRESHOLD}, the engine bypasses the division and outputs all zeros. This effectively filters out negligible attention scores, conserving dynamic power.
 
-\section{Design Methodology and Verification Infrastructure}
-To facilitate rapid development and reliable testing of the dual-core design, a robust Makefile-driven flow and shell-based verification infrastructure were established.
-
-\subsection{Makefile Management}
-A centralized Makefile provides unified commands for behavioral simulation, synthesis, and gate-level simulation (GLS) across various design targets (e.g., \texttt{fullchip}, \texttt{core}, \texttt{mac}, \texttt{sfp\_row}). By standardizing the build system, team members could seamlessly run target-specific tests using commands such as \texttt{make sim TARGET=core} or \texttt{make syn TARGET=mac}, significantly improving development efficiency and avoiding configuration errors.
-
-\subsection{Shell-Based Verification and Automated Parsing}
-Synthesis quality of results (QoR) and timing closure were continuously tracked using a custom shell-based parser (\texttt{parse\_reports.sh}). Integrated into the Makefile as the \texttt{make parse} target, this tool automatically scans Design Compiler output reports to extract and summarize critical metrics, including total cell area, dynamic power, leakage power, and Worst Negative Slack (WNS). This automated reporting mechanism proved essential during the RTL optimization phase (Step 5), allowing the team to quickly evaluate the impact of repipelining the SFP block on the overall critical path.
-
 \section{Step-by-Step Implementation and Verification}
 To systematically conquer the design complexity, the project was executed in six sequential milestones.
 
@@ -84,6 +75,243 @@ Post-PnR layout, GLS waveform, and terminal output for the single-core design ar
 To validate the flexibility of the single-core design, we separately tested the QK product and the V--Norm product using the same computation path. This demonstrates that the design can support both stages of the attention computation, providing a verified foundation for later steps where these operations are connected into a more complete pipeline.
 
 In addition, minor modifications were made to the professor-provided testbench to align with our implementation. Specifically, the DUT was updated from \texttt{fullchip} to \texttt{core}, along with adjustments to parameter settings and data packing format. An automatic golden result comparison (PASS/FAIL) mechanism was also added. These changes improve verification efficiency while preserving the intended functionality. Figure~\ref{fig:s1_term} shows the terminal output demonstrating the golden result comparison mechanism, while Figure~\ref{fig:s1_wave} presents the corresponding waveform of the design.
+
+
+
+
+\subsection{\underline{\textnormal{Step 2: Output Normalisation}}}
+The single-core MAC array was integrated with the SFP (Softmax with Fixed-Point) row block. The SFP block normalizes the partial sums row by row in two phases: \textit{accumulation} and \textit{division}. 
+
+During the \textbf{accumulation (acc)} phase, the block calculates the row energy by summing the absolute values of the incoming partial sums from the MAC array ($S_i = \sum |sfp\_in[j]|$). 
+
+In the \textbf{division (div)} phase, each absolute partial sum is divided by the global row sum to produce the normalized output. To support multi-core scaling, the global sum combines the local core's sum ($S_i$) with the sum from the other core ($sum\_in$). 
+
+Since the theoretical output of the normalization falls within the range $[0, 1]$, integer division would yield zero for almost all values. To address this, a fixed-point scaling mechanism is introduced using the \texttt{out\_shift} parameter. The numerator is logically left-shifted by \texttt{out\_shift} bits before division: 
+\[ sfp\_div\_out[c] = \text{truncate}\left(\frac{|sfp\_in[c]| \ll out\_shift}{S_i + sum\_in}\right) \]
+This shift defines the fractional precision of the output. For example, a default \texttt{out\_shift = 7} allocates 7 bits for the fractional part, mapping the $[0, 1]$ range to $[0, 128]$ in the 8-bit output. Behavioral simulations verified that these calculations correctly normalize the partial sums. Figure~\ref{fig:s2_wave} shows the simulation waveform demonstrating the functional correctness of the Step 2 design, with the output matching the expected normalized values.
+
+
+\subsection{\underline{\textnormal{Step 3: Hierarchical Synthesis of Single Core}}}
+Memory macros (SRAMs for QMEM, KMEM, and PMEM) were incorporated into the core.
+A hierarchical synthesis and PnR flow was adopted to manage the physical
+placement of the SRAM macros alongside standard cells. Each SRAM was synthesized
+and placed-and-routed independently with the top metal layer restricted to M4,
+with data input pins on the bottom edge and output pins on the top edge. The
+extracted Liberty timing models and LEF files from SRAM PnR were used during
+core-level synthesis and PnR, with SRAM instances treated as black boxes via the
+\texttt{dont\_touch} attribute. Gate-level simulation confirmed functional
+correctness with zero mismatches across all 8$\times$8 QK and VN output values.
+
+
+
+\subsection{\underline{\textnormal{Step 4: Hierarchical Synthesis of Dual-Core}}}
+Two single-core instances were integrated into a top-level fullchip module, with each core processing 8 of the 16 attention vectors in parallel. Cross-domain partial sum exchange for global normalisation was implemented via a custom Gray-code asynchronous FIFO with a sample-and-hold register at each core input. Both a lockstep (single clock) and a dual-clock (1.0 ns / 1.2 ns) configuration were validated at gate level against software-computed golden references, with the dual-clock mode included as an extension beyond the base deliverable Table 3 captures the power, WNS and DRC measurements. Fig 10 is the fullchip layout and Fig 11, 12 shows non-lockstep operation. Fig 13, 14 show non-lockstep operation
+
+
+
+
+\subsection{\underline{\textnormal{Step 5: Architecture Optimisations}}}
+Initial synthesis results highlighted a massive timing violation (Worst Negative Slack $\approx$ -23.9\,ns) primarily due to deep combinational logic in the SFP row's absolute sum and division calculations. To achieve timing closure for a 1.0\,ns clock period, we added 3-stage pipeline in the accumulation and also added \texttt{-retime} to meet the timing requirement:
+\begin{itemize}
+    \item \textbf{Divider Optimization:}
+    Previous synthesis timing reports indicate that the native Verilog / divider is the bottleneck of achieving 0 WNS. 
+    Therefore, we implemented 2 possible upgrades of our division module. 
+    \begin{enumerate}
+    \item 6-stage pipelined long divider
+    \item 10-cycle MCP native Verilog / divider
+    \end{enumerate}
+    Besides, the 2 designs share a common handshake interface with the core (\texttt{div\_start}, \texttt{div\_busy}, \texttt{div\_done}); macros (\texttt{SFP\_LONGDIV}, \texttt{SFP\_MCP}, \texttt{VANILLA}) are also defined to compile and synthesis the designs with ease.
+    
+    \textbf{Results.} 
+    Both designs passed the Hold/Setup time check and the gate-level simulation. Nonetheless, we have to select the optimal design for PnR. Hence, we compare the synthesis result in Figure~\ref{fig:s5_divComparison}. 
+    The 6-staged pipelined long division hardware outperforms the 10 cycle MCP Verilog / divider with ($\sim$23\%) lower area, slightly lower power, and much shorter synthesis time (10 min vs. 45 min).
+    Thus, we selected the pipelined long divider for PnR.
+    
+
+
+
+    \item \textbf{Pipelining - Adder Tree Optimization:} The row energy accumulator was redesigned as a 3-stage pipelined reduction tree. After the 8 parallel multipliers, one pipeline stage captures the multiplication results, the next stage performs four pairwise additions, and the final stage reduces the partial sums to produce the accumulated row energy. Table IV presents a before-and-after comparison of the modules in which pipelining was implemented.
+
+    \item \textbf{Chip Interface Design and Internal Control:} 
+    The chip interface is redesigned not only to remove redundant signals, but also to hide unnecessary internal details. The goal is to provide an intuitive and self-consistent interface, allowing users to operate the chip without understanding internal dataflow or timing dependencies. Each core is independently controlled, and we describe usage from the perspective of a single core.
+    
+
+    \textbf{Example Flow (MULT+NORM+READ):} 
+    Write Q/K via \texttt{inst\_ext} $\rightarrow$ set \texttt{mode} $\rightarrow$ assert \texttt{start} (locks memory) $\rightarrow$ compute $\rightarrow$ unlock $\rightarrow$ read PMEM.
+    The above example involves external memory instructions and mode configuration. Refer to Figure~\ref{fig:s5_Controller_user_manual_spec} for details.
+    
+    \textbf{Design Insights.}
+    \begin{itemize}
+        \item Flexible data loading; fixed execution schedule, simplifying hardware control while preserving user flexibility.
+        \item Deterministic memory locking with hardware-enforced protection, eliminating user-side synchronization.
+        \item Unified interface (4 commands) with mode-driven dataflow, reducing control complexity and enabling data reuse.
+        \item Implicit pipeline support, allowing overlap of computation and data loading for higher throughput.
+    \end{itemize}
+
+    \item \textbf{Normalization Block Protocol: }
+The Alpha implementation exposes a two-phase, row-local transaction. For each row, the partial-sum vector on \texttt{sfp\_in} is valid for a single cycle coincident with a one-cycle \texttt{acc\_start} pulse; the same vector must be reapplied for one cycle coincident with \texttt{div\_start}. The accumulation phase for a given row completes before division begins for that row (internal FIFO ordering). The cross-core partial sum \texttt{sum\_in} is asserted on the cycle immediately following \texttt{div\_start}, modeling a one-cycle read delay on the interconnect. A new \texttt{div\_start} is permitted only when \texttt{div\_busy} is low, excluding overlapping divide operations. The normalized result \texttt{sfp\_div\_out} is qualified by a one-cycle \texttt{div\_done} pulse. Division uses $S_{\mathrm{local}}+\texttt{sum\_in}$ as divisor, where $S_{\mathrm{local}}$ is the row energy from the acc phase; the block outputs all zeros if $S_i < \texttt{SFP\_THRESHOLD}$ or if the input row is identically zero.
+
+
+\item Dual-Core Verification (Lockstep and Non-Lockstep). Functional correctness of the dual-core integration was verified in both lockstep (single shared clock) and non-lockstep (1.0 ns / 1.2 ns asynchronous) configurations at gate level, demonstrating robustness of the asynchronous CDC protocol across both operating modes.
+    
+
+\end{itemize}
+These architectural optimizations successfully between Step 4 and 5 reduced the WNS (Setup)from $\sim$-9.106\,ns down to 0.001\,ns, and WNS (Hold) from eliminating $\sim$-4.713\,ns down to 0.037\,ns, all timing violations. The Power increased from 29.68 mW to 54.21 mW. Table II provides the comparison parameters for all steps.
+
+
+
+\subsection{Step 6: Sparsity-Aware Attention}
+The final milestone validated the sparsity-aware feature. By injecting highly sparse matrices, we confirmed that the SFP engine correctly identifies rows below \texttt{SFP\_THRESHOLD} and outputs zeros, bypassing unnecessary long division cycles.
+
+\textbf{Sparsity Definition and Threshold Calibration.}
+We define the row-wise accumulation as:
+\begin{equation}
+S_i = \sum_{j} \left| (QK^T)_{i,j} \right|.
+\end{equation}
+A row is skipped if $S_i < T$, where $T$ corresponds to \texttt{SFP\_THRESHOLD}. To achieve a target sparsity of 30\%, $T$ is obtained from the empirical distribution of $S_i$ using Monte Carlo simulation over 10{,}000 datasets:
+\begin{equation}
+T = \text{Percentile}_{30}(S),
+\end{equation}
+ensuring approximately 30\% of rows satisfy $S_i < T$. The sparsity is defined as:
+\begin{equation}
+\text{sparsity} = \frac{1}{N} \sum_i \mathbf{1}(S_i < T).
+\end{equation}
+
+\textbf{RTL Skip Mechanism and Verification.}
+In RTL, the accumulation from both cores is combined as \texttt{sum\_2core}, and the skip condition is evaluated via \texttt{sum\_2core < SFP\_THRESHOLD}. When triggered, the divisor is gated to zero (\texttt{sum\_2core\_gated}) and fed into the divider (e.g., \texttt{div\_longdiv}), allowing its FSM to bypass computation and force zero outputs without modifying the control flow. The same criterion is replicated in the testbench to count skipped rows and compute sparsity. Figure~\ref{fig:s6_layout} shows the corresponding layout.
+
+\textbf{Results.}
+Using 10{,}000 sample in \texttt{threshold.py} searching threshold, the threshold for sparsity we get is 169503. With this threhold, we test test with 1000 other random generated data ,and the measured sparsity we get is 34.975\%, close to the 30\% target. The deviation is attributed to distribution variance, demonstrating that the threshold generalizes well and that the RTL correctly implements sparsity-aware skipping. Figure~\ref{fig:s6_wave} and Figure~\ref{fig:s6_term} shows the corresponding waveform and terminal output.
+
+
+\section{Plus Alpha Implementations}
+To facilitate rapid development and reliable testing of the dual-core design, a robust Makefile-driven flow and shell-based verification infrastructure were established.
+\subsection{\underline{\textnormal{Design Methodology and Verification Infrastructure}}}
+\begin{itemize}
+
+    \item \textbf{Production System Setup (Makefile-based Flow):} 
+    A centralized Makefile manages RTL simulation, GLS, and synthesis, with key parameters (e.g., target, clock, configuration) specified via command-line arguments for reproducible and rapid iteration. A summary is shown in Table~\ref{tab:makefile_cmds}.
+    The \texttt{USER\_DEFINES} variable (persisted in \texttt{USER\_DEFINE\_TASK\_VARS}) enables flexible architectural exploration (e.g., \texttt{SFP\_LONGDIV}, \texttt{SFP\_MCP}, \texttt{SFP\_THRESHOLD}) without modifying RTL or scripts. Since it propagates to both simulation and synthesis, it ensures consistency between RTL and final netlist.
+    
+
+    \item \textbf{Randomized Input Generation:} 
+    We support automatic generation of randomized test patterns for functional verification. 
+    The system detects missing pattern files and generates them on demand, allowing large-scale testing without manual data preparation. 
+    This improves coverage and helps uncover corner-case bugs under diverse input conditions.
+
+    \item \textbf{.mingu Shell (Matrix INstruction Generation Utility):}
+    A scriptable simulation shell built on top of the Makefile flow, providing a
+    high-level interface (\texttt{writeQ}, \texttt{simulate}, etc.) to control the
+    testbench. It supports configuration/execution phases, variable substitution,
+    and \texttt{for}-loops for automated testing across \texttt{Alpha} and \texttt{Step6}.
+   
+
+   For example, Fig.~\ref{fig:s5_MinguVeri} shows generation of 100 randomized patterns and output verification using \texttt{.mingu}. Its well-defined interface allows high-level commands to map directly to hardware states, enabling scalable testing from single-core RTL to full-chip Post-PnR without new testbenches.
+   
+\end{itemize}
+
+
+
+
+\subsection{\underline{\textnormal{PnR Statistics}}}
+\begin{itemize}
+    \item 0 DRC  violations were obtained for Steps 1,3 and 6
+    \item PnR for Step4 and Step5 was closed with less than 5 DRC violations
+    \item Near 0 WNS was achieved  for both setup and hold time for  Step5 and  where we implemented our optimisations
+\end{itemize}
+
+\section{Deliverable Path}
+Table 1 contains the paths to our submission.
+\begin{table}[htbp]
+    \caption{Deliverable Path Summary}
+    \centering
+    \begin{tabular}{|c|>{\raggedright\arraybackslash}p{0.72\linewidth}|}
+        \hline
+        \textbf{Step} & \textbf{Path} \\
+        \hline
+        1 & \url{/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/workspace/Step1} \\
+        \hline
+        2 & \url{/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/workspace/Step2} \\
+        \hline
+        3 & \url{/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/workspace/Step3_norm} \\
+        \hline
+        4 & \url{/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/workspace/Step4_hier} \\
+        \hline
+        5 & \url{/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/workspace/Alpha} \\
+        \hline
+        6 & \url{/home/linux/ieng6/ECE260B_WI26_A00/c8chiu/ECE260B-Final-Project/workspace/Step6} \\
+        \hline
+        \multicolumn{2}{|c|}{\textbf{Final Version}} \\
+        \hline
+    \end{tabular}
+    \label{tab:deliverable}
+\end{table}
+
+\section{Conclusion}
+This project successfully demonstrates the design, implementation, and physical realization of a dual-core attention accelerator. By partitioning the system into asynchronous domains, we enabled flexible inter-core data exchange. Through the introduction of a Sparsity-Aware SFP engine, computations on insignificant data are bypassed, promoting energy efficiency. Most importantly, critical timing bottlenecks were identified and resolved via rigorous RTL repipelining, ensuring the design easily meets the 1.0\,ns clock constraint in a TSMC 65nm process. The progressive, step-by-step verification methodology guaranteed robustness from the behavioral level down to post-PnR gate-level simulations, confirming the design's readiness for physical fabrication.
+
+ \begin{table}[htbp]
+    \caption{Performance Comparison}
+    \begin{center}
+        \begin{tabular}{|c|c|c|c|c|}
+            \hline
+            \textbf{} & \textbf{Power(VCD)} & \textbf{Setup WNS} & \textbf{Hold WNS} & \textbf{DRC} \\
+            \hline
+            STEP 1 &  51.59 mW & -1.005  & & 0  \\
+            STEP 3 &  61.22 mW & -22.472 & & 0  \\
+            STEP 4 &  29.68 mW & -9.106 & -4.713 & 1 \\
+            STEP 5 &  54.21 mW &  0.001 & 0.037 & 4 \\
+            STEP 6 &  52.59 mW &  0.004 & & 0 \\
+            \hline
+        \end{tabular}
+        \label{tab:s1}
+    \end{center}
+\end{table}
+
+
+\clearpage
+\section*{Tables and Figures}
+\begin{table}[htbp]
+    \caption{Supported Makefile Commands and Parameters}
+    \begin{center}
+        \begin{tabular}{l p{5cm}}
+            \toprule
+            \textbf{Command / Parameter} & \textbf{Description} \\
+            \midrule
+            \texttt{make sim} & Runs RTL simulation using \texttt{iverilog} and \texttt{vvp}. Supports SV via \texttt{-g2012}. \\
+            \texttt{make gls} & Runs gate-level simulation using post-synthesis netlists (\texttt{syn/gate/*.out.v}) and PDK. \\
+            \texttt{make syn} & Runs Design Compiler synthesis using \texttt{run\_dc.tcl}. \\
+            \texttt{make sim-shell} & Launches the interactive `.mingu` shell for testbench execution. \\
+            \texttt{make parse} & Parses synthesis reports and outputs a summary of area, power, and timing. \\
+            \texttt{TARGET=<name>} & Specifies the design target (e.g., \texttt{fullchip}, \texttt{core}, \texttt{mac}, \texttt{sfp\_row}). \\
+            \texttt{SYN\_EFFORT=<level>} & Sets synthesis optimization effort: \texttt{low}, \texttt{medium}, or \texttt{high} (default). \\
+            \texttt{CYCLE=<val>} & Overrides the default clock period during simulation. \\
+            \texttt{USER\_DEFINES=<...>} & Passes custom Verilog macros (e.g., \texttt{SFP\_LONGDIV}) to both simulation and synthesis. \\
+            \bottomrule
+        \end{tabular}
+        \label{tab:makefile_cmds}
+    \end{center}
+\end{table}
+\begin{table*}[htbp]
+    \caption{Summary of standard \texttt{.mingu} scripts and their purposes}
+    \begin{center}
+        \begin{tabular}{l p{10cm}}
+            \toprule
+            \textbf{Script Name} & \textbf{Purpose \& Features} \\
+            \midrule
+            \texttt{in-n-out-fullchip.mingu} & Basic RTL simulation pipeline executing Q*K\textsuperscript{T}, Norm, and V*Norm\textsuperscript{T} sequentially on a single static test pattern. \\
+            \texttt{in-n-out100-fullchip.mingu} & Large-scale automated RTL simulation utilizing the \texttt{for} loop. It automatically triggers the python/shell pattern generator to create 100 sets of randomized Q, K, and V matrices and verifies the hardware against a software golden model continuously. \\
+            \texttt{in-n-out500-fullchip.mingu} & Stress-testing variant scaling the loop and automatic pattern generation to 500 unique datasets. \\
+            \texttt{in-n-out*-fullchip-gls.mingu} & Post-PnR validation scripts. By simply changing \texttt{set\_sim\_stage} to \texttt{post\_sim}, the exact same test sequence is piped into \texttt{xrun} with the synthesized and routed netlist (with back-annotated delays or threshold logic). \\
+            \bottomrule
+        \end{tabular}
+        \label{tab:mingu_files}
+    \end{center}
+\end{table*}
+
+% Flush tables before the long figure run (avoids exceeding LaTeX float queues).
+\clearpage
+
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=0.30\textwidth]{Step1_images/Step1corelayout.png}}
     \caption{Single-Core Layout (post-PnR).}
@@ -97,46 +325,16 @@ In addition, minor modifications were made to the professor-provided testbench t
 \end{figure}
 
 \begin{figure*}[htbp]
-    \centerline{\includegraphics[width=1.0\textwidth]{Step1_images/Step1waveform.png}}
+    \centerline{\includegraphics[width=1.0\textwidth]{Step1_images/Step1PLGLSwaveform.png}}
     \caption{Single-Core GLS Waveform.}
     \label{fig:s1_wave}
 \end{figure*}
 
-
-
-\begin{table}[htbp]
-    \caption{Step 1 Synthesis \& PnR Results}
-    \begin{center}
-        \begin{tabular}{|c|c|c|c|}
-            \hline
-            \textbf{Design} & \textbf{Power (VCD)} & \textbf{WNS} & \textbf{DRC} \\
-            \hline
-            Single Core & 50.74 mW & -0.014 ns & 0 \\
-            \hline
-        \end{tabular}
-        \label{tab:s1}
-    \end{center}
-\end{table}
-
-\subsection{Step 2: Output Normalization}
-The single-core MAC array was integrated with the SFP (Softmax with Fixed-Point) row block. The SFP block normalizes the partial sums row by row in two phases: \textit{accumulation} and \textit{division}. 
-
-During the \textbf{accumulation (acc)} phase, the block calculates the row energy by summing the absolute values of the incoming partial sums from the MAC array ($S_i = \sum |sfp\_in[j]|$). 
-
-In the \textbf{division (div)} phase, each absolute partial sum is divided by the global row sum to produce the normalized output. To support multi-core scaling, the global sum combines the local core's sum ($S_i$) with the sum from the other core ($sum\_in$). 
-
-Since the theoretical output of the normalization falls within the range $[0, 1]$, integer division would yield zero for almost all values. To address this, a fixed-point scaling mechanism is introduced using the \texttt{out\_shift} parameter. The numerator is logically left-shifted by \texttt{out\_shift} bits before division: 
-\[ sfp\_div\_out[c] = \text{truncate}\left(\frac{|sfp\_in[c]| \ll out\_shift}{S_i + sum\_in}\right) \]
-This shift defines the fractional precision of the output. For example, a default \texttt{out\_shift = 7} allocates 7 bits for the fractional part, mapping the $[0, 1]$ range to $[0, 128]$ in the 8-bit output. Behavioral simulations verified that these calculations correctly normalize the partial sums. Figure~\ref{fig:s2_wave} shows the simulation waveform demonstrating the functional correctness of the Step 2 design, with the output matching the expected normalized values.
-
-\begin{figure*}[htbp]
-    \centerline{\includegraphics[width=0.8\textwidth]{Step2_images/waveform.png}}
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=0.45\textwidth]{Step2_images/waveform.png}}
     \caption{Step 2 Simulation Waveform demonstrating functional correctness of Output Normalization.}
     \label{fig:s2_wave}
-\end{figure*}
-
-\subsection{Step 3: Hierarchical Synthesis of Core}
-Memory macros (SRAMs for QMEM, KMEM, and PMEM) were incorporated into the core. A hierarchical synthesis and PnR flow was adopted to manage the physical placement of the SRAM macros alongside standard cells.
+\end{figure}
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=0.30\textwidth]{temp.png}}
@@ -168,23 +366,6 @@ Memory macros (SRAMs for QMEM, KMEM, and PMEM) were incorporated into the core. 
     \label{fig:s3_term}
 \end{figure}
 
-\begin{table}[htbp]
-    \caption{Step 3 Hierarchical Core Results}
-    \begin{center}
-        \begin{tabular}{|c|c|c|c|}
-            \hline
-            \textbf{Design} & \textbf{Power (VCD)} & \textbf{WNS} & \textbf{DRC} \\
-            \hline
-            Hier.\ Core & 61.22 mW & --- & --- \\
-            \hline
-        \end{tabular}
-        \label{tab:s3}
-    \end{center}
-\end{table}
-
-\subsection{Step 4: Hierarchical Synthesis of Dual-Core}
-The design was expanded to a full dual-core architecture. This step focused on non-lockstep execution across the two clock domains. Hierarchical PnR constraints were applied to seamlessly integrate both cores at the top level.
-
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=0.30\textwidth]{temp.png}}
     \caption{Fullchip Layout (placeholder; replace with fullchip snapshot).}
@@ -203,246 +384,54 @@ The design was expanded to a full dual-core architecture. This step focused on n
     \label{fig:s4_term}
 \end{figure}
 
-\begin{table}[htbp]
-    \caption{Step 4 Dual-Core Results}
-    \begin{center}
-        \begin{tabular}{|c|c|c|c|}
-            \hline
-            \textbf{Design} & \textbf{Power (VCD)} & \textbf{WNS} & \textbf{DRC} \\
-            \hline
-            Dual Core & 19.19 mW & --- & --- \\
-            \hline
-        \end{tabular}
-        \label{tab:s4}
-    \end{center}
-\end{table}
+\clearpage
 
-\subsection{Step 5: Alphas (Architecture Optimization)}
-Initial synthesis results highlighted a massive timing violation (Worst Negative Slack $\approx$ -23.9\,ns) primarily due to deep combinational logic in the SFP row's absolute sum and division calculations. To achieve timing closure for a 1.0\,ns clock period, we added 3-stage pipeline in the accumulation and also add \texttt{-retime} to meet the timing requirement:
-\begin{itemize}
-    \item \textbf{Divider Optimization:}
-    Previous synthesis timing reports indicate that the native Verilog / divider is the bottleneck of achieving 0 WNS. 
-    Therefore, we implemented 2 possible upgrades of our division module. 
-    \begin{enumerate}
-    \item 6-stage pipelined long divider
-    \item 10-cycle MCP native Verilog / divider
-    \end{enumerate}
-    Besides, the 2 designs share a common handshake interface with the core (\texttt{div\_start}, \texttt{div\_busy}, \texttt{div\_done}); macros (\texttt{SFP\_LONGDIV}, \texttt{SFP\_MCP}, \texttt{VANILLA}) are also defined to compile and synthesis the designs with ease.
-    
-    \textbf{Results.} 
-    Both designs passed the Hold/Setup time check and the gate-level simulation. Nonetheless, we have to select the optimal design for PnR. Hence, we compare the synthesis result in Figure~\ref{fig:s5_divComparison}. 
-    The 6-staged pipelined long division hardware outperforms the 10 cycle MCP Verilog / divider with ($\sim$23\%) lower area, slightly lower power, and much shorter synthesis time (10 min vs. 45 min).
-    Thus, we select the pipelined long divider for PnR.
-    \begin{figure}[htbp]
+\begin{figure}[htbp]
         \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/Div_comparison.png}}
         \caption{Synthesis result of core with different division module}
         \label{fig:s5_divComparison}
     \end{figure}
-
-
-    \item \textbf{Pipelining: Adder Tree Optimization:} The row energy accumulator was redesigned as a 3-stage pipelined reduction tree. After the 8 parallel multipliers, one pipeline stage captures the multiplication results, the next stage performs four pairwise additions, and the final stage reduces the partial sums to produce the accumulated row energy.
-
-
-    \item \textbf{Chip Interface Design and Internal Control:} 
-    The purpose of redesigning the chip interface is not only to remove redundant signals, but also to hide unnecessary internal details from the user. The interface should be intuitive and self-consistent, so that users can operate the chip without understanding internal dataflow or timing dependencies.
-    Each core is independently controlled.
-    We describe the interface usage from the perspective of a single core.
     \begin{figure}[htbp]
         \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/Core_interface_redesign.png}}
         \caption{Core interface redesign}
         \label{fig:s5_Core_interface_redesign}
     \end{figure}
-
-    \textbf{Example Usage: MULT + NORM + READ.} 
-
-    A user wants to compute matrix multiplication, apply normalization, save the result in KMEM for later use, but also want to read it out for verification.
-    \begin{enumerate}
-        \item Write data to KMEM and QMEM through \texttt{mem\_in} by designating \texttt{inst\_ext[5:0]}(SRAM operation \& addr).
-        \item Set \texttt{mode\_in = 3'b001} (MULT+NORM $\rightarrow$ KMEM and PMEM) and assert \texttt{set\_mode} for one cycle to latch the configuration.
-        \item Assert \texttt{start} for one cycle to begin execution. If the core is busy (\texttt{status[3]=1}), the \texttt{start} signal is ignored.
-        \item During execution, \texttt{status[3]=1} indicates the core is busy, while \texttt{status[2:0]} indicate memory locks (QMEM / KMEM / PMEM).
-        \item User may start to write K/QMEM data for next operation after the K/QMEM lock is freed.
-        \item \texttt{status[3]} returns to 0 after the result is stored in PMEM and KMEM. The user can then issue PMEM read by designating \texttt{inst\_ext[5:0]}(SRAM operation \& addr) and wait for 1 cycle for the result at the \texttt{out} port.
-    \end{enumerate}
-    The above example involves external memory instructions and core mode setting. Refer to Figure~\ref{fig:s5_Controller_user_manual_spec} for details.
     \begin{figure}[htbp]
         \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/Controller_user_manual_spec.png}}
         \caption{Available core instruction/operation specification}
         \label{fig:s5_Controller_user_manual_spec}
     \end{figure}
-
-    \textbf{Design Insights.}
-    \begin{enumerate}
-        \item \textbf{Flexible data loading, fixed execution.} 
-        The user has full freedom to write Q/K memory in any order and timing. 
-        In contrast, execution follows a fixed address increment pattern, since the hardware performs a deterministic MAC sequence. 
-        This cleanly separates user control from hardware scheduling.
-        \item \textbf{Deterministic memory locking.} 
-        After start, memories are locked and released in a fixed order. 
-        Once a memory is released, it will not be locked again before the core becomes idle. 
-        This gives a clear contract: unlocked memory is always safe to write.
-        \item \textbf{Hardware-enforced protection.} 
-        Although status signals are visible, correctness does not rely on the user. 
-        Invalid operations (e.g., writing to locked memory or starting while busy) are automatically ignored by hardware.
-        \item \textbf{Unified memory interface with minimal command set.} 
-        All external memory accesses share the same interface (addr, data\_in, data\_out). 
-        To avoid conflicts, only four commands are allowed: \texttt{NO\_OP}, \texttt{KMEM\_WRITE}, \texttt{QMEM\_WRITE}, \texttt{PMEM\_READ}.
-        This eliminates read/write conflicts and simplifies controller design.
-        \item \textbf{Mode-driven dataflow.} 
-        A 3-bit mode encodes both operation type and result destination. 
-        Results can be written to PMEM for output, or kept in KMEM for further computation. 
-        This enables chaining operations without extra data movement.
-        \item \textbf{Implicit pipeline support.} 
-        The interface naturally allows overlapping computation and data loading. 
-        While some memories are locked for computation, others can already be reused for the next stage.
-        For example, in MULT+NORM mode, QMEM is released after MAC load, 
-        so if user's next step is multiply norm by V, user can start writing V data while normalization is still running.
-    \end{enumerate}
-
-    \item \textbf{Production System Setup (Makefile-based Flow):} 
-    A centralized Makefile is designed to manage the entire simulation pipeline, including RTL simulation, gate-level simulation (GLS), and synthesis. 
-    Key parameters such as simulation target, clock period, and design configuration can be specified through command-line arguments, enabling reproducible experiments and fast design iteration. 
-    A summary of the supported Makefile commands and arguments is provided in Table~\ref{tab:makefile_cmds}.
-    
-    Particularly, the \texttt{USER\_DEFINES} variable (which can be stored persistently in \texttt{USER\_DEFINE\_TASK\_VARS}) offers a significant advantage for architectural exploration. It allows developers to seamlessly switch hardware configurations—such as changing the division module to \texttt{SFP\_LONGDIV} or \texttt{SFP\_MCP}, or enabling sparsity features via \texttt{SFP\_THRESHOLD}—without modifying the underlying RTL or synthesis scripts. Because this single variable propagates globally to both the simulator (\texttt{iverilog}) and the synthesizer (\texttt{Design Compiler}), it guarantees functional consistency between RTL verification and the final synthesized netlist.
-
-    \begin{table}[htbp]
-        \caption{Supported Makefile Commands and Parameters}
-        \begin{center}
-            \begin{tabular}{l p{6cm}}
-                \toprule
-                \textbf{Command / Parameter} & \textbf{Description} \\
-                \midrule
-                \texttt{make sim} & Runs RTL simulation using \texttt{iverilog} and \texttt{vvp}. Supports SV via \texttt{-g2012}. \\
-                \texttt{make gls} & Runs gate-level simulation using post-synthesis netlists (\texttt{syn/gate/*.out.v}) and PDK. \\
-                \texttt{make syn} & Runs Design Compiler synthesis using \texttt{run\_dc.tcl}. \\
-                \texttt{make sim-shell} & Launches the interactive `.mingu` shell for testbench execution. \\
-                \texttt{make parse} & Parses synthesis reports and outputs a summary of area, power, and timing. \\
-                \texttt{TARGET=<name>} & Specifies the design target (e.g., \texttt{fullchip}, \texttt{core}, \texttt{mac}, \texttt{sfp\_row}). \\
-                \texttt{SYN\_EFFORT=<level>} & Sets synthesis optimization effort: \texttt{low}, \texttt{medium}, or \texttt{high} (default). \\
-                \texttt{CYCLE=<val>} & Overrides the default clock period during simulation. \\
-                \texttt{USER\_DEFINES=<...>} & Passes custom Verilog macros (e.g., \texttt{SFP\_LONGDIV}) to both simulation and synthesis. \\
-                \bottomrule
-            \end{tabular}
-            \label{tab:makefile_cmds}
-        \end{center}
-    \end{table}
-
-    \item \textbf{Randomized Input Generation:} 
-    We support automatic generation of randomized test patterns for functional verification. 
-    The system detects missing pattern files and generates them on demand, allowing large-scale testing without manual data preparation. 
-    This improves coverage and helps uncover corner-case bugs under diverse input conditions.
-
-    \item \textbf{.mingu Shell (Matrix INstruction Generation Utility):} 
-    The crown jewel of our verification framework is a custom, highly extensible simulation shell named the \textit{Matrix INstruction Generation Utility} (\texttt{.mingu}). Built on top of our Makefile flow and utilizing the hardware's unified interface, it completely abstracts away low-level testbench manipulation, allowing users to express verification tasks in a clean, scriptable format.
-
-    The \texttt{.mingu} shell operates in a two-phase execution model:
-    \begin{enumerate}
-        \item \textbf{Configuration Phase (Before \texttt{fix\_set}):} Users define the environment using shell-level commands. This includes setting the simulation target (\texttt{set\_scope core|fullchip}), configuring the clock periods for asynchronous testing (\texttt{set\_clock\_period}), selecting the backend execution stage (\texttt{set\_sim\_stage sim|gls|post\_sim}), defining user variables (\texttt{set VAR value}), and controlling output features (\texttt{set\_dump\_vcd}).
-        \item \textbf{Execution Phase (After \texttt{fix\_set}):} Once the environment is locked and compiled via \texttt{fix\_set}, the shell enters the interactive or batch testbench phase. Users issue high-level operations that perfectly map to our hardware's clean controller interface. Support includes data loading (\texttt{writeQ}, \texttt{writeK0}, \texttt{writeK1}), mode configuration (\texttt{set\_exec\_target}), operation triggers (\texttt{simulate}, \texttt{reset}), and automated golden model verification (\texttt{verifypmem}).
-    \end{enumerate}
-
-    Crucially, the shell supports \textbf{variable substitution} and \textbf{\texttt{for}-loops}, which makes large-scale automated testing remarkably simple. As shown in the comprehensive list in Table~\ref{tab:mingu_files}, we utilize this feature extensively across both the \texttt{Alpha} and \texttt{Step6} workspaces to ensure complete functional coverage.
-
-    \begin{table*}[htbp]
-        \caption{Summary of standard \texttt{.mingu} scripts and their purposes}
-        \begin{center}
-            \begin{tabular}{l p{10cm}}
-                \toprule
-                \textbf{Script Name} & \textbf{Purpose \& Features} \\
-                \midrule
-                \texttt{in-n-out-fullchip.mingu} & Basic RTL simulation pipeline executing Q*K\textsuperscript{T}, Norm, and V*Norm\textsuperscript{T} sequentially on a single static test pattern. \\
-                \texttt{in-n-out100-fullchip.mingu} & Large-scale automated RTL simulation utilizing the \texttt{for} loop. It automatically triggers the python/shell pattern generator to create 100 sets of randomized Q, K, and V matrices and verifies the hardware against a software golden model continuously. \\
-                \texttt{in-n-out500-fullchip.mingu} & Stress-testing variant scaling the loop and automatic pattern generation to 500 unique datasets. \\
-                \texttt{in-n-out*-fullchip-gls.mingu} & Post-PnR validation scripts. By simply changing \texttt{set\_sim\_stage} to \texttt{post\_sim}, the exact same test sequence is piped into \texttt{xrun} with the synthesized and routed netlist (with back-annotated delays or threshold logic). \\
-                \bottomrule
-            \end{tabular}
-            \label{tab:mingu_files}
-        \end{center}
-    \end{table*}
-
-    For example, Figure~\ref{fig:s5_MinguVeri} demonstrates the generation of 100 randomized data patterns and output verification via the \texttt{.mingu} shell. Because the hardware interface is well-defined and minimal, these high-level commands can directly correspond to meaningful hardware states. This provides a highly scalable and resilient testing framework that easily transitioned our tests from basic single-core RTL all the way to full-chip, dual-clock Post-PnR netlists without writing new testbenches.
     \begin{figure}[htbp]
         \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/MinguVeri.png}}
         \caption{in-n-out100-fullchip.mingu execution script demonstrating \texttt{for}-loops and automated testing.}
         \label{fig:s5_MinguVeri}
     \end{figure}
-
-    \item \textbf{Dual Core Verification on both Lockstep \& Non-Lockstep Clock Pair: }
-
+    \begin{figure}[htbp]
+        \centerline{\includegraphics[width=0.30\textwidth]{Step6_images/Step6corelayout.png}}
+        \caption{Sparsity-Aware Attention Dual-Core Layout.}
+        \label{fig:s6_layout}
+    \end{figure}
     
-
-\end{itemize}
-These architectural optimizations successfully reduced the data arrival time from $\sim$25.0\,ns down to 0.97\,ns, eliminating all timing violations. As shown in Table~\ref{tab:s5_timing}, the fullchip area was reduced by 47.8\%, the MAC array by 40.5\%, and the SFP row by 54.1\% as the costly combinational divider was replaced with a pipelined design.
-
-\begin{table}[htbp]
-    \caption{Timing Optimization Synthesis Results (Target Period = 1.0 ns)}
-    \begin{center}
-        \begin{tabular}{l c c c c c}
-            \toprule
-            \textbf{Design} & \multicolumn{2}{c}{\textbf{Before Repipelining}} & \multicolumn{2}{c}{\textbf{After Repipelining}} & \textbf{Area Reduction} \\
-            \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-6}
-             & \textbf{Area ($\mu m^2$)} & \textbf{WNS (ns)} & \textbf{Area ($\mu m^2$)} & \textbf{WNS (ns)} & \\
-            \midrule
-            Fullchip    & 557,909 & -9.11 & 291,243 & +0.04 & -47.8\% \\
-            MAC Array   & 116,808 & -1.61  &  69,490 & +0.00 & -40.5\% \\
-            SFP Row     &  53,864 & -23.92 &  24,698 & +0.00 & -54.1\% \\
-            \bottomrule
-        \end{tabular}
-        \label{tab:s5_timing}
-    \end{center}
-\end{table}
-
-\subsection{Step 6: Sparsity-Aware Attention}
-The final milestone validated the sparsity-aware feature. By injecting highly sparse matrices, we confirmed that the SFP engine correctly identifies rows below \texttt{SFP\_THRESHOLD} and outputs zeros, bypassing unnecessary long division cycles.
-
-\textbf{Sparsity Definition and Threshold Calibration.}
-We define the row-wise accumulation as:
-\begin{equation}
-S_i = \sum_{j} \left| (QK^T)_{i,j} \right|.
-\end{equation}
-A row is skipped if $S_i < T$, where $T$ corresponds to \texttt{SFP\_THRESHOLD}. To achieve a target sparsity of 30\%, $T$ is obtained from the empirical distribution of $S_i$ using Monte Carlo simulation over 10{,}000 datasets:
-\begin{equation}
-T = \text{Percentile}_{30}(S),
-\end{equation}
-ensuring approximately 30\% of rows satisfy $S_i < T$. The sparsity is defined as:
-\begin{equation}
-\text{sparsity} = \frac{1}{N} \sum_i \mathbf{1}(S_i < T).
-\end{equation}
-
-\textbf{RTL Skip Mechanism and Verification.}
-In RTL, the accumulation from both cores is combined as \texttt{sum\_2core}, and the skip condition is evaluated via \texttt{sum\_2core < SFP\_THRESHOLD}. When triggered, the divisor is gated to zero (\texttt{sum\_2core\_gated}) and fed into the divider (e.g., \texttt{div\_longdiv}), allowing its FSM to bypass computation and force zero outputs without modifying the control flow. The same criterion is replicated in the testbench to count skipped rows and compute sparsity. Figure~\ref{fig:s6_layout} shows the corresponding layout.
-
-\textbf{Results.}
-Using 10{,}000 sample in \texttt{threshold.py} searching threshold, the threshold for sparsity we get is 169503. With this threhold, we test test with 1000 other random generated data ,and the measured sparsity we get is 34.975\%, close to the 30\% target. The deviation is attributed to distribution variance, demonstrating that the threshold generalizes well and that the RTL correctly implements sparsity-aware skipping. Figure~\ref{fig:s6_wave} and Figure~\ref{fig:s6_term} shows the corresponding waveform and terminal output.
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.30\textwidth]{Step6_images/Step6corelayout.png}}
-    \caption{Sparsity-Aware Attention Dual-Core Layout.}
-    \label{fig:s6_layout}
-\end{figure}
-
-\begin{figure*}[htbp]
-    \centerline{\includegraphics[width=1.0\textwidth]{Step6_images/Step6FinalPLGLSwaveform.png}}
-    \caption{Sparsity-Aware Attention Dual-Core GLS Waveform.}
-    \label{fig:s6_wave}
-\end{figure*}
-
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.30\textwidth]{Step6_images/Step6FinalPLGLSwaveform.png}}
-    \caption{Sparsity-Aware Attention Dual-Core GLS Terminal Output.}
-    \label{fig:s6_term}
-\end{figure}
+    \begin{figure*}[htbp]
+        \centerline{\includegraphics[width=1.0\textwidth]{temp.png}}
+        \caption{Sparsity-Aware Attention Dual-Core GLS Waveform (placeholder).}
+        \label{fig:s6_wave}
+    \end{figure*}
+    
+    \begin{figure}[htbp]
+        \centerline{\includegraphics[width=0.30\textwidth]{temp.png}}
+        \caption{Sparsity-Aware Attention Dual-Core GLS Terminal Output (placeholder).}
+        \label{fig:s6_term}
+    \end{figure}
 
 
-\section{Conclusion}
-This project successfully demonstrates the design, implementation, and physical realization of a dual-core attention accelerator. By partitioning the system into asynchronous domains, we enabled flexible inter-core data exchange. Through the introduction of a Sparsity-Aware SFP engine, computations on insignificant data are bypassed, promoting energy efficiency. Most importantly, critical timing bottlenecks were identified and resolved via rigorous RTL repipelining, ensuring the design easily meets the 1.0\,ns clock constraint in a TSMC 65nm process. The progressive, step-by-step verification methodology guaranteed robustness from the behavioral level down to post-PnR gate-level simulations, confirming the design's readiness for physical fabrication.
-
+\clearpage
 % Include bibliography entries from references.bib without mandatory in-text cites.
 \nocite{project_repo}
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
-
+\newpage
 \appendices
 \onecolumn
 \section{Mingu Shell Command Reference}
@@ -492,5 +481,4 @@ These commands are executed \textbf{after} \texttt{fix\_set}. They map directly 
     \item \texttt{for <var> = <start> to <end> ... endfor}: Iterates block of execution commands. Variables inside the loop can be referenced using \texttt{\$(var)}. Nested loops are not supported.
     \item \texttt{exit}: Terminates the simulation gracefully and prints a summary of mismatches.
 \end{itemize}
-
 \end{document}
