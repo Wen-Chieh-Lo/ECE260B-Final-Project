@@ -20,7 +20,7 @@ set_sim_define SFP_LONGDIV SFP_THRESHOLD=169503
 set_scope fullchip
 fix_set
 
-for i = 0 to 100
+for i = 0 to 99
 
 	reset
 

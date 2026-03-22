@@ -18,7 +18,7 @@ set_clock_period 1 1.2
 set_sim_define SFP_LONGDIV SFP_THRESHOLD=169503
 fix_set
 
-for i = 0 to 100
+for i = 0 to 99
 
 	reset
 
