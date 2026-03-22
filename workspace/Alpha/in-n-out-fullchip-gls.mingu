@@ -1,20 +1,19 @@
 # =============================================================================
 #
-#   in-n-out-fullchip.mingu  —  RTL Simulation Command Script (fullchip_shell)
+#   in-n-out-fullchip-gls.mingu  —  Post-sim batch (xrun + fullchip_shell_tb, PnR netlist)
 #
-#   Dual-core fullchip: writeK0/writeK1 for separate K per core.
+#   Uses set_sim_stage post_sim. Same flow as in-n-out-fullchip.mingu, PnR netlist.
 #
-#   USAGE: ./sim_shell.sh -f in-n-out-fullchip.mingu
+#   USAGE: ./sim_shell.sh -f in-n-out-fullchip-gls.mingu
 #
 # =============================================================================
 
 set PATTERN sim/pattern
-set_output_dir sim/waveform
-set_sim_stage sim
+set_output_dir post_sim/waveform
+set_sim_stage post_sim
+set_sim_target fullchip_shell
 set_clock_period 1
 set_sim_define SFP_LONGDIV
-set_sim_target fullchip_shell
-set_sim_stage post_sim
 fix_set
 
 # Test 1: Q*K^T
