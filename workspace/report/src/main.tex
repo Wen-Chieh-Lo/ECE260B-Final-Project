@@ -34,38 +34,38 @@
 \maketitle
 
 \begin{abstract}
-This report presents the design and physical implementation of a dual-core machine learning accelerator tailored for the attention mechanisms in modern transformer models. The architecture features an asynchronous clocking scheme that distributes matrix multiplication and normalization across a dual-core setup. A hardware-optimized, sparsity-aware Softmax (SFP) engine is introduced, which utilizes cross-core sum exchange and bypasses redundant computations to improve energy efficiency. To overcome critical timing bottlenecks, we applied rigorous architectural optimizations—including a pipelined long divider and adder tree—reducing the critical path delay from over 24\,ns to under 1.0\,ns and shrinking the full-chip standard cell area by 47.8\%. Furthermore, we developed a highly scalable, Makefile-driven verification framework anchored by a custom \texttt{.mingu} shell. This framework seamlessly bridges behavioral RTL simulations with large-scale, automated post-PnR gate-level simulations. Validated through a TSMC 65nm hierarchical physical design flow, the accelerator achieves zero timing violations and demonstrates fully functional, tape-out-ready physical layouts.
+This report presents the physical implementation of a dual-core attention accelerator for transformer models. The architecture distributes matrix multiplication and Softmax normalization across two asynchronous cores. A hardware-optimized, sparsity-aware Softmax (SFP) engine dynamically bypasses redundant computations via cross-core sum exchange, significantly enhancing energy efficiency. To resolve critical timing bottlenecks, architectural optimizations—including a pipelined long divider and an adder tree—reduced the critical path from over 24\,ns to under 1.0\,ns and achieved a 47.8\% standard cell area reduction. A custom Makefile-driven \texttt{.mingu} shell provides a scalable verification framework bridging behavioral RTL and post-PnR gate-level simulations. Validated in a TSMC 65nm hierarchical physical design flow, the tape-out-ready layout achieves zero timing violations.
 \end{abstract}
 
 \section{Introduction}
-Attention mechanisms form the computational backbone of modern transformer models, but their reliance on intensive matrix multiplications (MatMul) and row-wise Softmax normalizations presents significant throughput and memory bottlenecks. To address these challenges, this project proposes a dual-core hardware accelerator designed specifically for efficient attention computation.
+Attention mechanisms dominate the computational and memory bounds of transformers due to intensive matrix multiplications (MatMul) and row-wise Softmax normalizations. This project proposes a dual-core hardware accelerator tailored to alleviate these bottlenecks.
 
-The architecture partitions the workload across two independent cores communicating via asynchronous FIFOs, enabling flexible cross-domain scheduling. To alleviate the Softmax bottleneck, we developed a Sparsity-Aware Softmax (SFP) engine that dynamically skips computations for insignificant attention scores, reducing dynamic power and latency. Given the complexity of the asynchronous, dual-core architecture, we adopted a rigorous, incremental design methodology—progressing from basic single-core RTL to a tape-out-ready, full-chip hierarchical physical layout. This report details the architectural innovations and the physical implementation milestones that achieved zero timing violations under a 1.0\,ns clock constraint.
+The workload is partitioned across two independent cores communicating via asynchronous FIFOs, enabling flexible cross-domain scheduling. A Sparsity-Aware Softmax (SFP) engine skips low-magnitude attention scores to reduce dynamic power and latency. Given the complexity of this asynchronous architecture, an incremental design methodology was adopted, progressing from single-core RTL to a full-chip hierarchical physical layout. This report details the architectural innovations and physical implementation required to meet a 1.0\,ns clock constraint with zero timing violations.
 
 \section{Proposed Architecture}
 
-\subsection{\underline{\textnormal{Dual-Core System \& Asynchronous Clocking}}}
-To maximize throughput, the accelerator is partitioned into two distinct processing cores (Core 0 and Core 1). Each core operates in its own clock domain (\texttt{clk0} and \texttt{clk1}) to simulate realistic system-on-chip (SoC) environments where different functional blocks might run at different frequencies. Data and control signals are securely transferred between the two clock domains using asynchronous FIFOs (Async FIFO). This cross-domain communication (CDC) ensures that matrix chunks processed by one core can be synchronized with the other core without meta-stability issues, particularly during the global sum accumulation required for Softmax normalization.
+\subsection{Dual-Core System \& Asynchronous Clocking}
+To maximize throughput, the accelerator is divided into two processing cores (Core 0 and Core 1) in independent clock domains (\texttt{clk0}, \texttt{clk1}), modeling a realistic multi-frequency System-on-Chip (SoC) environment. Cross-domain communication (CDC) relies on asynchronous FIFOs, ensuring partial sums required for global Softmax normalization are synchronized without metastability.
 
-\subsection{\underline{\textnormal{Core Controller \& Data flow}}}
-Each core features an independent controller and a memory map (\texttt{reg\_map}) to handle top-level configurations. The controller manages the data flow between the Query Memory (QMEM), Key Memory (KMEM), the MAC array, and the SFP engine based on the defined operation mode (\texttt{op\_mode}):
+\subsection{Core Controller \& Dataflow}
+Each core features an independent controller and a memory map (\texttt{reg\_map}). The controller orchestrates dataflow between the Query Memory (QMEM), Key Memory (KMEM), the MAC array, and the SFP engine based on the active operation mode (\texttt{op\_mode}):
 \begin{itemize}
-    \item \textbf{Mode 1 (MatMul Only):} The core multiplies data from QMEM and KMEM using the MAC array, and directly stores the result into the Partial Sum Memory (PMEM).
-    \item \textbf{Mode 0 (MatMul + Normalization):} Data from QMEM and KMEM are multiplied, and the resulting partial sums are fed into the SFP engine. The normalized outputs are then written back to either PMEM or KMEM, dictated by \texttt{sfp\_write\_to\_pmem} and \texttt{sfp\_write\_to\_kmem} flags.
+    \item \textbf{Mode 1 (MatMul Only):} The MAC array multiplies QMEM and KMEM data, storing results directly into the Partial Sum Memory (PMEM).
+    \item \textbf{Mode 0 (MatMul + Normalization):} MAC array outputs are routed to the SFP engine. Normalized results are written to PMEM or KMEM, dictated by configuration flags.
 \end{itemize}
-The controller automatically generates status flags (e.g., \texttt{qmem\_free}) to notify upper-level modules when memory banks are available for new data, enabling efficient cycle-saving data prefetching.
+Status flags (e.g., \texttt{qmem\_free}) notify upper-level modules of memory availability, facilitating cycle-efficient data prefetching.
 
-\subsection{\underline{\textnormal{Sparsity-Aware Softmax (SFP) Engine}}}
-The SFP row block is responsible for normalizing one row of the MAC array outputs. The normalization process is divided into two pipelined phases:
+\subsection{Sparsity-Aware Softmax (SFP) Engine}
+The SFP engine normalizes MAC array outputs row by row via a two-phase pipeline:
 \begin{enumerate}
-    \item \textbf{Accumulation (acc):} When \texttt{acc\_start} is pulsed, the engine computes the row energy $S_{i} = \sum_{j} |sfp\_in[j]|$ using an adder tree. The sum is temporarily stored in an internal FIFO, and \texttt{acc\_done} is asserted upon completion.
-    \item \textbf{Division (div):} During the division phase, triggered by \texttt{div\_start} (which is gated by a \texttt{div\_busy} signal to prevent overlapping operations), the engine retrieves the local sum from the FIFO and adds it to the sum from the other core (\texttt{sum\_in}). It then computes the normalized output:
+    \item \textbf{Accumulation (acc):} Initiated by \texttt{acc\_start}, an adder tree computes the row energy $S_{i} = \sum_{j} |sfp\_in[j]|$. The result is buffered in an internal FIFO, asserting \texttt{acc\_done}.
+    \item \textbf{Division (div):} Triggered by \texttt{div\_start} (gated by \texttt{div\_busy}), the engine adds the local sum to the remote core's sum (\texttt{sum\_in}) and computes the normalized output:
     \begin{equation}
         sfp\_div\_out[c] = \text{trunc}\left(\frac{|sfp\_in[c]| \ll out\_shift}{S_{local} + sum\_in}\right)
     \end{equation}
-    Upon finishing the division, a \texttt{div\_done} pulse is generated to indicate that the normalized results are valid.
+    A \texttt{div\_done} pulse validates the normalized results.
 \end{enumerate}
-To further optimize performance, a sparsity gating mechanism is implemented. If the computed row energy $S_{i}$ is strictly less than a configurable \texttt{SFP\_THRESHOLD}, the engine bypasses the division and outputs all zeros. This effectively filters out negligible attention scores, conserving dynamic power.
+To optimize energy efficiency, a sparsity gating mechanism bypasses the division phase and outputs zeros if $S_{i}$ falls below a configurable \texttt{SFP\_THRESHOLD}. This effectively suppresses negligible attention scores, conserving dynamic power.
 
 \section{Step-by-Step Implementation and Verification}
 To systematically conquer the design complexity, the project was executed in six sequential milestones.
