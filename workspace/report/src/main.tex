@@ -344,10 +344,10 @@ Initial synthesis results highlighted a massive timing violation (Worst Negative
 
     Crucially, the shell supports \textbf{variable substitution} and \textbf{\texttt{for}-loops}, which makes large-scale automated testing remarkably simple. As shown in the comprehensive list in Table~\ref{tab:mingu_files}, we utilize this feature extensively across both the \texttt{Alpha} and \texttt{Step6} workspaces to ensure complete functional coverage.
 
-    \begin{table}[htbp]
+    \begin{table*}[htbp]
         \caption{Summary of standard \texttt{.mingu} scripts and their purposes}
         \begin{center}
-            \begin{tabular}{l p{4.5cm}}
+            \begin{tabular}{l p{10cm}}
                 \toprule
                 \textbf{Script Name} & \textbf{Purpose \& Features} \\
                 \midrule
@@ -359,7 +359,7 @@ Initial synthesis results highlighted a massive timing violation (Worst Negative
             \end{tabular}
             \label{tab:mingu_files}
         \end{center}
-    \end{table}
+    \end{table*}
 
     For example, Figure~\ref{fig:s5_MinguVeri} demonstrates the generation of 100 randomized data patterns and output verification via the \texttt{.mingu} shell. Because the hardware interface is well-defined and minimal, these high-level commands can directly correspond to meaningful hardware states. This provides a highly scalable and resilient testing framework that easily transitioned our tests from basic single-core RTL all the way to full-chip, dual-clock Post-PnR netlists without writing new testbenches.
     \begin{figure}[htbp]
