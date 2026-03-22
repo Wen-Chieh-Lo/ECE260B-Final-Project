@@ -129,11 +129,11 @@ Since the theoretical output of the normalization falls within the range $[0, 1]
 \[ sfp\_div\_out[c] = \text{truncate}\left(\frac{|sfp\_in[c]| \ll out\_shift}{S_i + sum\_in}\right) \]
 This shift defines the fractional precision of the output. For example, a default \texttt{out\_shift = 7} allocates 7 bits for the fractional part, mapping the $[0, 1]$ range to $[0, 128]$ in the 8-bit output. Behavioral simulations verified that these calculations correctly normalize the partial sums. Figure~\ref{fig:s2_wave} shows the simulation waveform demonstrating the functional correctness of the Step 2 design, with the output matching the expected normalized values.
 
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.45\textwidth]{Step2_images/waveform.png}}
+\begin{figure*}[htbp]
+    \centerline{\includegraphics[width=0.8\textwidth]{Step2_images/waveform.png}}
     \caption{Step 2 Simulation Waveform demonstrating functional correctness of Output Normalization.}
     \label{fig:s2_wave}
-\end{figure}
+\end{figure*}
 
 \subsection{Step 3: Hierarchical Synthesis of Core}
 Memory macros (SRAMs for QMEM, KMEM, and PMEM) were incorporated into the core. A hierarchical synthesis and PnR flow was adopted to manage the physical placement of the SRAM macros alongside standard cells.
@@ -300,8 +300,33 @@ Initial synthesis results highlighted a massive timing violation (Worst Negative
     \end{enumerate}
 
     \item \textbf{Production System Setup (Makefile-based Flow):} 
-    A centralized Makefile is designed to manage the entire simulation pipeline, including RTL simulation, gate-level simulation (GLS), and post-PnR validation. 
-    Key parameters such as simulation target, clock period, and design configuration can be specified through command-line arguments, enabling reproducible experiments and fast design iteration.
+    A centralized Makefile is designed to manage the entire simulation pipeline, including RTL simulation, gate-level simulation (GLS), and synthesis. 
+    Key parameters such as simulation target, clock period, and design configuration can be specified through command-line arguments, enabling reproducible experiments and fast design iteration. 
+    A summary of the supported Makefile commands and arguments is provided in Table~\ref{tab:makefile_cmds}.
+    
+    Particularly, the \texttt{USER\_DEFINES} variable (which can be stored persistently in \texttt{USER\_DEFINE\_TASK\_VARS}) offers a significant advantage for architectural exploration. It allows developers to seamlessly switch hardware configurations—such as changing the division module to \texttt{SFP\_LONGDIV} or \texttt{SFP\_MCP}, or enabling sparsity features via \texttt{SFP\_THRESHOLD}—without modifying the underlying RTL or synthesis scripts. Because this single variable propagates globally to both the simulator (\texttt{iverilog}) and the synthesizer (\texttt{Design Compiler}), it guarantees functional consistency between RTL verification and the final synthesized netlist.
+
+    \begin{table}[htbp]
+        \caption{Supported Makefile Commands and Parameters}
+        \begin{center}
+            \begin{tabular}{l p{6cm}}
+                \toprule
+                \textbf{Command / Parameter} & \textbf{Description} \\
+                \midrule
+                \texttt{make sim} & Runs RTL simulation using \texttt{iverilog} and \texttt{vvp}. Supports SV via \texttt{-g2012}. \\
+                \texttt{make gls} & Runs gate-level simulation using post-synthesis netlists (\texttt{syn/gate/*.out.v}) and PDK. \\
+                \texttt{make syn} & Runs Design Compiler synthesis using \texttt{run\_dc.tcl}. \\
+                \texttt{make sim-shell} & Launches the interactive `.mingu` shell for testbench execution. \\
+                \texttt{make parse} & Parses synthesis reports and outputs a summary of area, power, and timing. \\
+                \texttt{TARGET=<name>} & Specifies the design target (e.g., \texttt{fullchip}, \texttt{core}, \texttt{mac}, \texttt{sfp\_row}). \\
+                \texttt{SYN\_EFFORT=<level>} & Sets synthesis optimization effort: \texttt{low}, \texttt{medium}, or \texttt{high} (default). \\
+                \texttt{CYCLE=<val>} & Overrides the default clock period during simulation. \\
+                \texttt{USER\_DEFINES=<...>} & Passes custom Verilog macros (e.g., \texttt{SFP\_LONGDIV}) to both simulation and synthesis. \\
+                \bottomrule
+            \end{tabular}
+            \label{tab:makefile_cmds}
+        \end{center}
+    \end{table}
 
     \item \textbf{Randomized Input Generation:} 
     We support automatic generation of randomized test patterns for functional verification. 
@@ -309,38 +334,59 @@ Initial synthesis results highlighted a massive timing violation (Worst Negative
     This improves coverage and helps uncover corner-case bugs under diverse input conditions.
 
     \item \textbf{.mingu Shell (Matrix INstruction Generation Utility):} 
-    We developed a custom simulation shell (“.mingu shell”), named after \textit{Matrix INstruction Generation Utility}, on top of the Makefile flow. 
-    It provides a simple and scriptable interface for interacting with the system.
+    The crown jewel of our verification framework is a custom, highly extensible simulation shell named the \textit{Matrix INstruction Generation Utility} (\texttt{.mingu}). Built on top of our Makefile flow and utilizing the hardware's unified interface, it completely abstracts away low-level testbench manipulation, allowing users to express verification tasks in a clean, scriptable format.
 
-    Instead of manually controlling low-level signals in testbench, users can describe operations in a concise and structured form. 
-    For example: Figure\ref{fig:s5_MinguVeri} demonstrates generation of 100 randomized data patterns and output verification via .mingu shell.
+    The \texttt{.mingu} shell operates in a two-phase execution model:
+    \begin{enumerate}
+        \item \textbf{Configuration Phase (Before \texttt{fix\_set}):} Users define the environment using shell-level commands. This includes setting the simulation target (\texttt{set\_scope core|fullchip}), configuring the clock periods for asynchronous testing (\texttt{set\_clock\_period}), selecting the backend execution stage (\texttt{set\_sim\_stage sim|gls|post\_sim}), defining user variables (\texttt{set VAR value}), and controlling output features (\texttt{set\_dump\_vcd}).
+        \item \textbf{Execution Phase (After \texttt{fix\_set}):} Once the environment is locked and compiled via \texttt{fix\_set}, the shell enters the interactive or batch testbench phase. Users issue high-level operations that perfectly map to our hardware's clean controller interface. Support includes data loading (\texttt{writeQ}, \texttt{writeK0}, \texttt{writeK1}), mode configuration (\texttt{set\_exec\_target}), operation triggers (\texttt{simulate}, \texttt{reset}), and automated golden model verification (\texttt{verifypmem}).
+    \end{enumerate}
+
+    Crucially, the shell supports \textbf{variable substitution} and \textbf{\texttt{for}-loops}, which makes large-scale automated testing remarkably simple. As shown in the comprehensive list in Table~\ref{tab:mingu_files}, we utilize this feature extensively across both the \texttt{Alpha} and \texttt{Step6} workspaces to ensure complete functional coverage.
+
+    \begin{table}[htbp]
+        \caption{Summary of standard \texttt{.mingu} scripts and their purposes}
+        \begin{center}
+            \begin{tabular}{l p{5cm}}
+                \toprule
+                \textbf{Script Name} & \textbf{Purpose \& Features} \\
+                \midrule
+                \texttt{in-n-out-fullchip.mingu} & Basic RTL simulation pipeline executing Q*K\textsuperscript{T}, Norm, and V*Norm\textsuperscript{T} sequentially on a single static test pattern. \\
+                \texttt{in-n-out100-fullchip.mingu} & Large-scale automated RTL simulation utilizing the \texttt{for} loop. It automatically triggers the python/shell pattern generator to create 100 sets of randomized Q, K, and V matrices and verifies the hardware against a software golden model continuously. \\
+                \texttt{in-n-out500-fullchip.mingu} & Stress-testing variant scaling the loop and automatic pattern generation to 500 unique datasets. \\
+                \texttt{in-n-out*-fullchip-gls.mingu} & Post-PnR validation scripts. By simply changing \texttt{set\_sim\_stage} to \texttt{post\_sim}, the exact same test sequence is piped into \texttt{xrun} with the synthesized and routed netlist (with back-annotated delays or threshold logic). \\
+                \bottomrule
+            \end{tabular}
+            \label{tab:mingu_files}
+        \end{center}
+    \end{table}
+
+    For example, Figure~\ref{fig:s5_MinguVeri} demonstrates the generation of 100 randomized data patterns and output verification via the \texttt{.mingu} shell. Because the hardware interface is well-defined and minimal, these high-level commands can directly correspond to meaningful hardware states. This provides a highly scalable and resilient testing framework that easily transitioned our tests from basic single-core RTL all the way to full-chip, dual-clock Post-PnR netlists without writing new testbenches.
     \begin{figure}[htbp]
         \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/MinguVeri.png}}
-        \caption{in-n-out100-fullchip.mingu}
+        \caption{in-n-out100-fullchip.mingu execution script demonstrating \texttt{for}-loops and automated testing.}
         \label{fig:s5_MinguVeri}
     \end{figure}
-    More importantly, this shell is built upon the clean chip interface design. 
-    Since the hardware interface is well-defined and minimal, high-level commands can directly map to meaningful operations, enabling intuitive and efficient system interaction.
 
     \item \textbf{Dual Core Verification on both Lockstep \& Non-Lockstep Clock Pair: }
 
     
 
 \end{itemize}
-These architectural optimizations successfully reduced the data arrival time from $\sim$25.0\,ns down to 0.97\,ns, eliminating all timing violations. Furthermore, the total cell area of the SFP row was reduced by 54\% as the costly combinational divider was replaced.
+These architectural optimizations successfully reduced the data arrival time from $\sim$25.0\,ns down to 0.97\,ns, eliminating all timing violations. As shown in Table~\ref{tab:s5_timing}, the fullchip area was reduced by 47.8\%, the MAC array by 40.5\%, and the SFP row by 54.1\% as the costly combinational divider was replaced with a pipelined design.
 
 \begin{table}[htbp]
     \caption{Timing Optimization Synthesis Results (Target Period = 1.0 ns)}
     \begin{center}
-        \begin{tabular}{l c c c c}
+        \begin{tabular}{l c c c c c}
             \toprule
-            \textbf{Design} & \multicolumn{2}{c}{\textbf{Before Repipelining}} & \multicolumn{2}{c}{\textbf{After Repipelining}} \\
-            \cmidrule(lr){2-3} \cmidrule(lr){4-5}
-             & \textbf{Area ($\mu m^2$)} & \textbf{WNS (ns)} & \textbf{Area ($\mu m^2$)} & \textbf{WNS (ns)} \\
+            \textbf{Design} & \multicolumn{2}{c}{\textbf{Before Repipelining}} & \multicolumn{2}{c}{\textbf{After Repipelining}} & \textbf{Area Reduction} \\
+            \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-6}
+             & \textbf{Area ($\mu m^2$)} & \textbf{WNS (ns)} & \textbf{Area ($\mu m^2$)} & \textbf{WNS (ns)} & \\
             \midrule
-            Core        & 243,526 & -23.68 & 175,820 & +0.00 \\
-            MAC Array   & 116,808 & -1.61  &  69,490 & +0.00 \\
-            SFP Row     &  53,864 & -23.92 &  24,698 & +0.00 \\
+            Fullchip    & 557,909 & -9.11 & 291,243 & +0.04 & -47.8\% \\
+            MAC Array   & 116,808 & -1.61  &  69,490 & +0.00 & -40.5\% \\
+            SFP Row     &  53,864 & -23.92 &  24,698 & +0.00 & -54.1\% \\
             \bottomrule
         \end{tabular}
         \label{tab:s5_timing}
