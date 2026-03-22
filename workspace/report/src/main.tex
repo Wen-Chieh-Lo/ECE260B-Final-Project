@@ -83,7 +83,7 @@ Post-PnR layout, GLS waveform, and terminal output for the single-core design ar
 
 To validate the flexibility of the single-core design, we separately tested the QK product and the V--Norm product using the same computation path. This demonstrates that the design can support both stages of the attention computation, providing a verified foundation for later steps where these operations are connected into a more complete pipeline.
 
-In addition, minor modifications were made to the professor-provided testbench to align with our implementation. Specifically, we updated the DUT from fullchip to core, parameter settings, and data packing format, and added automatic golden result comparison (PASS/FAIL). These changes improve verification efficiency while preserving the intended computation functionality.
+In addition, minor modifications were made to the professor-provided testbench to align with our implementation. Specifically, the DUT was updated from \texttt{fullchip} to \texttt{core}, along with adjustments to parameter settings and data packing format. An automatic golden result comparison (PASS/FAIL) mechanism was also added. These changes improve verification efficiency while preserving the intended functionality. Figure~\ref{fig:s1_term} shows the terminal output demonstrating the golden result comparison mechanism, while Figure~\ref{fig:s1_wave} presents the corresponding waveform of the design.
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=0.30\textwidth]{Step1_images/Step1corelayout.png}}
     \caption{Single-Core Layout (post-PnR).}
@@ -411,10 +411,10 @@ ensuring approximately 30\% of rows satisfy $S_i < T$. The sparsity is defined a
 \end{equation}
 
 \textbf{RTL Skip Mechanism and Verification.}
-In RTL, the accumulation from both cores is combined as \texttt{sum\_2core}, and the skip condition is evaluated via \texttt{sum\_2core < SFP\_THRESHOLD}. When triggered, the divisor is gated to zero (\texttt{sum\_2core\_gated}) and fed into the divider (e.g., \texttt{div\_longdiv}), allowing its FSM to bypass computation and force zero outputs without modifying the control flow. The same criterion is replicated in the testbench to count skipped rows and compute sparsity.
+In RTL, the accumulation from both cores is combined as \texttt{sum\_2core}, and the skip condition is evaluated via \texttt{sum\_2core < SFP\_THRESHOLD}. When triggered, the divisor is gated to zero (\texttt{sum\_2core\_gated}) and fed into the divider (e.g., \texttt{div\_longdiv}), allowing its FSM to bypass computation and force zero outputs without modifying the control flow. The same criterion is replicated in the testbench to count skipped rows and compute sparsity. Figure~\ref{fig:s6_layout} shows the corresponding layout.
 
 \textbf{Results.}
-Using 10{,}000 samples for searching threshold, the threshold for sparsity we get is 169503. With this threhold, we test test with 1000 other random generated data ,and the measured sparsity we get is 34.975\%, close to the 30\% target. The deviation is attributed to distribution variance, demonstrating that the threshold generalizes well and that the RTL correctly implements sparsity-aware skipping.
+Using 10{,}000 sample in \texttt{threshold.py} searching threshold, the threshold for sparsity we get is 169503. With this threhold, we test test with 1000 other random generated data ,and the measured sparsity we get is 34.975\%, close to the 30\% target. The deviation is attributed to distribution variance, demonstrating that the threshold generalizes well and that the RTL correctly implements sparsity-aware skipping. Figure~\ref{fig:s6_wave} and Figure~\ref{fig:s6_term} shows the corresponding waveform and terminal output.
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=0.30\textwidth]{Step6_images/Step6corelayout.png}}
     \caption{Sparsity-Aware Attention Dual-Core Layout.}
@@ -422,13 +422,13 @@ Using 10{,}000 samples for searching threshold, the threshold for sparsity we ge
 \end{figure}
 
 \begin{figure*}[htbp]
-    \centerline{\includegraphics[width=1.0\textwidth]{temp.png}}
+    \centerline{\includegraphics[width=1.0\textwidth]{Step6_images/Step6FinalPLGLSwaveform.png}}
     \caption{Sparsity-Aware Attention Dual-Core GLS Waveform (placeholder).}
     \label{fig:s6_wave}
 \end{figure*}
 
 \begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.30\textwidth]{temp.png}}
+    \centerline{\includegraphics[width=0.30\textwidth]{Step6_images/Step6PLGLSwaveform.png}}
     \caption{Sparsity-Aware Attention Dual-Core GLS Terminal Output (placeholder).}
     \label{fig:s6_term}
 \end{figure}
