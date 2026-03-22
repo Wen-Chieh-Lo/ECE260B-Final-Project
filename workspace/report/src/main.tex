@@ -299,6 +299,30 @@ Initial synthesis results highlighted a massive timing violation (Worst Negative
         so if user's next step is multiply norm by V, user can start writing V data while normalization is still running.
     \end{enumerate}
 
+    \item \textbf{Production System Setup (Makefile-based Flow):} 
+    A centralized Makefile is designed to manage the entire simulation pipeline, including RTL simulation, gate-level simulation (GLS), and post-PnR validation. 
+    Key parameters such as simulation target, clock period, and design configuration can be specified through command-line arguments, enabling reproducible experiments and fast design iteration.
+
+    \item \textbf{Randomized Input Generation:} 
+    We support automatic generation of randomized test patterns for functional verification. 
+    The system detects missing pattern files and generates them on demand, allowing large-scale testing without manual data preparation. 
+    This improves coverage and helps uncover corner-case bugs under diverse input conditions.
+
+    \item \textbf{Mingu Shell (Matrix INstruction Generation Utility):} 
+    We developed a custom simulation shell (“mingu shell”), named after \textit{Matrix INstruction Generation Utility}, on top of the Makefile flow. 
+    It provides a simple and scriptable interface for interacting with the system.
+
+    Instead of manually controlling low-level signals in testbench, users can describe operations in a concise and structured form. 
+    For example: \texttt{in-n-out100-fullchip-gls.mingu} generates 100 randomized data patterns and verify the results.
+    \begin{figure}[htbp]
+        \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/MinguVeri.png}}
+        \caption{.mingu shell verification of 100 randomized input pattern}
+        \label{fig:s5_Controller_user_manual_spec}
+    \end{figure}
+
+    More importantly, this shell is built upon the clean chip interface design. 
+    Since the hardware interface is well-defined and minimal, high-level commands can directly map to meaningful operations, enabling intuitive and efficient system interaction.
+
 
 
 
