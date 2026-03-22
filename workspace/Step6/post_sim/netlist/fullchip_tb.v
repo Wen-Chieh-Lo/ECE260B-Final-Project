@@ -106,7 +106,7 @@ module fullchip_tb;
 	assign qmem_locked1 = status1[2];
 	assign kmem_locked1 = status1[1];
 	assign pmem_locked1 = status1[0];
-	assign pmem_out0 =  (^out0 === 1'bx)? 0 : out0;
+	assign pmem_out0 = (^out0 === 1'bx)?  0: out0;
 	assign pmem_out1 =  (^out1 === 1'bx)? 0 : out1;
 
 	fullchip fullchip_instance(

@@ -5,6 +5,6 @@ read_activity_file \
     -scope  fullchip_tb.fullchip_instance \
     -start  50ns \
     -end    300ns \
-    ../../../gls/waveform/fullchip_tb.vcd
+    ../../../gls/waveform/fullchip_sepclk.vcd
 
-report_power -outfile ./power_step4_vcd.rpt
+report_power -outfile ./power_step4_sepclk_vcd.rpt

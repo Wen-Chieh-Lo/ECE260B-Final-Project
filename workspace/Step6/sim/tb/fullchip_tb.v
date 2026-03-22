@@ -107,7 +107,7 @@ module fullchip_tb;
 	assign pmem_locked1 = status1[0];
 
 
-	fullchip #(.bw(bw), .bw_psum(bw_psum), .col(col), .pr(2*pr), .half_pr(pr)) fullchip_instance(
+	fullchip fullchip_instance(
 		.reset0(reset0), 		.reset1(reset1), 	
 		.clk0(clk0), 			.clk1(clk1), 	
 		.start0(start0), 		.start1(start1),
