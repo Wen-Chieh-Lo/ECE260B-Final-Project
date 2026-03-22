@@ -347,7 +347,7 @@ Initial synthesis results highlighted a massive timing violation (Worst Negative
     \begin{table}[htbp]
         \caption{Summary of standard \texttt{.mingu} scripts and their purposes}
         \begin{center}
-            \begin{tabular}{l p{5cm}}
+            \begin{tabular}{l p{4.5cm}}
                 \toprule
                 \textbf{Script Name} & \textbf{Purpose \& Features} \\
                 \midrule
@@ -442,5 +442,55 @@ This project successfully demonstrates the design, implementation, and physical 
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
+
+\appendices
+\onecolumn
+\section{Mingu Shell Command Reference}
+\label{sec:appendix_mingu}
+
+The \texttt{.mingu} shell abstracts the complexity of cycle-accurate testbenches into a high-level scripting language. Below is the complete reference of supported commands, categorized by execution phase.
+
+\subsection{Phase 1: Shell Configuration Commands}
+These commands must be executed \textbf{before} \texttt{fix\_set}. They configure the underlying simulation backend, Makefile parameters, and output preferences.
+
+\begin{itemize}
+    \item \texttt{set\_scope <core|fullchip>}: Selects the hardware hierarchy to simulate. Determines whether to instantiate a single core or the dual-core fullchip.
+    \item \texttt{set\_sim\_stage <sim|gls|post\_sim>}: Sets the simulation backend.
+    \begin{itemize}
+        \item \texttt{sim}: RTL behavioral simulation.
+        \item \texttt{gls}: Gate-level simulation using synthesized netlist.
+        \item \texttt{post\_sim}: Post-PnR gate-level simulation with delay annotations via \texttt{xrun}.
+    \end{itemize}
+    \item \texttt{set\_clock\_period <ns0> [ns1]}: Configures the half-cycle clock periods. If \texttt{ns1} is omitted, it defaults to \texttt{ns0} (lockstep). Example: \texttt{set\_clock\_period 1 1.2}.
+    \item \texttt{set\_dump\_vcd <0|1>}: Toggles waveform dumping (\texttt{1} for ON, \texttt{0} for OFF). Disabling VCD significantly speeds up massive test runs.
+    \item \texttt{set VAR value}: Defines a shell variable that can be substituted later using \texttt{\$(VAR)}. Example: \texttt{set PATTERN sw/pattern/random100}.
+    \item \texttt{fix\_set}: \textbf{Required.} Locks all configurations, triggers compilation of the hardware design, and transitions the shell into the execution phase.
+\end{itemize}
+
+\subsection{Phase 2: Hardware Execution Commands}
+These commands are executed \textbf{after} \texttt{fix\_set}. They map directly to the unified controller interface of the chip.
+
+\begin{itemize}
+    \item \texttt{set\_exec\_target <MODE>}: Sets the execution mode of the hardware controller (mapped to \texttt{mode\_in}).
+    \begin{itemize}
+        \item \texttt{CORE\_MODE\_MULT\_save\_to\_PMEM}: Standard $Q \times K^T$.
+        \item \texttt{CORE\_MODE\_MULT\_NORM\_save\_to\_PMEM\_and\_KMEM}: Computes $Q \times K^T$, applies Softmax, and saves to both Partial-Sum memory and Key memory for subsequent computation.
+    \end{itemize}
+    \item \textbf{Memory Writers}: Loads text-based integer matrices into the internal SRAMs via the \texttt{inst\_ext} and \texttt{mem\_in} ports.
+    \begin{itemize}
+        \item \texttt{writeQ <filepath>}: Loads data into QMEM.
+        \item \texttt{writeK0 <filepath>}: Loads data into Core 0's KMEM.
+        \item \texttt{writeK1 <filepath>}: Loads data into Core 1's KMEM.
+    \end{itemize}
+    \item \texttt{simulate}: Asserts the \texttt{start} signal and waits until the core's \texttt{status[3]} (busy flag) goes low. Internally, the testbench computes the golden model equivalent for validation.
+    \item \textbf{Golden Checkers}: Reads out the data from the PMEM via the \texttt{inst\_ext} port and compares it against the golden model.
+    \begin{itemize}
+        \item \texttt{verifypmem}: Checks PMEM results for all active cores and prints PASS/FAIL statistics.
+        \item \texttt{verifypmem0 / verifypmem1}: Specific checks for Core 0 or Core 1.
+    \end{itemize}
+    \item \texttt{reset}: Asserts the hardware reset signal for two cycles, clearing internal states.
+    \item \texttt{for <var> = <start> to <end> ... endfor}: Iterates block of execution commands. Variables inside the loop can be referenced using \texttt{\$(var)}. Nested loops are not supported.
+    \item \texttt{exit}: Terminates the simulation gracefully and prints a summary of mismatches.
+\end{itemize}
 
 \end{document}
