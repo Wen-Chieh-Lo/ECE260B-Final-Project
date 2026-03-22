@@ -1,7 +1,7 @@
 # =============================================================================
 # ECE260B Project Report — LaTeX build (sources in ./src)
 # =============================================================================
-#   make compile   — pdflatex + bibtex + pdflatex x2
+#   make compile   — pdflatex (+ bibtex only if \\bibdata appears in main.aux) + pdflatex x2
 #   make clean     — remove auxiliary files (keeps main.pdf)
 #   make distclean — clean + remove main.pdf
 #
@@ -45,7 +45,12 @@ ifeq ($(LATEXMK),1)
 	cd $(SRCDIR) && latexmk -pdf -interaction=nonstopmode -halt-on-error $(MAIN).tex
 else
 	cd $(SRCDIR) && pdflatex -interaction=nonstopmode -file-line-error $(MAIN).tex
-	cd $(SRCDIR) && bibtex $(MAIN)
+	@if [ -f "$(SRCDIR)/$(MAIN).aux" ] && grep -q bibdata "$(SRCDIR)/$(MAIN).aux"; then \
+		echo "Running bibtex (bibliography in $(MAIN).aux)..."; \
+		cd $(SRCDIR) && bibtex $(MAIN); \
+	else \
+		echo "Skipping bibtex (no bibliography in document)."; \
+	fi
 	cd $(SRCDIR) && pdflatex -interaction=nonstopmode -file-line-error $(MAIN).tex
 	cd $(SRCDIR) && pdflatex -interaction=nonstopmode -file-line-error $(MAIN).tex
 endif

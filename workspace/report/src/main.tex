@@ -11,8 +11,10 @@
 \usepackage{multirow}
 \usepackage{url}
 \usepackage{array}
-% TeX default float queue is small; many consecutive figures exceed it ("Too many unprocessed floats").
+% Many consecutive floats: avoid "Too many unprocessed floats" on TeX Live 2008.
 \usepackage{morefloats}
+% Load last: PDF links (TeX Live 2008: avoid unknown options like hidelinks).
+\usepackage{hyperref}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
@@ -70,7 +72,7 @@ To systematically conquer the design complexity, the project was executed in six
 
 \subsection{Step 1: Single Core RTL, Synthesis \& PNR}
 The baseline single-core design was implemented and verified first. This step established the core infrastructure, including the MAC array and the basic controller.
-Post-PnR layout, GLS waveform, and terminal output for the single-core design are shown below, with summary metrics in Table~\ref{tab:s1}.
+Post-PnR layout, GLS waveform, and terminal output for the single-core design are shown below. Table~\ref{tab:s1} summarizes power, WNS, and DRC across implementation steps, including Step~1.
 
 To validate the flexibility of the single-core design, we separately tested the QK product and the V--Norm product using the same computation path. This demonstrates that the design can support both stages of the attention computation, providing a verified foundation for later steps where these operations are connected into a more complete pipeline.
 
@@ -105,13 +107,31 @@ correctness with zero mismatches across all 8$\times$8 QK and VN output values.
 
 
 \subsection{\underline{\textnormal{Step 4: Hierarchical Synthesis of Dual-Core}}}
-Two single-core instances were integrated into a top-level fullchip module, with each core processing 8 of the 16 attention vectors in parallel. Cross-domain partial sum exchange for global normalisation was implemented via a custom Gray-code asynchronous FIFO with a sample-and-hold register at each core input. Both a lockstep (single clock) and a dual-clock (1.0 ns / 1.2 ns) configuration were validated at gate level against software-computed golden references, with the dual-clock mode included as an extension beyond the base deliverable Table 3 captures the power, WNS and DRC measurements. Fig 10 is the fullchip layout and Fig 11, 12 shows non-lockstep operation. Fig 13, 14 show non-lockstep operation
+Two single-core instances were integrated into a top-level fullchip module, with each core processing 8 of the 16 attention vectors in parallel. Cross-domain partial sum exchange for global normalisation was implemented via a custom Gray-code asynchronous FIFO with a sample-and-hold register at each core input. Both a lockstep (single clock) and a dual-clock (1.0 ns / 1.2 ns) configuration were validated at gate level against software-computed golden references, with the dual-clock mode included as an extension beyond the base deliverable. Table~\ref{tab:s1} captures the power, WNS, and DRC measurements. Figure~\ref{fig:s4_fullchip_layout} shows the dual-core fullchip layout. Figures~\ref{fig:s4_wave} and~\ref{fig:s4_wave1} present the GLS waveforms for non-lockstep and lockstep operation, respectively. Figures~\ref{fig:s4_term} and~\ref{fig:s4_term1} show the corresponding terminal outputs.
 
 
 
 
 \subsection{\underline{\textnormal{Step 5: Architecture Optimisations}}}
 Initial synthesis results highlighted a massive timing violation (Worst Negative Slack $\approx$ -23.9\,ns) primarily due to deep combinational logic in the SFP row's absolute sum and division calculations. To achieve timing closure for a 1.0\,ns clock period, we added 3-stage pipeline in the accumulation and also added \texttt{-retime} to meet the timing requirement:
+
+\begin{table}[htbp]
+    \caption{Timing Optimization Synthesis Results (Target Period = 1.0 ns)\label{tab:s5_timing}}
+    \begin{center}
+        \begin{tabular}{l c c c c c}
+            \toprule
+            \textbf{Design} & \multicolumn{2}{c}{\textbf{Before Repipelining}} & \multicolumn{2}{c}{\textbf{After Repipelining}} & \textbf{Area Reduction} \\
+            \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-6}
+            & \textbf{Area ($\mu\text{m}^2$)} & \textbf{WNS (ns)} & \textbf{Area ($\mu\text{m}^2$)} & \textbf{WNS (ns)} & \\
+            \midrule
+            Fullchip & 557{,}909 & $-9.11$ & 291{,}243 & $+0.04$ & $-47.8$\% \\
+            MAC Array & 116{,}808 & $-1.61$ & 69{,}490 & $+0.00$ & $-40.5$\% \\
+            SFP Row & 53{,}864 & $-23.92$ & 24{,}698 & $+0.00$ & $-54.1$\% \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+\end{table}
+
 \begin{itemize}
     \item \textbf{Divider Optimization:}
     Previous synthesis timing reports indicate that the native Verilog / divider is the bottleneck of achieving 0 WNS. 
@@ -130,7 +150,7 @@ Initial synthesis results highlighted a massive timing violation (Worst Negative
 
 
 
-    \item \textbf{Pipelining - Adder Tree Optimization:} The row energy accumulator was redesigned as a 3-stage pipelined reduction tree. After the 8 parallel multipliers, one pipeline stage captures the multiplication results, the next stage performs four pairwise additions, and the final stage reduces the partial sums to produce the accumulated row energy. Table IV presents a before-and-after comparison of the modules in which pipelining was implemented.
+    \item \textbf{Pipelining - Adder Tree Optimization:} The row energy accumulator was redesigned as a 3-stage pipelined reduction tree. After the 8 parallel multipliers, one pipeline stage captures the multiplication results, the next stage performs four pairwise additions, and the final stage reduces the partial sums to produce the accumulated row energy. Table~\ref{tab:s5_timing} presents a before-and-after area and timing comparison for the repipelined blocks (fullchip, MAC array, and SFP row).
 
     \item \textbf{Chip Interface Design and Internal Control:} 
     The chip interface is redesigned not only to remove redundant signals, but also to hide unnecessary internal details. The goal is to provide an intuitive and self-consistent interface, allowing users to operate the chip without understanding internal dataflow or timing dependencies. Each core is independently controlled, and we describe usage from the perspective of a single core.
@@ -156,7 +176,7 @@ The Alpha implementation exposes a two-phase, row-local transaction. For each ro
     
 
 \end{itemize}
-These architectural optimizations successfully between Step 4 and 5 reduced the WNS (Setup)from $\sim$-9.106\,ns down to 0.001\,ns, and WNS (Hold) from eliminating $\sim$-4.713\,ns down to 0.037\,ns, all timing violations. The Power increased from 29.68 mW to 54.21 mW. Table II provides the comparison parameters for all steps.
+These architectural optimizations successfully between Step 4 and 5 reduced the WNS (Setup)from $\sim$-9.106\,ns down to 0.001\,ns, and WNS (Hold) from eliminating $\sim$-4.713\,ns down to 0.037\,ns, all timing violations. The Power increased from 29.68 mW to 54.21 mW. Table~\ref{tab:s1} provides the comparison parameters for all steps.
 
 
 
@@ -181,7 +201,7 @@ ensuring approximately 30\% of rows satisfy $S_i < T$. The sparsity is defined a
 In RTL, the accumulation from both cores is combined as \texttt{sum\_2core}, and the skip condition is evaluated via \texttt{sum\_2core < SFP\_THRESHOLD}. When triggered, the divisor is gated to zero (\texttt{sum\_2core\_gated}) and fed into the divider (e.g., \texttt{div\_longdiv}), allowing its FSM to bypass computation and force zero outputs without modifying the control flow. The same criterion is replicated in the testbench to count skipped rows and compute sparsity. Figure~\ref{fig:s6_layout} shows the corresponding layout.
 
 \textbf{Results.}
-Using 10{,}000 sample in \texttt{threshold.py} searching threshold, the threshold for sparsity we get is 169503. With this threhold, we test test with 1000 other random generated data ,and the measured sparsity we get is 34.975\%, close to the 30\% target. The deviation is attributed to distribution variance, demonstrating that the threshold generalizes well and that the RTL correctly implements sparsity-aware skipping. Figure~\ref{fig:s6_wave} and Figure~\ref{fig:s6_term} shows the corresponding waveform and terminal output.
+Using 10{,}000 sample in \texttt{threshold.py} searching threshold, the threshold for sparsity we get is 169503. With this threhold, we test test with 1000 other random generated data ,and the measured sparsity we get is 34.975\%, close to the 30\% target. The deviation is attributed to distribution variance, demonstrating that the threshold generalizes well and that the RTL correctly implements sparsity-aware skipping. Figure~\ref{fig:s6_wave} and Figure~\ref{fig:s6_term} show the corresponding waveform and terminal output.
 
 
 \section{Plus Alpha Implementations}
@@ -221,9 +241,9 @@ To facilitate rapid development and reliable testing of the dual-core design, a 
 \end{itemize}
 
 \section{Deliverable Path}
-Table 1 contains the paths to our submission.
+Table~\ref{tab:deliverable} contains the paths to our submission.
 \begin{table}[htbp]
-    \caption{Deliverable Path Summary}
+    \caption{Deliverable Path Summary\label{tab:deliverable}}
     \centering
     \begin{tabular}{|c|>{\raggedright\arraybackslash}p{0.72\linewidth}|}
         \hline
@@ -244,14 +264,13 @@ Table 1 contains the paths to our submission.
         \multicolumn{2}{|c|}{\textbf{Final Version}} \\
         \hline
     \end{tabular}
-    \label{tab:deliverable}
 \end{table}
 
 \section{Conclusion}
 This project successfully demonstrates the design, implementation, and physical realization of a dual-core attention accelerator. By partitioning the system into asynchronous domains, we enabled flexible inter-core data exchange. Through the introduction of a Sparsity-Aware SFP engine, computations on insignificant data are bypassed, promoting energy efficiency. Most importantly, critical timing bottlenecks were identified and resolved via rigorous RTL repipelining, ensuring the design easily meets the 1.0\,ns clock constraint in a TSMC 65nm process. The progressive, step-by-step verification methodology guaranteed robustness from the behavioral level down to post-PnR gate-level simulations, confirming the design's readiness for physical fabrication.
 
  \begin{table}[htbp]
-    \caption{Performance Comparison}
+    \caption{Performance Comparison\label{tab:s1}}
     \begin{center}
         \begin{tabular}{|c|c|c|c|c|}
             \hline
@@ -264,15 +283,11 @@ This project successfully demonstrates the design, implementation, and physical 
             STEP 6 &  52.59 mW &  0.004 & & 0 \\
             \hline
         \end{tabular}
-        \label{tab:s1}
     \end{center}
 \end{table}
 
-
-\clearpage
-\section*{Tables and Figures}
 \begin{table}[htbp]
-    \caption{Supported Makefile Commands and Parameters}
+    \caption{Supported Makefile Commands and Parameters\label{tab:makefile_cmds}}
     \begin{center}
         \begin{tabular}{l p{5cm}}
             \toprule
@@ -289,148 +304,134 @@ This project successfully demonstrates the design, implementation, and physical 
             \texttt{USER\_DEFINES=<...>} & Passes custom Verilog macros (e.g., \texttt{SFP\_LONGDIV}) to both simulation and synthesis. \\
             \bottomrule
         \end{tabular}
-        \label{tab:makefile_cmds}
     \end{center}
 \end{table}
-\begin{table*}[htbp]
-    \caption{Summary of standard \texttt{.mingu} scripts and their purposes}
-    \begin{center}
-        \begin{tabular}{l p{10cm}}
-            \toprule
-            \textbf{Script Name} & \textbf{Purpose \& Features} \\
-            \midrule
-            \texttt{in-n-out-fullchip.mingu} & Basic RTL simulation pipeline executing Q*K\textsuperscript{T}, Norm, and V*Norm\textsuperscript{T} sequentially on a single static test pattern. \\
-            \texttt{in-n-out100-fullchip.mingu} & Large-scale automated RTL simulation utilizing the \texttt{for} loop. It automatically triggers the python/shell pattern generator to create 100 sets of randomized Q, K, and V matrices and verifies the hardware against a software golden model continuously. \\
-            \texttt{in-n-out500-fullchip.mingu} & Stress-testing variant scaling the loop and automatic pattern generation to 500 unique datasets. \\
-            \texttt{in-n-out*-fullchip-gls.mingu} & Post-PnR validation scripts. By simply changing \texttt{set\_sim\_stage} to \texttt{post\_sim}, the exact same test sequence is piped into \texttt{xrun} with the synthesized and routed netlist (with back-annotated delays or threshold logic). \\
-            \bottomrule
-        \end{tabular}
-        \label{tab:mingu_files}
-    \end{center}
-\end{table*}
 
-% Flush tables before the long figure run (avoids exceeding LaTeX float queues).
+
+
+
 \clearpage
 
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.30\textwidth]{Step1_images/Step1corelayout.png}}
-    \caption{Single-Core Layout (post-PnR).}
-    \label{fig:s1_layout}
+% --- Layouts and floorplans (non-waveform) ---
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{Step1_images/Step1corelayout.png}
+    \caption{Step 1 Single-Core Layout (post-PnR).\label{fig:s1_layout}}
 \end{figure}
 
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.30\textwidth]{Step1_images/Step1TO.png}}
-    \caption{Single-Core GLS Terminal Output.}
-    \label{fig:s1_term}
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{Step3_images/Step3corelayout.png}
+    \caption{Hierarchical Core Layout.\label{fig:s3_layout}}
 \end{figure}
 
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Step4_images/Step4Layout.png}
+    \caption{Dual-Core Fullchip Layout (Step 4).\label{fig:s4_fullchip_layout}}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Step5_images/Step5Fullchiplayout.png}
+    \caption{Step 5 Fullchip Layout.\label{fig:s5_fullchip_layout}}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Step6_images/Step6corelayout.png}
+    \caption{Sparsity-Aware Attention Dual-Core Layout.\label{fig:s6_layout}}
+\end{figure}
+
+\clearpage
+
+% --- All waveforms (RTL / GLS) in one block ---
 \begin{figure*}[htbp]
     \centerline{\includegraphics[width=1.0\textwidth]{Step1_images/Step1PLGLSwaveform.png}}
-    \caption{Single-Core GLS Waveform.}
-    \label{fig:s1_wave}
+    \caption{Step 1 Single-Core GLS Waveform.\label{fig:s1_wave}}
 \end{figure*}
-
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.45\textwidth]{Step2_images/waveform.png}}
-    \caption{Step 2 Simulation Waveform demonstrating functional correctness of Output Normalization.}
-    \label{fig:s2_wave}
-\end{figure}
-
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.30\textwidth]{temp.png}}
-    \caption{SRAM\_64b (Qmem \& Kmem) Layout (placeholder).}
-    \label{fig:s3_sram64}
-\end{figure}
-
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.30\textwidth]{temp.png}}
-    \caption{SRAM\_160b (Psum\_mem) Layout (placeholder).}
-    \label{fig:s3_sram160}
-\end{figure}
-
-\begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.30\textwidth]{Step3_images/Step3corelayout.png}}
-    \caption{Hierarchical Core Layout.}
-    \label{fig:s3_layout}
-\end{figure}
 
 \begin{figure*}[htbp]
-    \centerline{\includegraphics[width=1.0\textwidth]{Step3_images/Step3waveform.png}}
-    \caption{Hierarchical Core GLS Waveform.}
-    \label{fig:s3_wave}
+    \centerline{\includegraphics[width=1.0\textwidth]{Step2_images/waveform.png}}
+    \caption{Step 2 Simulation Waveform demonstrating functional correctness of Output Normalization.\label{fig:s2_wave}}
 \end{figure*}
+
+\begin{figure*}[htbp]
+    \centerline{\includegraphics[width=1.0\textwidth]{Step3_images/Step3UpdatedGLSWaveform.png}}
+    \caption{Step 3 Hierarchical Core GLS Waveform.\label{fig:s3_wave}}
+\end{figure*}
+
+\begin{figure*}[htbp]
+    \centerline{\includegraphics[width=1.0\textwidth]{Step4_images/Ste4FinalSepclkwaveform.png}}
+    \caption{Dual-Core Non-Lockstep GLS Waveform.\label{fig:s4_wave}}
+\end{figure*}
+
+\begin{figure*}[htbp]
+    \centerline{\includegraphics[width=1.0\textwidth]{Step4_images/Step4LockstepGLSwaveform.png}}
+    \caption{Dual-Core Lockstep GLS Waveform.\label{fig:s4_wave1}}
+\end{figure*}
+
+\begin{figure*}[htbp]
+    \centerline{\includegraphics[width=1.0\textwidth]{Step5_images/Step5FinalGLSwaveform.png}}
+    \caption{Step 5 GLS Waveform.\label{fig:s5_gls_waveform}}
+\end{figure*}
+
+\begin{figure*}[htbp]
+    \centerline{\includegraphics[width=1.0\textwidth]{Step6_images/Step6FinalPLGLSwaveform.png}}
+    \caption{Sparsity-Aware Attention Dual-Core GLS Waveform.\label{fig:s6_wave}}
+\end{figure*}
+
+\clearpage
+
+% --- Terminal outputs and synthesis / verification figures ---
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=0.30\textwidth]{Step1_images/Step1TO.png}}
+    \caption{Step 1 Single-Core GLS Terminal Output.\label{fig:s1_term}}
+\end{figure}
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=0.30\textwidth]{Step3_images/Step3TO.png}}
-    \caption{Hierarchical Core GLS Terminal Output.}
-    \label{fig:s3_term}
+    \caption{Step 3 Hierarchical Core GLS Terminal Output.\label{fig:s3_term}}
 \end{figure}
 
 \begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.30\textwidth]{temp.png}}
-    \caption{Fullchip Layout (placeholder; replace with fullchip snapshot).}
-    \label{fig:s4_fullchip_layout}
+    \centerline{\includegraphics[width=0.30\textwidth]{Step4_images/Step4SepClkGLSTO.png}}
+    \caption{Dual-Core Non-Lockstep GLS Terminal Output.\label{fig:s4_term}}
 \end{figure}
-
-\begin{figure*}[htbp]
-    \centerline{\includegraphics[width=1.0\textwidth]{Step4_images/Step4waveform.png}}
-    \caption{Dual-Core GLS Waveform.}
-    \label{fig:s4_wave}
-\end{figure*}
 
 \begin{figure}[htbp]
-    \centerline{\includegraphics[width=0.30\textwidth]{Step4_images/Step4TO.png}}
-    \caption{Dual-Core GLS Terminal Output.}
-    \label{fig:s4_term}
+    \centerline{\includegraphics[width=0.30\textwidth]{Step4_images/Step4LockstepGLSTO.png}}
+    \caption{Dual-Core Lockstep GLS Terminal Output.\label{fig:s4_term1}}
 \end{figure}
+
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/Step5PLGLSTO.png}}
+    \caption{Step 5 GLS Terminal Output.\label{fig:s5_plglsto}}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=0.30\textwidth]{Step6_images/Step6PLGLSTO.png}}
+    \caption{Sparsity-Aware Attention Dual-Core GLS Terminal Output.\label{fig:s6_term}}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/Div_comparison.png}}
+    \caption{Synthesis result of core with different division module.\label{fig:s5_divComparison}}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/Core_interface_redesign.png}}
+    \caption{Core interface redesign.\label{fig:s5_Core_interface_redesign}}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/Controller_user_manual_spec.png}}
+    \caption{Available core instruction/operation specification.\label{fig:s5_Controller_user_manual_spec}}
+\end{figure}
+
 
 \clearpage
 
-\begin{figure}[htbp]
-        \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/Div_comparison.png}}
-        \caption{Synthesis result of core with different division module}
-        \label{fig:s5_divComparison}
-    \end{figure}
-    \begin{figure}[htbp]
-        \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/Core_interface_redesign.png}}
-        \caption{Core interface redesign}
-        \label{fig:s5_Core_interface_redesign}
-    \end{figure}
-    \begin{figure}[htbp]
-        \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/Controller_user_manual_spec.png}}
-        \caption{Available core instruction/operation specification}
-        \label{fig:s5_Controller_user_manual_spec}
-    \end{figure}
-    \begin{figure}[htbp]
-        \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/MinguVeri.png}}
-        \caption{in-n-out100-fullchip.mingu execution script demonstrating \texttt{for}-loops and automated testing.}
-        \label{fig:s5_MinguVeri}
-    \end{figure}
-    \begin{figure}[htbp]
-        \centerline{\includegraphics[width=0.30\textwidth]{Step6_images/Step6corelayout.png}}
-        \caption{Sparsity-Aware Attention Dual-Core Layout.}
-        \label{fig:s6_layout}
-    \end{figure}
-    
-    \begin{figure*}[htbp]
-        \centerline{\includegraphics[width=1.0\textwidth]{temp.png}}
-        \caption{Sparsity-Aware Attention Dual-Core GLS Waveform (placeholder).}
-        \label{fig:s6_wave}
-    \end{figure*}
-    
-    \begin{figure}[htbp]
-        \centerline{\includegraphics[width=0.30\textwidth]{temp.png}}
-        \caption{Sparsity-Aware Attention Dual-Core GLS Terminal Output (placeholder).}
-        \label{fig:s6_term}
-    \end{figure}
-
-
-\clearpage
-% Include bibliography entries from references.bib without mandatory in-text cites.
-\nocite{project_repo}
-
-\bibliographystyle{IEEEtran}
-\bibliography{references}
 \newpage
 \appendices
 \onecolumn
@@ -452,7 +453,7 @@ These commands must be executed \textbf{before} \texttt{fix\_set}. They configur
     \end{itemize}
     \item \texttt{set\_clock\_period <ns0> [ns1]}: Configures the half-cycle clock periods. If \texttt{ns1} is omitted, it defaults to \texttt{ns0} (lockstep). Example: \texttt{set\_clock\_period 1 1.2}.
     \item \texttt{set\_dump\_vcd <0|1>}: Toggles waveform dumping (\texttt{1} for ON, \texttt{0} for OFF). Disabling VCD significantly speeds up massive test runs.
-    \item \texttt{set VAR value}: Defines a shell variable that can be substituted later using \texttt{\$(VAR)}. Example: \texttt{set PATTERN sw/pattern/random100}.
+    \item \texttt{set VAR value}: Defines a shell variable that can be substituted later using \texttt{\$\{VAR\}}. Example: \texttt{set PATTERN sw/pattern/random100}.
     \item \texttt{fix\_set}: \textbf{Required.} Locks all configurations, triggers compilation of the hardware design, and transitions the shell into the execution phase.
 \end{itemize}
 
@@ -478,7 +479,30 @@ These commands are executed \textbf{after} \texttt{fix\_set}. They map directly 
         \item \texttt{verifypmem0 / verifypmem1}: Specific checks for Core 0 or Core 1.
     \end{itemize}
     \item \texttt{reset}: Asserts the hardware reset signal for two cycles, clearing internal states.
-    \item \texttt{for <var> = <start> to <end> ... endfor}: Iterates block of execution commands. Variables inside the loop can be referenced using \texttt{\$(var)}. Nested loops are not supported.
+    \item \texttt{for <var> = <start> to <end> ... endfor}: Iterates block of execution commands. Variables inside the loop can be referenced using \texttt{\$\{var\}}. Nested loops are not supported.
     \item \texttt{exit}: Terminates the simulation gracefully and prints a summary of mismatches.
 \end{itemize}
+\clearpage
+\section*{Tables and Figures}
+\begin{table*}[htbp]
+    \caption{Summary of standard \texttt{.mingu} scripts and their purposes\label{tab:mingu_files}}
+    \begin{center}
+        \begin{tabular}{l p{10cm}}
+            \toprule
+            \textbf{Script Name} & \textbf{Purpose \& Features} \\
+            \midrule
+            \texttt{in-n-out-fullchip.mingu} & Basic RTL simulation pipeline executing Q*K\textsuperscript{T}, Norm, and V*Norm\textsuperscript{T} sequentially on a single static test pattern. \\
+            \texttt{in-n-out100-fullchip.mingu} & Large-scale automated RTL simulation utilizing the \texttt{for} loop. It automatically triggers the python/shell pattern generator to create 100 sets of randomized Q, K, and V matrices and verifies the hardware against a software golden model continuously. \\
+            \texttt{in-n-out500-fullchip.mingu} & Stress-testing variant scaling the loop and automatic pattern generation to 500 unique datasets. \\
+            \texttt{in-n-out*-fullchip-gls.mingu} & Post-PnR validation scripts. By simply changing \texttt{set\_sim\_stage} to \texttt{post\_sim}, the exact same test sequence is piped into \texttt{xrun} with the synthesized and routed netlist (with back-annotated delays or threshold logic). \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+\end{table*}
+\begin{figure*}[htbp]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Step5_images/MinguVeri.png}
+    \caption{in-n-out100-fullchip.mingu execution script demonstrating \texttt{for}-loops and automated testing.\label{fig:s5_MinguVeri}}
+\end{figure*}
+
 \end{document}
