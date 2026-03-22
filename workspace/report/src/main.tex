@@ -229,7 +229,7 @@ Initial synthesis results highlighted a massive timing violation (Worst Negative
     \end{enumerate}
     Besides, the 2 designs share a common handshake interface with the core (\texttt{div\_start}, \texttt{div\_busy}, \texttt{div\_done}); macros (\texttt{SFP\_LONGDIV}, \texttt{SFP\_MCP}, \texttt{VANILLA}) are also defined to compile and synthesis the designs with ease.
     
-    \textbf{Result.} 
+    \textbf{Results.} 
     Both designs passed the Hold/Setup time check and the gate-level simulation. Nonetheless, we have to select the optimal design for PnR. Hence, we compare the synthesis result in Figure~\ref{fig:s5_divComparison}. 
     The 6-staged pipelined long division hardware outperforms the 10 cycle MCP Verilog / divider with ($\sim$23\%) lower area, slightly lower power, and much shorter synthesis time (10 min vs. 45 min).
     Thus, we select the pipelined long divider for PnR.
@@ -240,10 +240,67 @@ Initial synthesis results highlighted a massive timing violation (Worst Negative
     \end{figure}
 
 
-
     \item \textbf{Pipelining: Adder Tree Optimization:} The row energy accumulator was redesigned as a 3-stage pipelined reduction tree. After the 8 parallel multipliers, one pipeline stage captures the multiplication results, the next stage performs four pairwise additions, and the final stage reduces the partial sums to produce the accumulated row energy.
 
-    \item \textbf{Chip interface and controller design: } Chip interface(picture + example usage of QK-Norm-VN), Chip mem external access control(FSM+block diagram), Chip internal data flow control(FSM+block diagram), SFP calculation handshake design(waveform)
+
+    \item \textbf{Chip Interface Design and Internal Control:} 
+    The purpose of redesigning the chip interface is not only to remove redundant signals, but also to hide unnecessary internal details from the user. The interface should be intuitive and self-consistent, so that users can operate the chip without understanding internal dataflow or timing dependencies.
+    Each core is independently controlled.
+    We describe the interface usage from the perspective of a single core.
+    \begin{figure}[htbp]
+        \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/Core_interface_redesign.png}}
+        \caption{Core interface redesign}
+        \label{fig:s5_Core_interface_redesign}
+    \end{figure}
+
+    \textbf{Example Usage: MULT + NORM + READ.} 
+
+    A user wants to compute matrix multiplication, apply normalization, save the result in KMEM for later use, but also want to read it out for verification.
+    \begin{enumerate}
+        \item Write data to KMEM and QMEM through \texttt{mem\_in} by designating \texttt{inst\_ext[5:0]}(SRAM operation \& addr).
+        \item Set \texttt{mode\_in = 3'b001} (MULT+NORM $\rightarrow$ KMEM and PMEM) and assert \texttt{set\_mode} for one cycle to latch the configuration.
+        \item Assert \texttt{start} for one cycle to begin execution. If the core is busy (\texttt{status[3]=1}), the \texttt{start} signal is ignored.
+        \item During execution, \texttt{status[3]=1} indicates the core is busy, while \texttt{status[2:0]} indicate memory locks (QMEM / KMEM / PMEM).
+        \item User may start to write K/QMEM data for next operation after the K/QMEM lock is freed.
+        \item \texttt{status[3]} returns to 0 after the result is stored in PMEM and KMEM. The user can then issue PMEM read by designating \texttt{inst\_ext[5:0]}(SRAM operation \& addr) and wait for 1 cycle for the result at the \texttt{out} port.
+    \end{enumerate}
+    The above example involves external memory instructions and core mode setting. Refer to Figure~\ref{fig:s5_Controller_user_manual_spec} for details.
+    \begin{figure}[htbp]
+        \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/Controller_user_manual_spec.png}}
+        \caption{Available core instruction/operation specification}
+        \label{fig:s5_Controller_user_manual_spec}
+    \end{figure}
+
+    \textbf{Design Insights.}
+    \begin{enumerate}
+        \item \textbf{Flexible data loading, fixed execution.} 
+        The user has full freedom to write Q/K memory in any order and timing. 
+        In contrast, execution follows a fixed address increment pattern, since the hardware performs a deterministic MAC sequence. 
+        This cleanly separates user control from hardware scheduling.
+        \item \textbf{Deterministic memory locking.} 
+        After start, memories are locked and released in a fixed order. 
+        Once a memory is released, it will not be locked again before the core becomes idle. 
+        This gives a clear contract: unlocked memory is always safe to write.
+        \item \textbf{Hardware-enforced protection.} 
+        Although status signals are visible, correctness does not rely on the user. 
+        Invalid operations (e.g., writing to locked memory or starting while busy) are automatically ignored by hardware.
+        \item \textbf{Unified memory interface with minimal command set.} 
+        All external memory accesses share the same interface (addr, data\_in, data\_out). 
+        To avoid conflicts, only four commands are allowed: \texttt{NO\_OP}, \texttt{KMEM\_WRITE}, \texttt{QMEM\_WRITE}, \texttt{PMEM\_READ}.
+        This eliminates read/write conflicts and simplifies controller design.
+        \item \textbf{Mode-driven dataflow.} 
+        A 3-bit mode encodes both operation type and result destination. 
+        Results can be written to PMEM for output, or kept in KMEM for further computation. 
+        This enables chaining operations without extra data movement.
+        \item \textbf{Implicit pipeline support.} 
+        The interface naturally allows overlapping computation and data loading. 
+        While some memories are locked for computation, others can already be reused for the next stage.
+        For example, in MULT+NORM mode, QMEM is released after MAC load, 
+        so if user's next step is multiply norm by V, user can start writing V data while normalization is still running.
+    \end{enumerate}
+
+
+
 
     \item \textbf{Production system set up: } (We have brilliant makefile-powered developing environment :D)
 
