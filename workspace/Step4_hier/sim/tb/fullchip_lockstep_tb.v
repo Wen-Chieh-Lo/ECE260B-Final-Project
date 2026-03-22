@@ -152,7 +152,7 @@ module fullchip_tb;
   // ═══════════════════════════════════════════════════════════════════════════════
   initial begin
 
-    $dumpfile("fullchip_tb.vcd");
+    $dumpfile("sim/waveform/fullchip_lockstep.vcd");
     $dumpvars(0, fullchip_tb);
 
     mismatch_prd_core0 = 0;  mismatch_prd_core1 = 0;

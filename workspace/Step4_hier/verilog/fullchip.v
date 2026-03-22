@@ -1,27 +1,6 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission
 //
-// GLS FIX — sfp_sum_in_0/1 are REGISTERED (sample-and-hold) with
-// SYNCHRONOUS reset.
-//
-// Root cause of original VN failure:
-//   sfp_sum_in_1 = mem[rd_ptr_bin] is purely combinational.
-//   div_q fires 1-2 cycles after div_c1, advancing rd_ptr and dropping
-//   the FIFO output back to 0. In GLS the combinational mux path hasn't
-//   settled at the div_c1 posedge for some SFP iterations, so sfp_row
-//   divides by 0 and writes wrong N values to kmem.
-//
-// Why async reset didn't work:
-//   DC optimized away the async reset on sfp_sum_in_0_r / sfp_sum_in_1_r
-//   because the enable (!fifo_empty) is 0 during reset — so DC concluded
-//   the reset is redundant. This left DFQD1 cells (no reset pin) that
-//   start as X in GLS. X on sum_in corrupted core1 QK results.
-//
-// Why synchronous reset works:
-//   DC CANNOT eliminate a synchronous reset — it must synthesize a mux
-//   on the D input so the register loads 0 on the clock edge when reset=1.
-//   The TB holds reset=1 from time 0 and applies 12+ ticks before reset=0,
-//   so the registers are guaranteed to be 0 before any QK/SFP/VN work.
 
 module fullchip (clk0, clk1, mem_in0, mem_in1, inst0, inst1, reset0, reset1, out0, out1, fifo0_empty, fifo1_empty/*, sfp_sum_in_1_out*/);
 
@@ -65,8 +44,7 @@ wire fifo_empty_1_0, fifo_empty_0_1;
 //
 // Synchronous reset forces DC to synthesize a D-mux, guaranteeing the
 // register resets to 0 on the first clock edge after reset is asserted.
-// This prevents X initialization in GLS regardless of whether the enable
-// path is active or not during reset.
+// added for prevention of X propogation in GLS
 //
 // Enable condition: latch only when the source FIFO is non-empty, i.e.
 // when valid data is present at the FIFO output.
@@ -76,7 +54,7 @@ reg [bw_psum+3:0] sfp_sum_in_1_r;
 
 // core1 reads from fifo_inst_ext_core0_1  (rd_clk = clk1)
 // core0 reads from fifo_inst_ext_core1_0
-// In fullchip.v — replace both always blocks with this:
+
 
 always @(posedge clk0) begin
     if (reset0)
