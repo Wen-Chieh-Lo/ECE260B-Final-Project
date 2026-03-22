@@ -313,24 +313,17 @@ Initial synthesis results highlighted a massive timing violation (Worst Negative
     It provides a simple and scriptable interface for interacting with the system.
 
     Instead of manually controlling low-level signals in testbench, users can describe operations in a concise and structured form. 
-    For example: \texttt{in-n-out100-fullchip.mingu} generates 100 randomized data patterns and verify the results.
+    For example: Figure\ref{fig:s5_MinguVeri} demonstrates generation of 100 randomized data patterns and output verification via .mingu shell.
     \begin{figure}[htbp]
         \centerline{\includegraphics[width=0.30\textwidth]{Step5_images/MinguVeri.png}}
-        \caption{.mingu shell verification of 100 randomized input pattern}
+        \caption{in-n-out100-fullchip.mingu}
         \label{fig:s5_MinguVeri}
     \end{figure}
-
     More importantly, this shell is built upon the clean chip interface design. 
     Since the hardware interface is well-defined and minimal, high-level commands can directly map to meaningful operations, enabling intuitive and efficient system interaction.
 
-
-
-
-    \item \textbf{Production system set up: } (We have brilliant makefile-powered developing environment :D)
-
-    \item \textbf{Randomised input generation: }
-
     \item \textbf{Dual Core Verification on both Lockstep \& Non-Lockstep Clock Pair: }
+
     
 
 \end{itemize}
