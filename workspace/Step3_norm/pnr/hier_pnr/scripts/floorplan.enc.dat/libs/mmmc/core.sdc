@@ -1,1 +1,0 @@
-/home/linux/ieng6/ECE260B_WI26_A00/miw090/ECE260B-Final-Project/workspace/Step3_norm/pnr/hier_pnr/constraints/core.sdc
