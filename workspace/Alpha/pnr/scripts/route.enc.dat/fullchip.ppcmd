@@ -13,7 +13,7 @@
 # END_PPCMD 1 
 
 # PPCMD 2 
-# addStripe -number_of_sets 2 -spacing 6 -layer M4 -width 2 -nets { VSS VDD 
+# addStripe -nets {VDD VSS} -layer M5 -direction horizontal -width 1 -spacing 4 -number_of_sets 25 -start_offset 5 -stop_offset 5 -stacked_via_top_layer M8 -stacked_via_bottom_layer M1
 # 3 
 # 2 
 # 1 
@@ -21,12 +21,12 @@
 # 0 
 # 2 
 # BOX_LIST 
-# 12000 12000 1768800 1768400 0 
-# 22000 22000 1758800 1758400 0 
+# 10000 18000 6062000 6068800 0 
+# 22000 30000 6050000 6056800 0 
 # END_BOX_LIST 
 # NET_INFO_LIST 
-# VDD 4000 4 0 56000 1748800 1686800 0 0 
-# VSS 4000 4 0 40000 1748800 1686800 0 0 
+# VSS 2000 5 0 60000 6031000 248660 0 0 
+# VDD 2000 5 0 50000 6031000 248660 0 0 
 # END_NET_INFO_LIST 
 # END_PPCMD 2 
 
@@ -45,7 +45,7 @@
 # END_PPCMD 3 
 
 # PPCMD 4 
-# addRing -spacing {top 2 bottom 2 left 2 right 2} -width {top 3 bottom 3 left 3 right 3} -layer {top M1 bottom M1 left M2 right M2} -center 1 -type core_rings -nets {VSS  VDD}
+# addRing -spacing {top 2 bottom 2 left 2 right 2} -width {top 4 bottom 4 left 4 right 4} -layer {top M5 bottom M5 left M4 right M4} -center 1 -type core_rings -nets {VSS VDD}
 # 1 
 # 32 
 # 1 
@@ -55,21 +55,21 @@
 # BOX_LIST 
 # END_BOX_LIST 
 # NET_INFO_LIST 
-# VDD 6000 1 1 0 0 0 0 0 
+# VDD 8000 5 1 0 0 0 0 0 
 # RING_PT_INFO_LIST 
-# 893400 15000 893400 1771400 
+# 3040000 14000 3040000 6064800 
 # END_RING_PT_INFO_LIST 
-# VDD 6000 2 1 0 0 0 0 0 
+# VDD 8000 4 1 0 0 0 0 0 
 # RING_PT_INFO_LIST 
-# 15000 893200 1771800 893200 
+# 14000 3039400 6066000 3039400 
 # END_RING_PT_INFO_LIST 
-# VSS 6000 1 1 0 0 0 0 0 
+# VSS 8000 5 1 0 0 0 0 0 
 # RING_PT_INFO_LIST 
-# 893400 25000 893400 1761400 
+# 3040000 26000 3040000 6052800 
 # END_RING_PT_INFO_LIST 
-# VSS 6000 2 1 0 0 0 0 0 
+# VSS 8000 4 1 0 0 0 0 0 
 # RING_PT_INFO_LIST 
-# 25000 893200 1761800 893200 
+# 26000 3039400 6054000 3039400 
 # END_RING_PT_INFO_LIST 
 # END_NET_INFO_LIST 
 # END_PPCMD 4 
