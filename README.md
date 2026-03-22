@@ -1,301 +1,215 @@
-# ECE260B Final Project
+# High-Performance Attention Engine (ECE260B Final Project)
 
-Verilog RTL and testbenches for single/dual-core MAC + SFP normalization.
+An open-source, configurable, and high-performance hardware attention mechanism engine (including MAC Array and Softmax/Normalization SFP Row) implemented in Verilog. This project provides complete RTL, Testbenches, and a physical design flow (Synthesis, PnR, GLS) optimized for the 65nm process.
 
-## Project TODO checklist
+---
 
-### Completed
-- [x] MAC array TB (single-core)
-- [x] SFP row TB (single-core)
-- [x] SFP row TB (dual-core)
-- [x] Core integration
-- [x] SFP repipelining (div_longdiv, sum8_2stage)
-- [x] MAC repipelining
-- [x] step1 flow (in Step1/ folder: step1.v + step1_tb.v + GLS)
-- [x] step1 + core synthesis & GLS (in Step1/ folder)
-- [x] Step 2 (core = step1+sfp_row) GLS
+## 📖 Table of Contents
+- [Project Overview](#-project-overview)
+- [Project Architecture](#-project-architecture)
+- [How to Use This Project](#-how-to-use-this-project)
+- [Quick Start](#-quick-start)
+- [Developer Guide (How to Extend)](#-developer-guide-how-to-extend)
+- [Synthesis & PnR Flow](#-synthesis--pnr-flow)
+- [Deliverables & Stages](#-deliverables--stages)
+- [Waveform & Design Assets](#-waveform--design-assets)
 
-### Main steps (planned)
+---
 
-| Step       | Scope                 | GLS     | PnR       | 
-|------------|-----------------------|---------|-----------|
-| **Step 1** | step1 (in Step1/)     | ✓       | ✓        | 
-| **Step 2** | core (step1+sfp_row)  | ✓       | —         |
-| **Step 3** | —                     | ✓       | planned   | 
-| **Step 4** | —                     | planned | planned   | 
-| **Step 5** | —                     | —       | planned   |
-| **Step 6** | minor RTL             | —       | tentative |
+## 🌟 Project Overview
 
-### GLS by authors
+This project implements a scalable hardware architecture for the attention mechanism commonly found in Transformer models, consisting primarily of:
+1. **MAC Array**: High-throughput Multiply-Accumulate array.
+2. **SFP Row (Softmax/Normalization)**: Utilizes an optimized hardware divider (`div_longdiv`) and a tree-adder structure for precise and high-speed normalization.
+3. **Core**: Integration of the MAC Array and SFP Row.
+4. **Fullchip**: Multi-core integration, including SRAM and control logic.
 
-| Step    | Owner                | Deadline          | Dependency |
-|---------|----------------------|-------------------|------------|
-| Step 1  | Wen-Chieh Lo         | Sat/Sun 11:59pm   | —          |
-| Step 2  | Chi-Han Chiu         | Sat 11:59pm       | Step 1     |
-| Step 4  | Nikhita Neelakanta   | next Fri max      | Step 2     |
+**Key Achievements**:
+Through aggressive repipelining, the critical path was reduced from ~25ns to `< 1ns`, allowing the design to easily meet a 1.2ns clock period in the TSMC 65nm GP process.
 
-### PnR (vanilla, 13th)
+---
 
-**Owners:** Shreeya Bhonsle, Ming-Yang Wu
+## 🏗 Project Architecture
 
-- [x] Step 1 PnR
-- [x] Step 3 PnR
-- [x] Step 4 PnR
-- [ ] Step 5 PnR (post-alphas)
-- [ ] Step 6 PnR (minor, tentative)
+```text
+├── deliverables/        # Release snapshots for each development stage (symlinked to actual workspaces)
+├── workspace/           # Working environments for various project stages
+│   ├── Step1/           # Single-core baseline
+│   ├── Step2/           # Core + SFP integration
+│   ├── Step3_norm/      # Hierarchical / SRAM variants
+│   ├── Step4_hier/      # Dual-core / Fullchip PnR
+│   └── Alpha/           # Optimized fullchip flow (Step 5/6)
+└── (A single workspace typically contains the following standard structure):
+    ├── verilog/         # RTL source code
+    ├── sim/             # RTL simulation and testbenches
+    ├── syn/             # Design Compiler (Synthesis) scripts and reports
+    ├── pnr/             # Innovus (Place & Route) scripts and reports
+    └── gls/             # Gate-Level Simulation
+```
 
-### Alphas (run in parallel with PnR)
+---
 
-| # | Task                                                           | Owner                                           |
-|--:|----------------------------------------------------------------|-------------------------------------------------|
-| 1 | Minimize WNS (step1 alpha done); add pipelining where suitable | Wen-Chieh Lo, Nikhita Neelakanta, Chi-Han Chiu  |
-| 2 | Long Division replace by LUT                                   | Wen-Chieh Lo                                    |
-| 5 | Randomise input, increase input coverage                       | b1chiang@ucsd.edu                               |
-| 6 | Control Signal                                                 | b1chiang@ucsd.edu                               |
-| 7 | Optimized SRAM entry                                           |                                                 |
+## 🚀 How to Use This Project
 
-### Other
+### Prerequisites
+- **Simulation**: Icarus Verilog (`iverilog`) or Cadence Xcelium (`xrun`)
+- **Synthesis**: Synopsys Design Compiler (DC)
+- **Place & Route (PnR)**: Cadence Innovus
+- **Process Node**: TSMC 65nm GP (If using other PDKs, please modify `common.sdc` and library paths)
 
-- [ ] fullchip protocol + integration
-- [ ] SRAM pnr
-- [ ] core hierarchy-pnr
+### 🐚 The `.mingu` Shell (Interactive Simulation)
+This project uses a custom scripting shell named **Mingu Shell** to run thousands of testbenches efficiently without recompiling.
+👉 **[Read the Mingu Shell Tutorial (sim_shell.sh)](TUTORIAL_MINGU.md)** for detailed usage and syntax.
 
-**Workflow:** PnR, alphas, and Step 6 can proceed in parallel.
-
-## Synthesis checklist
-
-All runs below used `SYN_EFFORT=low`; re-run with `SYN_EFFORT=high` for pre-PnR quality results.
-
-- [x] mac_array synthesized (`make syn TARGET=mac SYN_EFFORT=low`)
-- [x] sfp_row synthesized (`make syn TARGET=sfp_row SYN_EFFORT=low`)
-- [x] core synthesized (`make syn TARGET=core SYN_EFFORT=low`)
-- [x] step1 synthesized (in Step1/ folder: `cd Step1 && make syn`)
-- [x] All timing closed (see results below)
-
-## Quick Start
+### Quick Start (RTL Simulation & Synthesis)
+Navigate to a specific workspace (e.g., `workspace/Alpha/`) to execute commands.
 
 ```bash
-make sim                          # simulate fullchip (default)
-make sim TARGET=core              # simulate a specific target
-make gls TARGET=core              # gate-level sim (gls/tb + syn/gate + PDK)
-make syn                          # synthesize core (default, SYN_EFFORT=high)
-make syn TARGET=mac               # synthesize a specific target
-make syn TARGET=mac SYN_EFFORT=low  # fast mapping for quick sanity check
-make all TARGET=core              # run sim + syn for the same target
-make parse                        # parse syn/log/*.rep and print summary
-make help                         # list all targets and options
+# 1. Run fullchip simulation
+make sim TARGET=fullchip
+
+# 2. Run simulation for a specific sub-module
+make sim TARGET=core
+
+# 3. Execute synthesis (High optimization effort)
+make syn TARGET=core
+
+# 4. Execute gate-level simulation (after synthesis or PnR)
+make gls TARGET=core
+
+# 5. Parse and print synthesis reports (Area, Power, Timing)
+make parse
 ```
 
-Default targets, project path, and Verilog defines can be set in `USER_DEFINE_TASK_VARS`:
-- `TARGET` — default sim/syn target
-- `SYN_EFFORT` — low | medium | high
-- `USER_DEFINES` — space-separated macros (e.g. `SFP_LONGDIV`) applied to sim and syn
+*Note: Default targets and macros can be customized in the `USER_DEFINE_TASK_VARS` file under each workspace.*
 
-## Simulation targets
+---
 
-| TARGET        | Description             | filelist (in sim/filelists/)  |
-| ------------- | ----------------------- | ----------------------------- |
-| `fullchip`    | fullchip single-core    | `filelist`                    |
-| `core`        | single core             | `filelist_core`               |
-| `mac`         | mac_array               | `filelist_mac`                |
-| `sfp_row`     | sfp_row single-core     | `filelist_sfp_row`            |
-| `sfp_row_dual`| sfp_row dual-core       | `filelist_sfp_row_dual`       |
+## 🛠 Developer Guide (How to Extend)
 
-Waveforms are written to `sim/waveform/*.vcd` after each run.
+This project was built iteratively from `Step1` to `Alpha`. If you wish to contribute or extend this architecture (e.g., adding new activation functions or a customized SRAM controller), please follow these development guidelines:
 
-## Synthesis targets
+### 1. Extending the RTL (`verilog/`)
+- Place new modules in `verilog/submodules/` (for small utility modules) or `verilog/` (for major blocks).
+- **Repipelining Rule**: This architecture relies on deep pipelining to maintain a 1GHz+ clock. If you add complex combinational logic (such as non-linear functions), **you must split it into multiple pipeline stages**.
+- Update the instantiation declarations in top-level modules (e.g., `core.v` or `fullchip.v`).
 
-| TARGET        | top_module  | filelist (in syn/filelists/) | SDC         | Outputs                  |
-| ------------- | ----------- | ---------------------------- | ----------- | ------------------------ |
-| `core`        | core        | `filelist_core`              | common.sdc  | `gate/core.out.v`        |
-| `sfp_row`     | sfp_row     | `filelist_sfp_row`           | common.sdc  | `gate/sfp_row.out.v`     |
-| `mac`         | mac_array   | `filelist_mac`               | common.sdc  | `gate/mac_array.out.v`   |
+### 2. Updating File Lists (`sim/filelists/` & `syn/filelists/`)
+Whenever you create a new `.v` file:
+- Add the file path to the corresponding simulation list (`sim/filelists/filelist_<target>`).
+- Add the file path to the corresponding synthesis list (`syn/filelists/filelist_<target>`).
 
-Reports are written to `syn/log/<top>_area.rep`, `<top>_timing.rep`, `<top>_power.rep`.
+### 3. Creating Testbenches (`sim/tb/`)
+- Write a testbench (`tb_<module>.v`).
+- Set up output verification logic. **This project has strict timing specifications**:
+  - `mac_array`: When `ofifo_rd = 1`, the output is valid in the **same cycle**.
+  - `sfp_row`: When `div = 1`, the output is valid about **8 cycles later** (constrained by the latency of `div_longdiv`). Use `sfp_div_lat` and `sfp_acc_lat` parameters in the TB to align your golden outputs.
+- Waveforms will automatically be output to `sim/waveform/`.
 
-Run `make parse` (or `bash syn/parse_reports.sh`) to print a formatted summary.
-If Python has symbol/version issues, the shell script works without Python.
+### 4. Creating New Milestones (Workspaces)
+If you are making significant architectural changes:
+1. Copy the most stable current workspace (e.g., copy `workspace/Alpha` to `workspace/Beta`).
+2. Make your RTL changes in `workspace/Beta/verilog/`.
+3. Verify functionality via `make sim` and check synthesis results/timing via `make syn`.
+4. Proceed to `workspace/Beta/pnr/` to complete the physical design.
 
-## Project layout
+---
 
-```
-verilog/          RTL (core, fullchip, sync, sfp_row, ofifo)
-verilog/submodules/  div, div_longdiv, sum8, sum8_2stage
-verilog/mac/      MAC column and array
-verilog/memory/   SRAM, FIFO, mux
-sim/tb/           Testbenches
-sim/filelists/    Iverilog filelists (one per simulation target)
-sim/pattern/      Test vectors (kdata, mac_out, norm, etc.)
-sim/waveform/     Generated VCD files
-gls/              Gate-level simulation
-gls/tb/           GLS testbenches (paths: gls/waveform, gls/pattern)
-gls/filelists/   GLS filelists (DUT = syn/gate/*.out.v + PDK)
-gls/waveform/     GLS VCD output
-gls/pattern/     GLS test vectors
-syn/              Design Compiler scripts (run_dc.tcl, common.sdc)
-syn/filelists/    RTL filelists for synthesis (no testbench)
-syn/gate/         Synthesized netlist output
-syn/log/          Synthesis reports (area, timing, power)
-syn/work/         DC intermediate files (alib, logs, .template)
-syn/parse_reports.sh  Report summary script (no Python needed)
-```
+## 📈 Synthesis & PnR Flow
 
-Report parser: `make parse` or `bash syn/parse_reports.sh` — summarizes all designs in `syn/log/`.
+### Synthesis
+Synthesis is executed via a unified Makefile calling Synopsys DC.
+- **Constraints**: Defined in `syn/common.sdc`, with a default clock period of 1ns.
+- **Outputs**: Synthesized netlists are saved to `syn/gate/*.out.v`.
+- **Reports**: Timing, area, and power reports are located in `syn/log/`. Use `make parse` to view a quick dashboard in the terminal.
 
-## I/O delay spec (for TB result checking)
+### Place and Route (PnR)
+PnR is performed using Cadence Innovus.
+- Related scripts are located in `pnr/scripts/`.
+- **Flow**: Floorplanning -> Power Planning -> Placement -> CTS -> Routing -> Post-Route Optimization.
+- **Hierarchical PnR**: `Step3` and `Step4` demonstrate a hierarchical PnR flow, where cores are pre-hardened as macros before top-level routing.
 
-When to sample RTL outputs to compare against golden. All delays in clock cycles.
+---
 
-| Block           | Assert                   | Sample output               |
-| --------------- | ------------------------ | --------------------------- |
-| **mac_array**   | `ofifo_rd = 1` (per row) | `out` valid **same cycle**  |
-| **sfp_row**     | `div = 1` for one cycle  | `sfp_out` valid **~8 cycles after** (div_longdiv latency) |
+## 📦 Deliverables & Stages
 
-With `SFP_LONGDIV` defined, the divider uses `div_longdiv` (FSM, ~8 cycles). TBs use `sfp_div_lat` and `sfp_acc_lat` parameters to align sampling.
+We maintain a symlink structure in the `deliverables/` folder, accurately reflecting the state of each Tape-out / milestone. This is highly beneficial for regression testing and CI/CD pipelines.
 
-## Discussion
+| Stage (Step) | Scope | Actual Workspace Path | Status / Notes |
+|---|---|---|---|
+| **Step 1** | Single-core baseline | `workspace/Step1` | Synthesis & PnR Complete. |
+| **Step 2** | Core (MAC + SFP) | `workspace/Step2` | Synthesis Complete. No PnR. |
+| **Step 3** | Hierarchical PnR | `workspace/Step3_norm` | Cores have been hardened into macros. |
+| **Step 4** | Dual-core Fullchip | `workspace/Step4_hier` | Dual-core PnR and top-level integration. |
+| **Alpha** (Step5) | Optimized Fullchip | `workspace/Alpha` | Final fully optimized RTL and PnR. |
+| **Step 6** | Further Fixes & Optimization | `workspace/Step6` | Advanced optimized RTL and PnR. |
 
-**Choosing the SFP shift to maximize precision**
+*To verify the integrity of deliverables, please check the audit logs in `deliverables/README.md`.*
 
-- In `sfp_row`, the RTL left-shifts `sfp_in` by `out_shift` then divides by sum (`(sfp_in << out_shift) / sum_2core`) so that integer division keeps more fractional precision.
-- **Trade-off:** A larger `out_shift` gives more effective fractional bits and better accuracy, but the numerator width grows (`bw_psum + out_shift`), increasing divider size and overflow risk.
-- Open questions: For given `bw_psum`, sum range, and output width, derive non-overflow conditions and quantization error to choose a parameterized shift (e.g. tied to `bw_psum` or `log2(col)`), and validate with TB golden reference.
+---
 
-## Synthesis results
+## 📊 Waveform & Design Assets
 
-All three designs synthesized with `SYN_EFFORT=high`, clock period 1 ns (TSMC 65 nm GP WC).
-Run `make parse` to regenerate the summary.
+The table below compiles the detailed locations of Verilog files, Testbenches (TB), Waveforms (VCD), and Layout Scripts (ENC) for the core across all stages. This is crucial for handovers, debugging, and regression testing.
 
-### Analysis summary
+### Step 1 (Single-core Baseline)
+| Category | Type | File Path |
+|---|---|---|
+| **Behavioural** | Verilog | [`workspace/Step1/verilog/`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/tree/main/workspace/Step1/verilog) |
+| | Pattern | [`workspace/Step1/sim/pattern/`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/tree/main/workspace/Step1/sim/pattern) |
+| | Testbench | [`workspace/Step1/sim/tb/`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/tree/main/workspace/Step1/sim/tb) |
+| | VCD | [`workspace/Step1/sim/waveform/step1.vcd`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step1/sim/waveform/step1.vcd) |
+| **Post-layout GLS** | Verilog | [`workspace/Step1/post_sim/netlist/core.pnr.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step1/post_sim/netlist/core.pnr.v) |
+| | Testbench | [`workspace/Step1/gls/tb/step1_tb.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step1/gls/tb/step1_tb.v) |
+| | VCD | [`workspace/Step1/gls/waveform/step1.vcd`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step1/gls/waveform/step1.vcd) |
+| | ENC | [`workspace/Step1/pnr/scripts/route.enc`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step1/pnr/scripts/route.enc) |
 
-| Design        | Before repipelining                          | After repipelining                    |
-|---------------|----------------------------------------------|---------------------------------------|
-| **core**      | 243.5k um² · 24.8 ns · VIOLATED (-23.7 ns)   | 175.8k um² (-28%) · 0.95 ns · MET     |
-| **mac_array** | 116.8k um² · 2.62 ns · VIOLATED (-1.6 ns)    | 69.5k um² (-40%) · 0.968 ns · MET     |
-| **sfp_row**   | 53.9k um² · 25 ns · VIOLATED (-23.9 ns)      | 24.7k um² (-54%) · 0.97 ns · MET      |
+### Step 2 (Core + SFP Integration)
+| Category | Type | File Path |
+|---|---|---|
+| **Behavioural** | VCD | [`workspace/Step2/sim/waveform/core.vcd`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step2/sim/waveform/core.vcd) |
 
-**Conclusion:** Repipelining (div_longdiv, sum8_2stage) breaks the critical path from combinational divider/sum into multiple register stages, reducing data arrival from ~25 ns to under ~1 ns and meeting the 1.2 ns clock. Area changes with pipeline registers: core and mac_array shrink due to logic restructuring; sfp_row shrinks significantly as div_longdiv replaces the combinational divider.
+### Step 3 (Hierarchical PnR)
+| Category | Type | File Path |
+|---|---|---|
+| **Post-layout GLS** | Verilog | [`workspace/Step3_norm/post_sim/netlist/core.pnr.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step3_norm/post_sim/netlist/core.pnr.v) <br> [`workspace/Step3_norm/post_sim/netlist/sram_160b_w16.pnr.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step3_norm/post_sim/netlist/sram_160b_w16.pnr.v) <br> [`workspace/Step3_norm/post_sim/netlist/sram_w16.pnr.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step3_norm/post_sim/netlist/sram_w16.pnr.v) |
+| | Testbench | [`workspace/Step3_norm/post_sim/netlist/core_tb.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step3_norm/post_sim/netlist/core_tb.v) |
+| | VCD | [`workspace/Step3_norm/gls/waveform/core.vcd`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step3_norm/gls/waveform/core.vcd) |
+| | ENC | [`workspace/Step3_norm/pnr/hier_pnr/scripts/route.enc`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step3_norm/pnr/hier_pnr/scripts/route.enc) |
 
-#### Before repipelining
-``` 
-+--------------------------------------------------------------------------------+
-|  Design: core                                                                  |
-+================================================================================+
-|                                                                                |
-|  [ Area ]                                                                      |
-|  Total cell area                    243,526.681 um2                            |
-|                                                                                |
-|  [ Power ]                                                                     |
-|  Total Dynamic Power                53.6901 mW                                 |
-|  Cell Leakage Power                 2.7489 mW                                  |
-|                                                                                |
-|  [ Timing - worst path ]                                                       |
-|  Startpoint                         sfp_instance/fifo_inst_int/rd_ptr_reg_0_   |
-|  Endpoint                           sfp_instance/sfp_out_sign6_reg_0_          |
-|  Data arrival time                  24.794 ns                                  |
-|  Slack (VIOLATED)                   [FAIL] -23.688 ns                          |
-|                                                                                |
-+--------------------------------------------------------------------------------+
+### Step 4 (Dual-core Fullchip)
+| Category | Type | File Path |
+|---|---|---|
+| **Behavioural** | Verilog | [`workspace/Step4_hier/verilog/`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/tree/main/workspace/Step4_hier/verilog) |
+| | Pattern | [`workspace/Step4_hier/sim/pattern/`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/tree/main/workspace/Step4_hier/sim/pattern) |
+| | Testbench (Non-lockstep) | [`workspace/Step4_hier/sim/tb/fullchip_sepclk_tb.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step4_hier/sim/tb/fullchip_sepclk_tb.v) |
+| | VCD (Non-lockstep) | [`workspace/Step4_hier/sim/waveform/fullchip_sepclk.vcd`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step4_hier/sim/waveform/fullchip_sepclk.vcd) |
+| | Testbench (Lockstep) | [`workspace/Step4_hier/sim/tb/fullchip_lockstep_tb.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step4_hier/sim/tb/fullchip_lockstep_tb.v) |
+| | VCD (Lockstep) | [`workspace/Step4_hier/sim/waveform/fullchip_lockstep.vcd`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step4_hier/sim/waveform/fullchip_lockstep.vcd) |
+| **Post-layout GLS** | Verilog | [`workspace/Step4_hier/post_sim/netlist/core.pnr.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step4_hier/post_sim/netlist/core.pnr.v) <br> [`workspace/Step4_hier/post_sim/netlist/fullchip.pnr.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step4_hier/post_sim/netlist/fullchip.pnr.v) <br> [`workspace/Step4_hier/post_sim/netlist/sram_w16.pnr.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step4_hier/post_sim/netlist/sram_w16.pnr.v) <br> [`workspace/Step4_hier/post_sim/netlist/sram_160b_w16.pnr.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step4_hier/post_sim/netlist/sram_160b_w16.pnr.v) |
+| | Testbench | [`workspace/Step4_hier/post_sim/netlist/core_tb.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step4_hier/post_sim/netlist/core_tb.v) <br> [`workspace/Step4_hier/post_sim/netlist/fullchip_lockstep_tb.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step4_hier/post_sim/netlist/fullchip_lockstep_tb.v) <br> [`workspace/Step4_hier/post_sim/netlist/fullchip_sepclk_tb.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step4_hier/post_sim/netlist/fullchip_sepclk_tb.v) |
+| | VCD | [`workspace/Step4_hier/gls/waveform/fullchip_lockstep_tb.vcd`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step4_hier/gls/waveform/fullchip_lockstep_tb.vcd) <br> [`workspace/Step4_hier/gls/waveform/fullchip_sepclk.vcd`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step4_hier/gls/waveform/fullchip_sepclk.vcd) |
+| | ENC | [`workspace/Step4_hier/pnr/core_pnr/scripts/route.enc`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step4_hier/pnr/core_pnr/scripts/route.enc) <br> [`workspace/Step4_hier/pnr/core_pnr/scripts/route.enc.dat/`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/tree/main/workspace/Step4_hier/pnr/core_pnr/scripts/route.enc.dat) |
 
-+--------------------------------------------------------------------------------+
-|  Design: mac_array                                                             |
-+================================================================================+
-|                                                                                |
-|  [ Area ]                                                                      |
-|  Total cell area                    116,808.120 um2                            |
-|                                                                                |
-|  [ Power ]                                                                     |
-|  Total Dynamic Power                10.0596 mW                                 |
-|  Cell Leakage Power                 1.5810 mW                                  |
-|                                                                                |
-|  [ Timing - worst path ]                                                       |
-|  Startpoint                         col_idx_4__mac_col_inst/key_q_reg_4_       |
-|  Endpoint                           out[75] (output port clocked by clk)       |
-|  Data arrival time                  2.618 ns                                   |
-|  Slack (VIOLATED)                   [FAIL] -1.618 ns                           |
-|                                                                                |
-+--------------------------------------------------------------------------------+
+### Step 5 / Alpha (Optimized Fullchip)
+| Category | Type | File Path |
+|---|---|---|
+| **Behavioural** | Verilog | [`workspace/Alpha/verilog/`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/tree/main/workspace/Alpha/verilog) |
+| | Pattern | [`workspace/Alpha/sim/pattern/`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/tree/main/workspace/Alpha/sim/pattern) |
+| | Testbench | [`workspace/Alpha/sim/tb/fullchip_tb.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Alpha/sim/tb/fullchip_tb.v) |
+| | VCD | [`workspace/Alpha/sim/waveform/fullchip.vcd`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Alpha/sim/waveform/fullchip.vcd) |
+| **Post-layout GLS** | Verilog | [`workspace/Alpha/post_sim/netlist/fullchip.pnr.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Alpha/post_sim/netlist/fullchip.pnr.v) |
+| | Testbench | [`workspace/Alpha/post_sim/netlist/fullchip_tb.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Alpha/post_sim/netlist/fullchip_tb.v) <br> [`workspace/Alpha/post_sim/netlist/fullchip_shell_tb.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Alpha/post_sim/netlist/fullchip_shell_tb.v) |
+| | VCD | [`workspace/Alpha/gls/waveform/fullchip.vcd`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Alpha/gls/waveform/fullchip.vcd) |
+| | ENC | [`workspace/Alpha/pnr/scripts/route.enc`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Alpha/pnr/scripts/route.enc) |
 
-+--------------------------------------------------------------------------------+
-|  Design: sfp_row                                                               |
-+================================================================================+
-|                                                                                |
-|  [ Area ]                                                                      |
-|  Total cell area                    53,864.280 um2                             |
-|                                                                                |
-|  [ Power ]                                                                     |
-|  Total Dynamic Power                19.4076 mW                                 |
-|  Cell Leakage Power                 667.9583 uW                                |
-|                                                                                |
-|  [ Timing - worst path ]                                                       |
-|  Startpoint                         fifo_inst_int/rd_ptr_reg_0_                |
-|  Endpoint                           sfp_out_sign3_reg_0_                       |
-|  Data arrival time                  25.034 ns                                  |
-|  Slack (VIOLATED)                   [FAIL] -23.926 ns                          |
-|                                                                                |
-+--------------------------------------------------------------------------------+
-```
+### Step 6
+| Category | Type | File Path |
+|---|---|---|
+| **Post-layout GLS** | Verilog | [`workspace/Step6/post_sim/netlist/fullchip.pnr.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step6/post_sim/netlist/fullchip.pnr.v) |
+| | Testbench | [`workspace/Step6/post_sim/netlist/fullchip_shell_tb.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step6/post_sim/netlist/fullchip_shell_tb.v) <br> [`workspace/Step6/post_sim/netlist/fullchip_tb.v`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step6/post_sim/netlist/fullchip_tb.v) |
+| | VCD | [`workspace/Step6/gls/waveform/fullchip.vcd`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step6/gls/waveform/fullchip.vcd) |
+| | ENC | [`workspace/Step6/pnr/scripts/route.enc`](https://github.com/Wen-Chieh-Lo/ECE260B-Final-Project/blob/main/workspace/Step6/pnr/scripts/route.enc) |
 
-#### After repipelining
-``` 
-+--------------------------------------------------------------------------------+
-|  Design: core                                                                  |
-+================================================================================+
-|                                                                                |
-|  [ Area ]                                                                      |
-|  Total cell area                                                 175820.762 um2|
-|                                                                                |
-|  [ Power ]                                                                     |
-|  Total Dynamic Power                                                 72.0683 mW|
-|  Cell Leakage Power                                                   1.2643 mW|
-|                                                                                |
-|  [ Timing - worst path ]                                                       |
-|  Startpoint                               sfp_instance/div0_divisor_fix_reg_10_|
-|  Endpoint                                   sfp_instance/div0_remainder_reg_18_|
-|  Data arrival time                                                     0.950 ns|
-|  Slack (MET)                                                   [PASS] +0.000 ns|
-|                                                                                |
-+--------------------------------------------------------------------------------+
-
-+--------------------------------------------------------------------------------+
-|  Design: mac_array                                                             |
-+================================================================================+
-|                                                                                |
-|  [ Area ]                                                                      |
-|  Total cell area                                                  69490.440 um2|
-|                                                                                |
-|  [ Power ]                                                                     |
-|  Total Dynamic Power                                                 18.8235 mW|
-|  Cell Leakage Power                                                 584.1715 uW|
-|                                                                                |
-|  [ Timing - worst path ]                                                       |
-|  Startpoint                             col_idx_1__mac_col_inst_query_q_reg_38_|
-|  Endpoint                          ...ol_inst_mac_8in_instance_product4_reg_12_|
-|  Data arrival time                                                     0.968 ns|
-|  Slack (MET)                                                   [PASS] +0.000 ns|
-|                                                                                |
-+--------------------------------------------------------------------------------+
-
-+--------------------------------------------------------------------------------+
-|  Design: sfp_row                                                               |
-+================================================================================+
-|                                                                                |
-|  [ Area ]                                                                      |
-|  Total cell area                                                  24698.160 um2|
-|                                                                                |
-|  [ Power ]                                                                     |
-|  Total Dynamic Power                                                 11.9368 mW|
-|  Cell Leakage Power                                                 144.8709 uW|
-|                                                                                |
-|  [ Timing - worst path ]                                                       |
-|  Startpoint                                                         sfp_in[151]|
-|  Endpoint                                               sum8_inst_s67_r_reg_17_|
-|  Data arrival time                                                     0.968 ns|
-|  Slack (MET)                                                   [PASS] +0.000 ns|
-|                                                                                |
-+--------------------------------------------------------------------------------+
-``` 
-# ECE260B
-# ECE260B
-# ECE260B
-# ECE260B
+---
+*Maintained by the ECE260B Project Team (UC San Diego).*
