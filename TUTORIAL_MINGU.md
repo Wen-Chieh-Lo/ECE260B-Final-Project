@@ -64,7 +64,27 @@ Once the simulation is running, the following commands are piped into the Verilo
 - `verifypmem`: Instructs the testbench to compare the hardware output inside the PMEM against the golden software data.
 - `exit`: Terminates the simulation gracefully.
 
-## 4. Complete Example
+## 4. Automatic Pattern Generation
+
+A powerful feature of the `sim_shell.sh` script is its ability to automatically generate test patterns if they are missing.
+
+When you define a pattern directory using the `set PATTERN` command, the shell checks if the first test vector (`qdata_0.txt`) exists in that directory. If it doesn't, and the directory name ends with `random<N>` (e.g., `random100`), the shell will automatically invoke the `sw/gen_random_patterns.sh` script to generate exactly `N` sets of patterns.
+
+**Example:**
+```text
+set PATTERN sw/pattern/random100
+```
+If `sw/pattern/random100/qdata_0.txt` is not found, `sim_shell.sh` prints:
+```bash
+>>> [sim_shell] Missing sw/pattern/random100/ — running sw/gen_random_patterns.sh (NUM_SETS=100)
+```
+And it generates the 100 sets of data automatically before running the simulation.
+
+*(Note: The directory name must strictly follow the `random<N>` format to trigger this feature.)*
+
+---
+
+## 5. Complete Example
 Here is a complete `.mingu` script (`in-n-out100-fullchip-gls.mingu`) that runs 100 random tests on the post-layout netlist. If `sw/pattern/random100/` is missing, `sim_shell.sh` will even automatically generate the software patterns.
 
 ```text

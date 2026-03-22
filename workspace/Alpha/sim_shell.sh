@@ -105,6 +105,22 @@ parse_line() {
 	return 0
 }
 
+# Batch mingu uses set PATTERN sw/pattern/random<N>; data is gitignored. Generate if missing.
+ensure_sw_random_patterns() {
+	[[ -z "${PATTERN:-}" ]] && return 0
+	if [[ ! "$PATTERN" =~ random([0-9]+)$ ]]; then
+		return 0
+	fi
+	local n="${BASH_REMATCH[1]}"
+	local marker="${PROJ_ROOT}/${PATTERN}/qdata_0.txt"
+	if [[ -f "$marker" ]]; then
+		return 0
+	fi
+	local out_rel="${PATTERN#sw/}"
+	echo ">>> [sim_shell] Missing ${PATTERN}/ — running sw/gen_random_patterns.sh (NUM_SETS=${n})" >&2
+	( cd "$PROJ_ROOT" && sh sw/gen_random_patterns.sh --bw 8 --pr 8 --col 8 --total_cycle 8 --num_sets "$n" --out_dir "$out_rel" ) || exit 1
+}
+
 # Expand for loops in TB block: "for var = start to end" ... "endfor" -> repeated body with set var
 # Single-level only; no nesting. Inclusive range [start,end].
 expand_for_loops() {
@@ -241,6 +257,8 @@ run_with_fix_set() {
 	done <<< "$after_fix"
 	after_fix="$after_fix_filtered"
 
+	ensure_sw_random_patterns
+
 	# Run: make sim/gls, or post_sim (xrun with fullchip_shell_tb for batch mingu)
 	# Use temp file for sim/gls stdin to avoid pipe/newline issues.
 	if [[ "$SIM_STAGE" == "post_sim" ]]; then
@@ -277,14 +295,6 @@ fi
 # Read input once
 INPUT_CONTENT=$(read_input)
 
-# Auto-run make gen-patterns when mingu uses sw/pattern/random100 and files are missing
-if echo "$INPUT_CONTENT" | grep -qE 'set[[:space:]]+PATTERN[[:space:]]+sw/pattern/random100|sw/pattern/random100'; then
-	if [[ ! -f "$PROJ_ROOT/sw/pattern/random100/qdata_0.txt" ]]; then
-		echo ">>> PATTERN=sw/pattern/random100 but pattern files missing; running make gen-patterns"
-		make gen-patterns
-	fi
-fi
-
 # If input has fix_set, do two-phase; else simple
 if echo "$INPUT_CONTENT" | grep -q '^[[:space:]]*fix_set[[:space:]]*$'; then
 	run_with_fix_set "$INPUT_CONTENT"
@@ -319,6 +329,9 @@ else
 		[[ "$SIM_STAGE" == "post_sim" ]] && [[ "${PATTERN}" != ../* ]] && export PATTERN="../${PATTERN}"
 		simple_filtered=$(echo "$simple_filtered" | perl -pe 's/\$\(([A-Za-z_][A-Za-z0-9_]*)\)/\${\1}/g')
 		simple_filtered=$(echo "$simple_filtered" | envsubst 2>/dev/null || echo "$simple_filtered")
+		
+		ensure_sw_random_patterns
+		
 		echo ""
 		if [[ "$SIM_STAGE" == "post_sim" ]]; then
 			POST_SIM_DIR="$PROJ_ROOT/post_sim"
