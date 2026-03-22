@@ -68,5 +68,5 @@ venv/
 *.temp
 *.gds2
 #*.sdf
-#*.def
+*.def
 
