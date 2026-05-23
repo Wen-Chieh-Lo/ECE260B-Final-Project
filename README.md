@@ -1,4 +1,4 @@
-# High-Performance Attention Engine (ECE260B Final Project)
+# High-Performance Attention Engine
 
 An open-source, configurable, and high-performance hardware attention mechanism engine (including MAC Array and Softmax/Normalization SFP Row) implemented in Verilog. This project provides complete RTL, Testbenches, and a physical design flow (Synthesis, PnR, GLS) optimized for the 65nm process.
 
