@@ -1,0 +1,6 @@
+// --- testbench ---
+./sim/tb/controller_tb.v
+
+// --- top / core ---
+./verilog/submodules/reg_map.v
+./verilog/submodules/controller.v

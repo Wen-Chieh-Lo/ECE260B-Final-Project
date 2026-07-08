@@ -1,0 +1,33 @@
+# Local/generated artifacts copied from Alpha or produced by tools.
+/gls/pattern/
+/gls/waveform/
+/pnr/scripts/
+/post_sim/
+/sim/pattern/
+/sim/waveform/
+/sw/pattern/
+/syn/gate/
+/syn/log/
+
+# Tool work directories and compiled simulation binaries.
+/gls/compiled/
+/sim/compiled/
+/syn/work/
+
+# Common generated reports/database outputs.
+*.rpt
+*.rep
+*.sdf
+*.lib
+*.lef
+*.vcd
+*.vcd.json
+*.tif.gz
+*.dbglobals
+*.globals
+*.marker.gz
+*.metric.gz
+*.place.gz
+*.route.gz
+*.fp.gz
+*.spr.gz
